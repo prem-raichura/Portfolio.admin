@@ -145,9 +145,6 @@ ${new Date().toLocaleString(
             return;
           }
 
-        const responseTime =
-          Date.now() - startTime;
-
         await logsQueue.add(
           "storeApiLog",
 
