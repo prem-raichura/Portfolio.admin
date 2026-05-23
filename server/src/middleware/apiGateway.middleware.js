@@ -125,27 +125,28 @@ ${new Date().toLocaleString(
       try {
 
         const responseTime =
-          Date.now() -
-          startTime;
+            Date.now() - startTime;
 
-        console.log(`
-====================================
+          const ignoredRoutes = [
+            "/api/logs",
+            "/api/analytics",
+            "/ping",
+          ];
 
-API Gateway Response
+          if (
+            ignoredRoutes.some(
+              (route) =>
+                req.originalUrl.startsWith(
+                  route
+                )
+            )
+          ) {
 
-====================================
+            return;
+          }
 
-Request ID:
-${requestId}
-
-Status:
-${res.statusCode}
-
-Response Time:
-${responseTime}ms
-
-====================================
-`);
+        const responseTime =
+          Date.now() - startTime;
 
         await logsQueue.add(
           "storeApiLog",

@@ -6,6 +6,9 @@ export const getLogs =
 
     try {
 
+      const userId =
+        req.user.userId;
+
       const page =
         Number(req.query.page) || 1;
 
@@ -18,6 +21,10 @@ export const getLogs =
       const logs =
         await prisma.logs.findMany({
 
+          where: {
+            user_id: userId,
+          },
+
           orderBy: {
             created_at: "desc",
           },
@@ -28,7 +35,12 @@ export const getLogs =
         });
 
       const totalLogs =
-        await prisma.logs.count();
+        await prisma.logs.count({
+
+          where: {
+            user_id: userId,
+          },
+        });
 
       return res.status(200).json({
 
