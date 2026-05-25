@@ -608,6 +608,12 @@ Backend deployed successfully on:
 - PostgreSQL Cloud
 - Redis Cloud
 
+Public URL:
+
+```bash
+https://portfolio-admin-7es8.onrender.com
+```
+
 ---
 
 # 📌 Future Scope
@@ -618,15 +624,11 @@ Backend deployed successfully on:
 - AI Portfolio Generator
 - Portfolio Themes
 - Real-time Analytics
-- Team Collaboration
-- Portfolio Templates Marketplace
 
 ---
 
-# 👨‍💻 Author
+## 🧑‍💻 Developed By
 
-Prem Raichura
-
-Computer Engineering Student  
-Backend Developer  
-Portfolio Creator
+[**Prem Raichura**](https://portfolio-prem-raichura.vercel.app/)
+* **GitHub:** [prem-raichura](https://github.com/prem-raichura)
+* **LinkedIn:** [prem-raichura](https://www.linkedin.com/in/prem-raichura/)
