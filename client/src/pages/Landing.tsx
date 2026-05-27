@@ -1,8 +1,6 @@
 import {
   ArrowRight,
   BarChart3,
-  BriefcaseBusiness,
-  Database,
   Moon,
   ShieldCheck,
   Sun,
@@ -15,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import PageLoader from "../components/ui/PageLoader";
+import UserChart from "../components/ui/UserChart";
 
 function App() {
   const { theme, setTheme } = useTheme();
@@ -34,21 +33,11 @@ function App() {
   const stats = [
     {
       icon: <BarChart3 size={26} />,
-      value: "24.8K",
-      label: "Portfolio Views",
+      value: "4+",
+      label: "Users",
     },
     {
       icon: <ShieldCheck size={26} />,
-      value: "12.4K",
-      label: "API Requests",
-    },
-    {
-      icon: <BriefcaseBusiness size={26} />,
-      value: "48",
-      label: "Projects Added",
-    },
-    {
-      icon: <Database size={26} />,
       value: "99.9%",
       label: "System Health",
     },
@@ -60,13 +49,47 @@ function App() {
 
       <div
         className="
+          relative
+          isolate
           min-h-screen
-          bg-[var(--bg-main)]
+          overflow-hidden
+          bg-white/60
+          dark:bg-black/8
+          backdrop-blur-sm
           text-[var(--text-primary)]
           transition-colors
           duration-300
         "
       >
+        <div
+          aria-hidden="true"
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            opacity-50
+            blur-sm
+            mix-blend-normal
+            bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(255,240,230,0.06),transparent_36%)]
+            dark:opacity-30
+          "
+        />
+
+        <div
+          aria-hidden="true"
+          className="
+            pointer-events-none
+            absolute
+            inset-x-0
+            top-0
+            h-24
+            bg-gradient-to-b
+            from-white/35
+            to-transparent
+            dark:from-white/5
+          "
+        />
+
         {/* NAVBAR */}
 
         <header
@@ -76,7 +99,7 @@ function App() {
             z-50
             border-b
             border-[var(--border-color)]
-            bg-[var(--bg-card)]/80
+            bg-[var(--bg-card)]/78
             backdrop-blur
           "
         >
@@ -112,11 +135,10 @@ function App() {
                   items-center
                   justify-center
                   rounded-2xl
-                  bg-[var(--button-primary)]
+                  bg-[linear-gradient(135deg,var(--button-primary)_0%,var(--accent-secondary)_100%)]
                   text-lg
                   font-bold
                   text-white
-                  dark:text-black
                 "
               >
                 P
@@ -161,7 +183,7 @@ function App() {
                   rounded-2xl
                   border
                   border-[var(--border-color)]
-                  bg-[var(--bg-card)]
+                  bg-[var(--bg-card)]/95
                   transition-all
                   duration-300
                   hover:scale-105
@@ -210,7 +232,7 @@ function App() {
                   rounded-2xl
                   border
                   border-[var(--border-color)]
-                  bg-[var(--bg-card)]
+                  bg-white/70
                   px-5
                   py-2.5
                   text-sm
@@ -218,6 +240,7 @@ function App() {
                   transition-all
                   duration-300
                   hover:bg-[var(--bg-secondary)]
+                  dark:bg-[var(--bg-card)]
                 "
               >
                 Register
@@ -231,7 +254,7 @@ function App() {
                 }
                 className="
                   rounded-2xl
-                  bg-[var(--button-primary)]
+                  bg-[linear-gradient(135deg,var(--button-primary)_0%,var(--accent-primary)_100%)]
                   px-5
                   py-2.5
                   text-sm
@@ -240,7 +263,6 @@ function App() {
                   transition-all
                   duration-300
                   hover:bg-[var(--button-primary-hover)]
-                  dark:text-black
                 "
               >
                 Login
@@ -270,34 +292,7 @@ function App() {
           {/* LEFT */}
 
           <div>
-            {/* Badge */}
-
-            <div
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-full
-                border
-                border-[var(--border-color)]
-                bg-[var(--bg-card)]
-                px-4
-                py-2
-                shadow-sm
-              "
-            >
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-
-              <p
-                className="
-                  text-sm
-                  font-medium
-                  text-[var(--text-secondary)]
-                "
-              >
-                Modern SaaS Portfolio Infrastructure
-              </p>
-            </div>
+            {/* badge removed per user request */}
 
             {/* Heading */}
 
@@ -317,7 +312,12 @@ function App() {
               <span
                 className="
                   block
-                  text-[var(--text-muted)]
+                  bg-gradient-to-r
+                  from-[var(--accent-primary)]
+                  via-[var(--accent-secondary)]
+                  to-[var(--accent-secondary)]
+                  bg-clip-text
+                  text-transparent
                 "
               >
                 Portfolio Ecosystem
@@ -336,11 +336,12 @@ function App() {
                 sm:text-lg
               "
             >
-              A modern developer-focused dashboard
-              for managing projects, analytics,
-              APIs, certificates, portfolio content,
-              and dynamic public portfolio
-              infrastructure.
+              A refined dashboard for managing
+              projects, analytics, APIs,
+              certificates, portfolio content,
+              and public portfolio infrastructure
+              with a calmer wood and peach visual
+              style.
             </p>
 
             {/* Buttons */}
@@ -366,15 +367,15 @@ function App() {
                   justify-center
                   gap-2
                   rounded-2xl
-                  bg-[var(--button-primary)]
+                  bg-[linear-gradient(135deg,var(--button-primary)_0%,var(--accent-primary)_100%)]
                   px-6
                   py-3
                   font-medium
                   text-white
                   transition-all
                   duration-300
-                  hover:bg-[var(--button-primary-hover)]
-                  dark:text-black
+                  shadow-[0_12px_30px_var(--accent-soft)]
+                  hover:brightness-105
                 "
               >
                 Get Started
@@ -389,12 +390,13 @@ function App() {
                   rounded-2xl
                   border
                   border-[var(--border-color)]
-                  bg-[var(--bg-card)]
+                  bg-[var(--bg-card)]/90
                   px-6
                   py-3
                   font-medium
                   transition-all
                   duration-300
+                  backdrop-blur
                   hover:bg-[var(--bg-secondary)]
                 "
               >
@@ -410,11 +412,13 @@ function App() {
               rounded-[32px]
               border
               border-[var(--border-color)]
-              bg-[var(--bg-card)]
+              bg-[linear-gradient(180deg,rgba(255,249,244,0.96)_0%,rgba(255,240,232,0.88)_100%)]
               p-5
               shadow-xl
+              backdrop-blur
               sm:p-6
               lg:p-8
+              dark:bg-[linear-gradient(180deg,rgba(36,27,23,0.96)_0%,rgba(30,22,19,0.9)_100%)]
             "
             style={{
               boxShadow:
@@ -454,14 +458,16 @@ function App() {
                 className="
                   w-fit
                   rounded-xl
-                  bg-[var(--bg-secondary)]
+                  bg-[var(--accent-soft)]
                   px-4
                   py-2
                   text-sm
                   font-medium
-                  text-[var(--text-secondary)]
+                  text-[var(--accent-primary)]
                 "
               >
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-green-500 align-middle"></span>
+
                 Live Analytics
               </div>
             </div>
@@ -483,12 +489,13 @@ function App() {
                     rounded-2xl
                     border
                     border-[var(--border-color)]
-                    bg-[var(--bg-card)]
+                    bg-white/82
                     p-5
                     transition-all
                     duration-300
                     hover:-translate-y-1
                     hover:shadow-md
+                    dark:bg-[var(--bg-card)]/82
                   "
                 >
                   <div
@@ -517,38 +524,9 @@ function App() {
               ))}
             </div>
 
-            {/* Graph */}
-
-            <div
-              className="
-                mt-6
-                rounded-2xl
-                border
-                border-[var(--border-color)]
-                bg-[var(--bg-card)]
-                p-5
-              "
-            >
-              <div
-                className="
-                  flex
-                  h-44
-                  items-end
-                  gap-3
-                "
-              >
-                <div className="h-24 w-full rounded-xl bg-[var(--button-primary)]"></div>
-
-                <div className="h-16 w-full rounded-xl bg-[var(--bg-secondary)]"></div>
-
-                <div className="h-40 w-full rounded-xl bg-[var(--button-primary)]"></div>
-
-                <div className="h-20 w-full rounded-xl bg-[var(--bg-secondary)]"></div>
-
-                <div className="h-32 w-full rounded-xl bg-[var(--button-primary)]"></div>
-
-                <div className="h-14 w-full rounded-xl bg-[var(--bg-secondary)]"></div>
-              </div>
+            {/* User chart */}
+            <div className="mt-6">
+              <UserChart />
             </div>
           </div>
         </main>

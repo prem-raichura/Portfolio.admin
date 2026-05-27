@@ -32,24 +32,31 @@ body,
 :root {
 
   /* Backgrounds */
-  --bg-main: #f5f7fb;
-  --bg-card: #ffffff;
-  --bg-secondary: #f3f4f6;
+  --bg-main: #fbf5ee;
+  --bg-main-start: #fffaf5;
+  --bg-main-end: #f3e3d5;
+  --bg-card: #fffaf6;
+  --bg-secondary: #f4e7dc;
 
   /* Text */
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
+  --text-primary: #2f241e;
+  --text-secondary: #6f5d50;
+  --text-muted: #9b8677;
 
   /* Borders */
-  --border-color: #e5e7eb;
+  --border-color: #ead8c8;
+
+  /* Accent */
+  --accent-primary: #c97f5d;
+  --accent-secondary: #f2a68b;
+  --accent-soft: rgba(201, 127, 93, 0.14);
 
   /* Buttons */
-  --button-primary: #111827;
-  --button-primary-hover: #1f2937;
+  --button-primary: #b96f52;
+  --button-primary-hover: #9f5c43;
 
   /* Shadow */
-  --shadow-color: rgba(0, 0, 0, 0.08);
+  --shadow-color: rgba(92, 58, 38, 0.08);
 }
 
 /* =========================
@@ -59,24 +66,31 @@ body,
 .dark {
 
   /* Backgrounds */
-  --bg-main: #0f172a;
-  --bg-card: #111827;
-  --bg-secondary: #1f2937;
+  --bg-main: #1b1411;
+  --bg-main-start: #2b1f1a;
+  --bg-main-end: #15100e;
+  --bg-card: #241b17;
+  --bg-secondary: #352723;
 
   /* Text */
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
+  --text-primary: #fff7f2;
+  --text-secondary: #e2cfc4;
+  --text-muted: #c7afa0;
 
   /* Borders */
-  --border-color: #374151;
+  --border-color: #4b382f;
+
+  /* Accent */
+  --accent-primary: #e39a79;
+  --accent-secondary: #f5c1ab;
+  --accent-soft: rgba(227, 154, 121, 0.16);
 
   /* Buttons */
-  --button-primary: #f9fafb;
-  --button-primary-hover: #e5e7eb;
+  --button-primary: #f5c1ab;
+  --button-primary-hover: #f8d2c2;
 
   /* Shadow */
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.34);
 }
 
 /* =========================
@@ -93,4 +107,27 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+}
+
+@keyframes gradient-drift {
+  0% {
+    background-position: 0% 0%;
+    transform: scale(1.02);
+  }
+
+  50% {
+    background-position: 100% 50%;
+    transform: scale(1.08);
+  }
+
+  100% {
+    background-position: 0% 0%;
+    transform: scale(1.02);
+  }
+}
+
+.gradient-drift {
+  animation: gradient-drift 18s ease-in-out infinite;
+  background-size: 240% 240%;
+  will-change: background-position, transform;
 }
