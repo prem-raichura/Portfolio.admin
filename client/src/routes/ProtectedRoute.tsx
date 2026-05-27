@@ -2,9 +2,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import {
-  jwtDecode,
-} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import {
   useEffect,
@@ -22,13 +20,55 @@ function ProtectedRoute({
 }) {
 
   /* =========================
-      ACCESS TOKEN
+      ACCESS TOKEN & TIMING
   ========================= */
 
-  const accessToken =
-    localStorage.getItem(
-      "accessToken"
-    );
+  const accessToken = localStorage.getItem("accessToken");
+
+
+  /* =========================
+      TOKEN VALIDATION
+      (move expiry checks to effect)
+  ========================= */
+
+  useEffect(() => {
+
+    const validateToken = () => {
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+
+      try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        const now = Date.now() / 1000;
+
+        if (decoded.exp < now) {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/login?expired=true";
+        }
+      } catch {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login";
+      }
+    };
+
+    window.addEventListener("focus", validateToken);
+    document.addEventListener("visibilitychange", validateToken);
+
+    // run once on mount
+    validateToken();
+
+    return () => {
+      window.removeEventListener("focus", validateToken);
+      document.removeEventListener("visibilitychange", validateToken);
+    };
+
+  }, []);
 
   /* =========================
       NO TOKEN
@@ -43,179 +83,25 @@ function ProtectedRoute({
     );
   }
 
-  try {
+  // Synchronous sanity check: ensure token is present and decodable
+  let isValid = true;
 
-    /* =========================
-        DECODE TOKEN
-    ========================= */
-
-    const decoded =
-      jwtDecode<JwtPayload>(
-        accessToken
-      );
-
-    const currentTime =
-      Date.now() / 1000;
-
-    /* =========================
-        TOKEN EXPIRED
-    ========================= */
-
-    if (
-      decoded.exp <
-      currentTime
-    ) {
-
-      localStorage.removeItem(
-        "accessToken"
-      );
-
-      localStorage.removeItem(
-        "refreshToken"
-      );
-
-      return (
-        <Navigate
-          to="/login?expired=true"
-          replace
-        />
-      );
+  if (!accessToken) {
+    isValid = false;
+  } else {
+    try {
+      jwtDecode<JwtPayload>(accessToken);
+    } catch {
+      isValid = false;
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
     }
-
-  } catch (error) {
-
-    /* =========================
-        INVALID TOKEN
-    ========================= */
-
-    localStorage.removeItem(
-      "accessToken"
-    );
-
-    localStorage.removeItem(
-      "refreshToken"
-    );
-
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
   }
 
-  /* =========================
-      TOKEN VALIDATION
-      ON TAB CHANGE
-  ========================= */
-
-  useEffect(() => {
-
-    const validateToken = () => {
-
-      const token =
-        localStorage.getItem(
-          "accessToken"
-        );
-
-      /* =====================
-          NO TOKEN
-      ===================== */
-
-      if (!token) {
-
-        window.location.href =
-          "/login";
-
-        return;
-      }
-
-      try {
-
-        const decoded =
-          jwtDecode<JwtPayload>(
-            token
-          );
-
-        const currentTime =
-          Date.now() / 1000;
-
-        /* =====================
-            TOKEN EXPIRED
-        ===================== */
-
-        if (
-          decoded.exp <
-          currentTime
-        ) {
-
-          localStorage.removeItem(
-            "accessToken"
-          );
-
-          localStorage.removeItem(
-            "refreshToken"
-          );
-
-          window.location.href =
-            "/login?expired=true";
-        }
-
-      } catch (error) {
-
-        /* =====================
-            INVALID TOKEN
-        ===================== */
-
-        localStorage.removeItem(
-          "accessToken"
-        );
-
-        localStorage.removeItem(
-          "refreshToken"
-        );
-
-        window.location.href =
-          "/login";
-      }
-    };
-
-    /* =========================
-        TAB FOCUS
-    ========================= */
-
-    window.addEventListener(
-      "focus",
-      validateToken
-    );
-
-    /* =========================
-        TAB VISIBILITY
-    ========================= */
-
-    document.addEventListener(
-      "visibilitychange",
-      validateToken
-    );
-
-    /* =========================
-        CLEANUP
-    ========================= */
-
-    return () => {
-
-      window.removeEventListener(
-        "focus",
-        validateToken
-      );
-
-      document.removeEventListener(
-        "visibilitychange",
-        validateToken
-      );
-    };
-
-  }, []);
+  if (!isValid) {
+    return <Navigate to="/login" replace />;
+  }
+  /* token expiry and change listeners are handled above in effect */
 
   /* =========================
       VALID TOKEN

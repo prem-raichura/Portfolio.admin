@@ -207,66 +207,62 @@ function App() {
 
                 {/* Moon */}
 
-                <Moon
-                  size={19}
-                  className={`
-                    absolute
+                  <Moon
+                    size={19}
+                    className={`
+                      absolute
+                      transition-all
+                      duration-500
+                      ${
+                        theme === "dark"
+                          ? "scale-100 rotate-0 opacity-100 text-slate-300"
+                          : "scale-0 -rotate-90 opacity-0"
+                      }
+                    `}
+                  />
+                </button>
+
+                {/* Register */}
+
+                <button
+                  onClick={() => handleNavigation("/register")}
+                  className="
+                    rounded-2xl
+                    border
+                    border-[var(--border-color)]
+                    bg-white/70
+                    px-5
+                    py-2.5
+                    text-sm
+                    font-medium
                     transition-all
-                    duration-500
-                    ${
-                      theme === "dark"
-                        ? "scale-100 rotate-0 opacity-100 text-slate-300"
-                        : "scale-0 -rotate-90 opacity-0"
-                    }
-                  `}
-                />
-              </button>
+                    duration-300
+                    hover:bg-[var(--bg-secondary)]
+                    dark:bg-[var(--bg-card)]
+                  "
+                >
+                  Register
+                </button>
 
-<<<<<<< HEAD
-              {/* Register */}
+                {/* Login */}
 
-              <button
-                onClick={() =>
-                  handleNavigation("/register")
-                }
-                className="
-                  rounded-2xl
-                  border
-                  border-[var(--border-color)]
-                  bg-white/70
-                  px-5
-                  py-2.5
-                  text-sm
-                  font-medium
-                  transition-all
-                  duration-300
-                  hover:bg-[var(--bg-secondary)]
-                  dark:bg-[var(--bg-card)]
-                "
-              >
-                Register
-              </button>
-              {/* Login */}
-{/* 
-              <button
-                onClick={() =>
-                  handleNavigation("/login")
-                }
-                className="
-                  rounded-2xl
-                  bg-[linear-gradient(135deg,var(--button-primary)_0%,var(--accent-primary)_100%)]
-                  px-5
-                  py-2.5
-                  text-sm
-                  font-medium
-                  text-white
-                  transition-all
-                  duration-300
-                  hover:bg-[var(--button-primary-hover)]
-                "
-              >
-                Login
-              </button> */}
+                <button
+                  onClick={() => handleNavigation("/login")}
+                  className="
+                    rounded-2xl
+                    bg-[linear-gradient(135deg,var(--button-primary)_0%,var(--accent-primary)_100%)]
+                    px-5
+                    py-2.5
+                    text-sm
+                    font-medium
+                    text-white
+                    transition-all
+                    duration-300
+                    hover:bg-[var(--button-primary-hover)]
+                  "
+                >
+                  Login
+                </button>
             </div>
           </div>
         </header>
