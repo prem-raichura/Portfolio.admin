@@ -23,7 +23,7 @@ function Navbar({
     useTheme();
 
     const { loading,
-        handleNavigation,
+        
     } = usePageNavigation();
 
   return (

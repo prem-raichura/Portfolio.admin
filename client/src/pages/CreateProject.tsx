@@ -24,8 +24,7 @@ function CreateProject() {
   const [title, setTitle] =
     useState("");
 
-  const [slug, setSlug] =
-    useState("");
+  const [slug, setSlug] = useState("");
 
   const [
     description,
