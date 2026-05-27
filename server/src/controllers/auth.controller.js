@@ -289,16 +289,16 @@ export const githubCallback =
         String(githubUser.id);
 
       const existingUser =
-        (await prisma.user.findUnique({
+       (await prisma.user.findUnique({
           where: {
             github_id: githubId,
           },
         })) ||
-        (await prisma.user.findFirst({
+        await prisma.user.findFirst({
           where: {
             email,
           },
-        }));
+        });
 
       const username =
         await getAvailableUsername(
@@ -313,7 +313,6 @@ export const githubCallback =
         );
 
       const userData = {
-        github_id: githubId,
         name:
           githubUser.name ||
           githubUser.login,
