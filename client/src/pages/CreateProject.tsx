@@ -21,10 +21,9 @@ function CreateProject() {
       MAIN STATES
   ========================= */
 
-  const [title, setTitle] =
-    useState("");
+  const [title, setTitle] = useState("");
 
-  const [slug, setSlug] = useState("");
+  const [_slug, setSlug] = useState("");
 
   const [
     description,
@@ -36,26 +35,22 @@ function CreateProject() {
     setPublisher,
   ] = useState("");
 
-  const [type, setType] =
-    useState("project");
+  const [type, setType] = useState("project");
 
-  const [status, setStatus] =
-    useState("ongoing");
+  const [status, setStatus] = useState("ongoing");
 
   const [
     featured,
     setFeatured,
   ] = useState(false);
 
-  const [dateTime, setDateTime] =
-    useState("");
+  const [dateTime, setDateTime] = useState("");
 
   /* =========================
       THUMBNAIL
   ========================= */
 
-  const [thumbnail, setThumbnail] =
-    useState<File | null>(null);
+  const [_thumbnail, setThumbnail] = useState<File | null>(null);
 
   const [
     thumbnailPreview,
@@ -70,8 +65,7 @@ function CreateProject() {
     string[]
   >([]);
 
-  const [tagInput, setTagInput] =
-    useState("");
+  const [tagInput, setTagInput] = useState("");
 
   /* =========================
       CONTRIBUTORS

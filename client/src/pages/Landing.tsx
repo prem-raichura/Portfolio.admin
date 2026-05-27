@@ -222,6 +222,7 @@ function App() {
                 />
               </button>
 
+<<<<<<< HEAD
               {/* Register */}
 
               <button
@@ -245,9 +246,8 @@ function App() {
               >
                 Register
               </button>
-
               {/* Login */}
-
+{/* 
               <button
                 onClick={() =>
                   handleNavigation("/login")
@@ -266,7 +266,7 @@ function App() {
                 "
               >
                 Login
-              </button>
+              </button> */}
             </div>
           </div>
         </header>
