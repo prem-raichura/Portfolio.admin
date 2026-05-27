@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   RESET
+========================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* =========================
+   ROOT
+========================= */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: Inter, sans-serif;
+}
+
+/* =========================
+   LIGHT THEME
+========================= */
+
+:root {
+
+  /* Backgrounds */
+  --bg-main: #f5f7fb;
+  --bg-card: #ffffff;
+  --bg-secondary: #f3f4f6;
+
+  /* Text */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+
+  /* Borders */
+  --border-color: #e5e7eb;
+
+  /* Buttons */
+  --button-primary: #111827;
+  --button-primary-hover: #1f2937;
+
+  /* Shadow */
+  --shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+/* =========================
+   DARK THEME
+========================= */
+
+.dark {
+
+  /* Backgrounds */
+  --bg-main: #0f172a;
+  --bg-card: #111827;
+  --bg-secondary: #1f2937;
+
+  /* Text */
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+
+  /* Borders */
+  --border-color: #374151;
+
+  /* Buttons */
+  --button-primary: #f9fafb;
+  --button-primary-hover: #e5e7eb;
+
+  /* Shadow */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* =========================
+   BODY
+========================= */
+
+body {
+  background: var(--bg-main);
+  color: var(--text-primary);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
