@@ -8,8 +8,12 @@ import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+
 import Projects from "../pages/Projects";
 import CreateProject from "../pages/CreateProject";
+
+import Experience from "../pages/Experience";
+import CreateExperience from "../pages/CreateExperience";
 
 function AppRoutes() {
   return (
@@ -45,18 +49,32 @@ function AppRoutes() {
           element={<Dashboard />}
         />
 
-        <Route
-            path="/projects"
-            element={
-                <Projects />
-            }
-        />
+        {/* Projects */}
 
         <Route
-            path="/projects/create"
-            element={
-                <CreateProject />
-            }
+          path="/projects"
+          element={<Projects />}
+        />
+
+        {/* Create Project */}
+
+        <Route
+          path="/projects/create"
+          element={<CreateProject />}
+        />
+
+        {/* Experience */}
+
+        <Route
+          path="/experience"
+          element={<Experience />}
+        />
+
+        {/* Create Experience */}
+
+        <Route
+          path="/experience/create"
+          element={<CreateExperience />}
         />
 
       </Routes>
