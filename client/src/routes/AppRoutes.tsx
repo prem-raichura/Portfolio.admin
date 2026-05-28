@@ -5,11 +5,15 @@ import {
 } from "react-router-dom";
 
 import Landing from "../pages/Landing";
+
 import Login from "../pages/Login";
-import Register from "../pages/Register";
+
+import AuthCallback from "../pages/AuthCallback";
+
 import Dashboard from "../pages/Dashboard";
 
 import Projects from "../pages/Projects";
+
 import CreateProject from "../pages/CreateProject";
 
 import Experience from "../pages/Experience";
@@ -21,32 +25,38 @@ function AppRoutes() {
 
       <Routes>
 
-        {/* Landing Page */}
+        {/* =========================
+            PUBLIC ROUTES
+        ========================= */}
 
         <Route
           path="/"
           element={<Landing />}
         />
 
-        {/* Login */}
-
         <Route
           path="/login"
           element={<Login />}
         />
 
-        {/* Register */}
-
         <Route
-          path="/register"
-          element={<Register />}
+          path="/auth/github/callback"
+          element={
+            <AuthCallback />
+          }
         />
 
-        {/* Dashboard */}
+        {/* =========================
+            PROTECTED ROUTES
+        ========================= */}
 
         <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
         {/* Projects */}

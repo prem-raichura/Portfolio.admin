@@ -24,15 +24,6 @@ const logsWorker =
         response_time,
       } = job.data;
 
-      console.log(`
-====================================
-
-LOG WORKER DATA
-
-====================================
-
-`, job.data);
-
       await prisma.logs.create({
         data: {
           user_id:
@@ -88,8 +79,4 @@ logsWorker.on(
 
     console.log(err);
   }
-);
-
-console.log(
-  "Logs Worker Started"
 );
