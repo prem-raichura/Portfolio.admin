@@ -4,321 +4,223 @@ import {
   Plus,
 } from "lucide-react";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import DashboardLayout from "../layouts/DashboardLayout";
-
 import ProjectCard from "../components/dashboard/cards/ProjectCard";
-
 import { usePageNavigation } from "../hooks/usePageNavigation";
-
 import PageLoader from "../components/ui/PageLoader";
+import api from "../services/api"; // update path if needed
+
+interface Project {
+  id: number;
+  title: string;
+  description: string;
+  featured: boolean;
+  status: string;
+  tags: string[];
+}
 
 function Projects() {
-  const {
-    loading,
-    handleNavigation,
-  } = usePageNavigation();
-
-  /* =========================
-      VIEW MODE
-  ========================= */
+ const {
+  handleNavigation,
+} = usePageNavigation();
 
   const [viewMode, setViewMode] =
-    useState("grid");
+    useState<"grid" | "list">("grid");
 
-  const projects = [
-    {
-      title:
-        "AI Portfolio Platform",
+  const [projects, setProjects] =
+    useState<Project[]>([]);
 
-      description:
-        "Modern AI-powered developer portfolio infrastructure with dynamic APIs and analytics.",
+  const [
+    projectsLoading,
+    setProjectsLoading,
+  ] = useState(true);
 
-      featured: true,
+  const fetchProjects = async () => {
+  try {
+      const response = await api.get("/api/projects");
 
-      status: "published",
+      setProjects(
+        response?.data?.projects ?? []
+      );
+    } catch (error: any) {
+      console.log("ERROR");
+      console.log(error.response);
+    } finally {
+      setProjectsLoading(false);
+    }
+  };
 
-      tags: [
-        "React",
-        "Node.js",
-        "PostgreSQL",
-        "Redis",
-      ],
-    },
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
-    {
-      title:
-        "Deepfake Detection System",
-
-      description:
-        "Research-based deepfake detection platform using Swin Transformers and diffusion models.",
-
-      featured: true,
-
-      status: "published",
-
-      tags: [
-        "PyTorch",
-        "Vision AI",
-        "Transformers",
-      ],
-    },
-
-    {
-      title:
-        "E-Library Platform",
-
-      description:
-        "Collaborative educational resource sharing platform with recommendation system.",
-
-      featured: false,
-
-      status: "draft",
-
-      tags: [
-        "Laravel",
-        "MySQL",
-        "Bootstrap",
-      ],
-    },
-
-    {
-      title:
-        "Farmer Marketplace",
-
-      description:
-        "Direct farmer-to-consumer marketplace platform with smart pricing system.",
-
-      featured: false,
-
-      status: "published",
-
-      tags: [
-        "Django",
-        "Cloud",
-        "Payments",
-      ],
-    },
-  ];
+  if (projectsLoading) {
+    return <PageLoader />;
+  }
 
   return (
-    <>
-      {loading && <PageLoader />}
+    <DashboardLayout>
+      <div
+        className="
+          flex
+          flex-col
+          gap-4
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
+        "
+      >
+        <div>
+          <h1
+            className="
+              text-3xl
+              font-bold
+            "
+          >
+            Projects
+          </h1>
 
-      <DashboardLayout>
+          <p
+            className="
+              mt-2
+              text-[var(--text-secondary)]
+            "
+          >
+            Manage your portfolio
+            projects.
+          </p>
+        </div>
 
-        {/* =========================
-            TOP SECTION
-        ========================= */}
+        <button
+          onClick={() =>
+            handleNavigation(
+              "/projects/create"
+            )
+          }
+          className="
+            flex
+            items-center
+            justify-center
+            gap-2
+            rounded-2xl
+            bg-[var(--button-primary)]
+            px-5
+            py-3
+            font-medium
+            text-white
+            transition-all
+            duration-300
+            hover:bg-[var(--button-primary-hover)]
+            dark:text-black
+          "
+        >
+          <Plus size={18} />
+          Add Project
+        </button>
+      </div>
 
+      <div
+        className="
+          mt-8
+          flex
+          justify-end
+        "
+      >
         <div
           className="
             flex
-            flex-col
-            gap-4
-            lg:flex-row
-            lg:items-center
-            lg:justify-between
+            items-center
+            rounded-2xl
+            border
+            border-[var(--border-color)]
+            bg-[var(--bg-card)]
+            p-1
           "
         >
-          {/* Left */}
-
-          <div>
-
-            <h1
-              className="
-                text-3xl
-                font-bold
-              "
-            >
-              Projects
-            </h1>
-
-            <p
-              className="
-                mt-2
-                text-[var(--text-secondary)]
-              "
-            >
-              Manage your portfolio projects.
-            </p>
-
-          </div>
-
-          {/* Right */}
+          <button
+            onClick={() =>
+              setViewMode("grid")
+            }
+            className={`
+              rounded-xl
+              p-2.5
+              transition-all
+              duration-300
+              ${
+                viewMode ===
+                "grid"
+                  ? "bg-[var(--button-primary)] text-white dark:text-black"
+                  : "text-[var(--text-secondary)]"
+              }
+            `}
+          >
+            <Grid2X2 size={18} />
+          </button>
 
           <button
             onClick={() =>
-              handleNavigation(
-                "/projects/create"
-              )
+              setViewMode("list")
             }
-            className="
-              flex
-              items-center
-              justify-center
-              gap-2
-              rounded-2xl
-              bg-[var(--button-primary)]
-              px-5
-              py-3
-              font-medium
-              text-white
+            className={`
+              rounded-xl
+              p-2.5
               transition-all
               duration-300
-              hover:bg-[var(--button-primary-hover)]
-              dark:text-black
-            "
+              ${
+                viewMode ===
+                "list"
+                  ? "bg-[var(--button-primary)] text-white dark:text-black"
+                  : "text-[var(--text-secondary)]"
+              }
+            `}
           >
-            <Plus size={18} />
-
-            Add Project
+            <LayoutList size={18} />
           </button>
-
         </div>
+      </div>
 
-        {/* =========================
-            SEARCH + FILTER
-        ========================= */}
-
+      {projects.length === 0 && (
         <div
           className="
             mt-8
-            flex
-            flex-col
-            gap-4
-            lg:flex-row
-            lg:items-center
-            lg:justify-between
+            rounded-3xl
+            border
+            border-[var(--border-color)]
+            bg-[var(--bg-card)]
+            p-10
+            text-center
           "
         >
-          {/* Filters */}
-
-          <div className="flex items-center gap-3">
-
-            <button
-              className="
-                rounded-2xl
-                border
-                border-[var(--border-color)]
-                bg-[var(--bg-card)]
-                px-4
-                py-2.5
-                text-sm
-                font-medium
-              "
-            >
-              All
-            </button>
-
-            <button
-              className="
-                rounded-2xl
-                border
-                border-[var(--border-color)]
-                bg-[var(--bg-card)]
-                px-4
-                py-2.5
-                text-sm
-                font-medium
-              "
-            >
-              Published
-            </button>
-
-            <button
-              className="
-                rounded-2xl
-                border
-                border-[var(--border-color)]
-                bg-[var(--bg-card)]
-                px-4
-                py-2.5
-                text-sm
-                font-medium
-              "
-            >
-              Draft
-            </button>
-
-          </div>
-
-          {/* VIEW TOGGLE */}
-
-          <div
+          <h3
             className="
-              flex
-              items-center
-              rounded-2xl
-              border
-              border-[var(--border-color)]
-              bg-[var(--bg-card)]
-              p-1
+              text-xl
+              font-semibold
             "
           >
-            {/* GRID */}
+            No Projects Found
+          </h3>
 
-            <button
-              onClick={() =>
-                setViewMode(
-                  "grid"
-                )
-              }
-              className={`
-                rounded-xl
-                p-2.5
-                transition-all
-                duration-300
-                ${
-                  viewMode ===
-                  "grid"
-                    ? "bg-[var(--button-primary)] text-white dark:text-black"
-                    : "text-[var(--text-secondary)]"
-                }
-              `}
-            >
-              <Grid2X2
-                size={18}
-              />
-            </button>
-
-            {/* LIST */}
-
-            <button
-              onClick={() =>
-                setViewMode(
-                  "list"
-                )
-              }
-              className={`
-                rounded-xl
-                p-2.5
-                transition-all
-                duration-300
-                ${
-                  viewMode ===
-                  "list"
-                    ? "bg-[var(--button-primary)] text-white dark:text-black"
-                    : "text-[var(--text-secondary)]"
-                }
-              `}
-            >
-              <LayoutList
-                size={18}
-              />
-            </button>
-
-          </div>
-
+          <p
+            className="
+              mt-2
+              text-[var(--text-secondary)]
+            "
+          >
+            Create your first
+            project.
+          </p>
         </div>
+      )}
 
-        {/* =========================
-            PROJECT GRID
-        ========================= */}
-
-        {viewMode ===
-          "grid" && (
+      {viewMode ===
+        "grid" &&
+        projects.length >
+          0 && (
           <div
             className="
               mt-8
@@ -330,12 +232,9 @@ function Projects() {
             "
           >
             {projects.map(
-              (
-                project,
-                index
-              ) => (
+              (project) => (
                 <ProjectCard
-                  key={index}
+                  key={project.id}
                   title={
                     project.title
                   }
@@ -349,7 +248,8 @@ function Projects() {
                     project.status
                   }
                   tags={
-                    project.tags
+                    project.tags ||
+                    []
                   }
                 />
               )
@@ -357,21 +257,15 @@ function Projects() {
           </div>
         )}
 
-        {/* =========================
-            LIST VIEW
-        ========================= */}
-
-        {viewMode ===
-          "list" && (
+      {viewMode ===
+        "list" &&
+        projects.length >
+          0 && (
           <div className="mt-8 space-y-5">
-
             {projects.map(
-              (
-                project,
-                index
-              ) => (
+              (project) => (
                 <div
-                  key={index}
+                  key={project.id}
                   className="
                     flex
                     flex-col
@@ -389,49 +283,22 @@ function Projects() {
                     lg:justify-between
                   "
                 >
-                  {/* LEFT */}
-
                   <div className="flex-1">
-
-                    <div className="flex items-center gap-3">
-
-                      <h2
-                        className="
-                          text-xl
-                          font-semibold
-                        "
-                      >
-                        {
-                          project.title
-                        }
-                      </h2>
-
-                      {project.featured && (
-                        <div
-                          className="
-                            rounded-full
-                            bg-yellow-100
-                            px-3
-                            py-1
-                            text-xs
-                            font-medium
-                            text-yellow-700
-                          "
-                        >
-                          Featured
-                        </div>
-                      )}
-
-                    </div>
-
-                    {/* DESCRIPTION */}
+                    <h2
+                      className="
+                        text-xl
+                        font-semibold
+                      "
+                    >
+                      {
+                        project.title
+                      }
+                    </h2>
 
                     <p
                       className="
                         mt-3
-                        max-w-3xl
                         text-sm
-                        leading-relaxed
                         text-[var(--text-secondary)]
                       "
                     >
@@ -439,128 +306,33 @@ function Projects() {
                         project.description
                       }
                     </p>
-
-                    {/* TAGS */}
-
-                    <div
-                      className="
-                        mt-4
-                        flex
-                        flex-wrap
-                        gap-2
-                      "
-                    >
-                      {project.tags.map(
-                        (
-                          tag,
-                          tagIndex
-                        ) => (
-                          <div
-                            key={
-                              tagIndex
-                            }
-                            className="
-                              rounded-full
-                              bg-[var(--bg-secondary)]
-                              px-3
-                              py-1
-                              text-xs
-                              font-medium
-                            "
-                          >
-                            {tag}
-                          </div>
-                        )
-                      )}
-                    </div>
-
                   </div>
-
-                  {/* RIGHT */}
 
                   <div
-                    className="
-                      flex
-                      flex-col
-                      items-start
-                      gap-4
-                      lg:items-end
-                    "
-                  >
-                    {/* STATUS */}
-
-                    <div
-                      className={`
-                        rounded-full
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        ${
-                          project.status ===
-                          "published"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-orange-100 text-orange-700"
-                        }
-                      `}
-                    >
-                      {
-                        project.status
+                    className={`
+                      rounded-full
+                      px-4
+                      py-2
+                      text-sm
+                      font-medium
+                      ${
+                        project.status ===
+                        "published"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-orange-100 text-orange-700"
                       }
-                    </div>
-
-                    {/* ACTIONS */}
-
-                    <div className="flex gap-3">
-
-                      <button
-                        className="
-                          rounded-xl
-                          border
-                          border-[var(--border-color)]
-                          px-4
-                          py-2
-                          text-sm
-                          font-medium
-                          transition-all
-                          duration-300
-                          hover:bg-[var(--bg-secondary)]
-                        "
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        className="
-                          rounded-xl
-                          border
-                          border-red-200
-                          px-4
-                          py-2
-                          text-sm
-                          font-medium
-                          text-red-500
-                          transition-all
-                          duration-300
-                          hover:bg-red-50
-                        "
-                      >
-                        Delete
-                      </button>
-
-                    </div>
-
+                    `}
+                  >
+                    {
+                      project.status
+                    }
                   </div>
-
                 </div>
               )
             )}
-
           </div>
         )}
-
-      </DashboardLayout>
-    </>
+    </DashboardLayout>
   );
 }
 
