@@ -8,13 +8,17 @@ import {
   Settings,
 } from "lucide-react";
 
-import { useLocation } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import SidebarItem from "./SidebarItem";
 
 import PageLoader from "../ui/PageLoader";
 
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { useState } from "react";
 
 function Sidebar({
   sidebarOpen,
@@ -24,9 +28,35 @@ function Sidebar({
   const location = useLocation();
   const { loading, } = usePageNavigation();
 
+  const navigate =
+  useNavigate();
+
+  const [
+  logoutLoading,
+  setLogoutLoading, ] = useState(false);
+
+  const handleLogout =
+  () => {
+
+    setLogoutLoading(true);
+
+    setTimeout(() => {
+
+      localStorage.clear();
+
+      navigate(
+        "/login",
+        {
+          replace: true,
+        }
+      );
+
+    }, 400);
+  };
+
   return (
     <>
-    {loading && <PageLoader />}
+    {( loading || logoutLoading ) && <PageLoader />}
     <aside
       className={`
         hidden
@@ -184,12 +214,35 @@ function Sidebar({
           p-4
         "
       >
-        <SidebarItem
-          icon={<LogOut size={20} />}
-          label="Logout"
-          path="/login"
-          sidebarOpen={sidebarOpen}
-        />
+        <button
+          onClick={handleLogout}
+          className="
+            flex
+            w-full
+            items-center
+            rounded-xl
+            px-4
+            py-3
+            transition-all
+            duration-200
+            hover:bg-red-500/10
+            hover:text-red-500
+          "
+        >
+
+          <LogOut size={20} />
+
+          {sidebarOpen && (
+
+            <span className="ml-3">
+
+              Logout
+
+            </span>
+
+          )}
+
+        </button>
       </div>
     </aside>
     </>

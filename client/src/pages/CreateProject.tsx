@@ -14,6 +14,12 @@ import type {
   ChangeEvent,
 } from "react";
 
+import {
+  createProject,
+} from "../services/projects/project.service";
+
+import { toast } from "react-hot-toast";
+
 import DashboardLayout from "../layouts/DashboardLayout";
 
 function CreateProject() {
@@ -23,12 +29,17 @@ function CreateProject() {
 
   const [title, setTitle] = useState("");
 
-  const [_slug, setSlug] = useState("");
+  const [slug, setSlug] = useState("");
 
   const [
     description,
     setDescription,
   ] = useState("");
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
 
   const [
     publisher,
@@ -50,7 +61,7 @@ function CreateProject() {
       THUMBNAIL
   ========================= */
 
-  const [_thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const [
     thumbnailPreview,
@@ -244,6 +255,213 @@ function CreateProject() {
     }
   };
 
+const handleSubmit = async (
+  e?: React.FormEvent
+) => {
+
+  if (e) {
+    e.preventDefault();
+  }
+
+  if (!title.trim()) {
+
+    toast.error(
+      "Project title is required"
+    );
+
+    return;
+  }
+
+  if (!slug.trim()) {
+
+    toast.error(
+      "Project slug is required"
+    );
+
+    return;
+  }
+
+  if (!description.trim()) {
+
+    toast.error(
+      "Project description is required"
+    );
+
+    return;
+  }
+
+  const invalidLink =
+    links.find(
+      (link) =>
+        link.value &&
+        !isValidUrl(
+          link.value
+        )
+    );
+
+  if (invalidLink) {
+
+    toast.error(
+      `Invalid URL in ${invalidLink.key}`
+    );
+
+    return;
+  }
+
+  try {
+
+    setLoading(true);
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "title",
+      title.trim()
+    );
+
+    formData.append(
+      "slug",
+      slug.trim()
+    );
+
+    formData.append(
+      "description",
+      description.trim()
+    );
+
+    formData.append(
+      "publisher",
+      publisher.trim()
+    );
+
+    formData.append(
+      "status",
+      status
+    );
+
+    formData.append(
+      "type",
+      type
+    );
+
+    formData.append(
+      "featured",
+      String(featured)
+    );
+
+    if (dateTime) {
+
+      formData.append(
+        "date_time",
+        dateTime
+      );
+    }
+
+    formData.append(
+      "authors_contributors",
+      JSON.stringify(
+        contributors
+      )
+    );
+
+    formData.append(
+      "tags",
+      JSON.stringify(
+        tags
+      )
+    );
+
+    formData.append(
+      "links",
+      JSON.stringify(
+        links.filter(
+          (link) =>
+            link.value.trim()
+        )
+      )
+    );
+
+    if (thumbnail) {
+
+      formData.append(
+        "thumbnail",
+        thumbnail
+      );
+    }
+
+    const response =
+      await createProject(
+        formData
+      );
+
+    if (
+      response?.success
+    ) {
+
+      toast.success(
+        response.message ||
+        "Project created successfully"
+      );
+
+      setTitle("");
+      setSlug("");
+      setDescription("");
+      setPublisher("");
+
+      setType(
+        "project"
+      );
+
+      setStatus(
+        "ongoing"
+      );
+
+      setFeatured(false);
+
+      setDateTime("");
+
+      setTags([]);
+      setTagInput("");
+
+      setContributors([]);
+      setContributorInput("");
+
+      setLinks([
+        {
+          key: "github",
+          value: "",
+        },
+      ]);
+
+      setThumbnail(
+        null
+      );
+
+      setThumbnailPreview(
+        ""
+      );
+    }
+
+  } catch (error: any) {
+
+    console.error(
+      error
+    );
+
+    toast.error(
+      error?.response
+        ?.data
+        ?.message ||
+      "Failed to create project"
+    );
+
+  } finally {
+
+    setLoading(false);
+  }
+};
+
   return (
     <DashboardLayout>
 
@@ -287,6 +505,9 @@ function CreateProject() {
         {/* Publish */}
 
         <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
           className="
             rounded-2xl
             bg-[var(--button-primary)]
@@ -297,10 +518,15 @@ function CreateProject() {
             transition-all
             duration-300
             hover:bg-[var(--button-primary-hover)]
+            disabled:opacity-50
             dark:text-black
           "
         >
-          Publish Project
+          {
+            loading
+              ? "Publishing..."
+              : "Publish Project"
+          }
         </button>
 
       </div>
