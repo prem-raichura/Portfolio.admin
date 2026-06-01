@@ -18,6 +18,8 @@ import PortfolioItemCard from "@shared/components/cards/PortfolioItemCard";
 import { usePageNavigation } from "@shared/hooks/usePageNavigation";
 import PageLoader from "@shared/components/ui/PageLoader";
 import api from "@shared/lib/api";
+import { toast } from "react-hot-toast";
+import { deleteProject } from "@features/projects/services/project.service";
 
 interface Project {
   id: number;
@@ -72,6 +74,8 @@ function Projects() {
 
   const [activeTypeFilter, setActiveTypeFilter] = useState<TypeFilter>("all");
   const [activeStatusFilter, setActiveStatusFilter] = useState<string>("all");
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Reset status filter when type changes
   const handleTypeFilterChange = (type: TypeFilter) => {
@@ -265,14 +269,34 @@ function Projects() {
   const fetchProjects = async () => {
     try {
       const response = await api.get("/api/projects");
-      setProjects(response?.data?.projects ?? []);
-    } catch (error: unknown) {
-      console.error(
-        "Failed to fetch projects",
-        error
-      );
+      if (response.data.success) {
+        setProjects(response.data.projects);
+      }
+    } catch (error) {
+      console.error("Failed to fetch projects", error);
     } finally {
       setProjectsLoading(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!projectToDelete?.slug && !projectToDelete?.id) return;
+    
+    try {
+      setIsDeleting(true);
+      const slug = projectToDelete.slug || String(projectToDelete.id);
+      const res = await deleteProject(slug);
+      
+      if (res?.success) {
+        toast.success("Project deleted successfully");
+        setProjectToDelete(null);
+        fetchProjects();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete project");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -597,12 +621,7 @@ function Projects() {
                   ),
               }}
               deleteAction={{
-                onClick: () => {
-                  console.log(
-                    "Delete project",
-                    project.slug || project.id
-                  );
-                },
+                onClick: () => setProjectToDelete(project),
               }}
             />
           ))}
@@ -873,6 +892,7 @@ function Projects() {
                   </button>
 
                   <button
+                    onClick={() => setProjectToDelete(project)}
                     className="
                       rounded-xl
                       border
@@ -893,6 +913,39 @@ function Projects() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* =========================
+          DELETE MODAL
+      ========================= */}
+
+      {projectToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-main)] p-6 shadow-2xl">
+            <h3 className="text-xl font-bold">Delete Project</h3>
+            <p className="mt-2 text-[var(--text-secondary)]">
+              Are you sure you want to delete "{projectToDelete.title}"? This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setProjectToDelete(null)}
+                disabled={isDeleting}
+                className="rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-red-600 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

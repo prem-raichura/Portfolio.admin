@@ -16,6 +16,8 @@ import Projects from "@features/projects/pages/Projects";
 
 import CreateProject from "@features/projects/pages/CreateProject";
 
+import EditProject from "@features/projects/pages/EditProject";
+
 import ProtectedRoute from "@app/routes/ProtectedRoute";
 
 import NotFound from "@app/pages/NotFound";
@@ -74,6 +76,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <CreateProject />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/projects/:slug/edit"
+          element={
+            <ProtectedRoute>
+              <EditProject />
             </ProtectedRoute>
           }
         />
