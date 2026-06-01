@@ -9,11 +9,11 @@ import {
   useState,
 } from "react";
 
-import DashboardLayout from "../layouts/DashboardLayout";
-import ProjectCard from "../components/dashboard/cards/ProjectCard";
-import { usePageNavigation } from "../hooks/usePageNavigation";
-import PageLoader from "../components/ui/PageLoader";
-import api from "../services/api";
+import DashboardLayout from "@layouts/DashboardLayout";
+import ProjectCard from "@features/projects/components/cards/ProjectCard";
+import { usePageNavigation } from "@shared/hooks/usePageNavigation";
+import PageLoader from "@shared/components/ui/PageLoader";
+import api from "@shared/lib/api";
 
 interface Project {
   id: number;
@@ -50,16 +50,25 @@ function Projects() {
     try {
       const response = await api.get("/api/projects");
       setProjects(response?.data?.projects ?? []);
-    } catch (error: any) {
-      console.log("ERROR");
-      console.log(error.response);
+    } catch (error: unknown) {
+      console.error(
+        "Failed to fetch projects",
+        error
+      );
     } finally {
       setProjectsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProjects();
+    const timer =
+      window.setTimeout(() => {
+        void fetchProjects();
+      }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   const filteredProjects = projects.filter((project) => {

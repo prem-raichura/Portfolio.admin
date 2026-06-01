@@ -1,25 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Toaster } from "react-hot-toast";
 
-import App from "./App";
+import App from "@app/App";
+import AppProviders from "@app/providers/AppProviders";
 
 import "./index.css";
-
-import { ThemeProvider } from "./components/theme-provider";
 
 ReactDOM.createRoot(
   document.getElementById("root")!
 ).render(
   <React.StrictMode>
-    <ThemeProvider>
+    <AppProviders>
       <App />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-        }}
-      />
-    </ThemeProvider>
+    </AppProviders>
   </React.StrictMode>
 );

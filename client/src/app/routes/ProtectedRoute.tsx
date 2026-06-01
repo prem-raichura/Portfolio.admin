@@ -10,6 +10,10 @@ import {
   useEffect,
 } from "react";
 
+import type {
+  ReactNode,
+} from "react";
+
 type JwtPayload = {
   exp: number;
 };
@@ -18,7 +22,7 @@ function ProtectedRoute({
   children,
 }: {
   children:
-    React.ReactNode;
+    ReactNode;
 }) {
 
   /* =========================
@@ -29,80 +33,6 @@ function ProtectedRoute({
     localStorage.getItem(
       "accessToken"
     );
-
-  /* =========================
-      NO TOKEN
-  ========================= */
-
-  if (!accessToken) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
-  }
-
-  try {
-
-    /* =========================
-        DECODE TOKEN
-    ========================= */
-
-    const decoded =
-      jwtDecode<JwtPayload>(
-        accessToken
-      );
-
-    const currentTime =
-      Date.now() / 1000;
-
-    /* =========================
-        TOKEN EXPIRED
-    ========================= */
-
-    if (
-      decoded.exp <
-      currentTime
-    ) {
-
-      localStorage.removeItem(
-        "accessToken"
-      );
-
-      localStorage.removeItem(
-        "refreshToken"
-      );
-
-      return (
-        <Navigate
-          to="/login?expired=true"
-          replace
-        />
-      );
-    }
-
-  } catch (error) {
-
-    /* =========================
-        INVALID TOKEN
-    ========================= */
-
-    localStorage.removeItem(
-      "accessToken"
-    );
-
-    localStorage.removeItem(
-      "refreshToken"
-    );
-
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
-  }
 
   /* =========================
       TOKEN VALIDATION
@@ -161,7 +91,7 @@ function ProtectedRoute({
             "/login?expired=true";
         }
 
-      } catch (error) {
+      } catch {
 
         /* =====================
             INVALID TOKEN
@@ -216,6 +146,19 @@ function ProtectedRoute({
     };
 
   }, []);
+
+  /* =========================
+      NO TOKEN
+  ========================= */
+
+  if (!accessToken) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
+  }
 
   /* =========================
       VALID TOKEN

@@ -10,7 +10,7 @@ import { useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import PageLoader from "../components/ui/PageLoader";
+import PageLoader from "@shared/components/ui/PageLoader";
 
 function Login() {
   const { theme, setTheme } = useTheme();

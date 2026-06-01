@@ -8,9 +8,20 @@ import {
   Users,
 } from "lucide-react";
 
-import DashboardLayout from "../layouts/DashboardLayout";
+import DashboardLayout from "@layouts/DashboardLayout";
 
-import StatCard from "../components/dashboard/cards/StatCard";
+import StatCard from "@features/dashboard/components/cards/StatCard";
+
+const popularProjects = [
+  {
+    name: "AI Portfolio Platform",
+    views: 842,
+  },
+  {
+    name: "Deepfake Detection System",
+    views: 617,
+  },
+];
 
 function Dashboard() {
   return (
@@ -208,12 +219,9 @@ function Dashboard() {
 
           <div className="mt-8 space-y-5">
 
-            {[
-              "AI Portfolio Platform",
-              "Deepfake Detection System",
-            ].map((project, index) => (
+            {popularProjects.map((project) => (
               <div
-                key={index}
+                key={project.name}
                 className="
                   flex
                   items-center
@@ -246,7 +254,7 @@ function Dashboard() {
                   <div>
 
                     <h3 className="font-medium">
-                      {project}
+                      {project.name}
                     </h3>
 
                     <p
@@ -268,10 +276,7 @@ function Dashboard() {
                     text-[var(--text-secondary)]
                   "
                 >
-                  {Math.floor(
-                    Math.random() * 1000
-                  )}{" "}
-                  views
+                  {project.views} views
                 </div>
               </div>
             ))}

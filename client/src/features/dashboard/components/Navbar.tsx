@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 
 import { useTheme } from "next-themes";
-import PageLoader from "../ui/PageLoader";
-import { usePageNavigation } from "../../hooks/usePageNavigation";
+import PageLoader from "@shared/components/ui/PageLoader";
+import { usePageNavigation } from "@shared/hooks/usePageNavigation";
 
 function Navbar({
   sidebarOpen,

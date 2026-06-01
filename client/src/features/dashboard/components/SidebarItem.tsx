@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-import PageLoader from "../../components/ui/PageLoader";
+import PageLoader from "@shared/components/ui/PageLoader";
 
-import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { usePageNavigation } from "@shared/hooks/usePageNavigation";
 
 function SidebarItem({
   icon,
