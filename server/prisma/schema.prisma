@@ -93,7 +93,7 @@ model Projects {
   user_id Int
 
   title String @db.VarChar(255)
-  slug String? @unique @db.VarChar(255)
+  slug String? @db.VarChar(255)
 
   authors_contributors Json?
 
@@ -118,6 +118,7 @@ model Projects {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@unique([user_id, slug])
   @@index([user_id])
 }
 
@@ -128,7 +129,7 @@ model Certificates {
 
   title String @db.VarChar(255)
 
-  slug String @unique @db.VarChar(255)
+  slug String @db.VarChar(255)
 
   type String @db.VarChar(100)
 
@@ -147,6 +148,7 @@ model Certificates {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@unique([user_id, slug])
   @@index([user_id])
 }
 
@@ -157,7 +159,7 @@ model Experience {
 
   title String @db.VarChar(255)
 
-  slug String @unique @db.VarChar(255)
+  slug String @db.VarChar(255)
 
   description String?
 
@@ -178,6 +180,7 @@ model Experience {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@unique([user_id, slug])
   @@index([user_id])
 }
 
