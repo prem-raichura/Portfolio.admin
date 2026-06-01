@@ -6,7 +6,6 @@ import {
 
 import {
   generateAccessToken,
-  generateRefreshToken,
 } from "../../utils/generateTokens.js";
 
 export const refreshAccessToken =

@@ -8,7 +8,10 @@ import {
 
 import {
   useEffect,
+  useState,
 } from "react";
+
+import PageLoader from "@shared/components/ui/PageLoader";
 
 import type {
   ReactNode,
@@ -18,25 +21,28 @@ type JwtPayload = {
   exp: number;
 };
 
+type AuthStatus =
+  | "checking"
+  | "valid"
+  | "missing"
+  | "expired"
+  | "invalid";
+
 function ProtectedRoute({
   children,
 }: {
   children:
     ReactNode;
 }) {
-
-  /* =========================
-      ACCESS TOKEN
-  ========================= */
-
-  const accessToken =
-    localStorage.getItem(
-      "accessToken"
-    );
+  const [
+    authStatus,
+    setAuthStatus,
+  ] = useState<AuthStatus>(
+    "checking"
+  );
 
   /* =========================
       TOKEN VALIDATION
-      ON TAB CHANGE
   ========================= */
 
   useEffect(() => {
@@ -54,8 +60,9 @@ function ProtectedRoute({
 
       if (!token) {
 
-        window.location.href =
-          "/login";
+        setAuthStatus(
+          "missing"
+        );
 
         return;
       }
@@ -87,9 +94,16 @@ function ProtectedRoute({
             "refreshToken"
           );
 
-          window.location.href =
-            "/login?expired=true";
+          setAuthStatus(
+            "expired"
+          );
+
+          return;
         }
+
+        setAuthStatus(
+          "valid"
+        );
 
       } catch {
 
@@ -105,10 +119,13 @@ function ProtectedRoute({
           "refreshToken"
         );
 
-        window.location.href =
-          "/login";
+        setAuthStatus(
+          "invalid"
+        );
       }
     };
+
+    validateToken();
 
     /* =========================
         TAB FOCUS
@@ -147,14 +164,32 @@ function ProtectedRoute({
 
   }, []);
 
+  if (
+    authStatus === "checking"
+  ) {
+    return <PageLoader />;
+  }
+
   /* =========================
       NO TOKEN
   ========================= */
 
-  if (!accessToken) {
+  if (
+    authStatus === "missing" ||
+    authStatus === "invalid"
+  ) {
     return (
       <Navigate
         to="/login"
+        replace
+      />
+    );
+  }
+
+  if (authStatus === "expired") {
+    return (
+      <Navigate
+        to="/login?expired=true"
         replace
       />
     );

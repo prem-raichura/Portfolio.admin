@@ -1,4 +1,5 @@
 import cloudinary from "../../config/cloudinary.js";
+import crypto from "crypto";
 
 import { prisma } from "../../config/db.js";
 
@@ -37,6 +38,43 @@ const getClientUrl = () =>
 const getGithubRedirectUri = () =>
   process.env.GITHUB_CALLBACK_URL ||
   `${getServerUrl()}/api/auth/github/callback`;
+
+const oauthStateCookieName =
+  "github_oauth_state";
+
+const getCookieValue = (
+  req,
+  name
+) => {
+  const cookies =
+    req.headers.cookie
+      ?.split(";")
+      .map((cookie) =>
+        cookie.trim()
+      ) || [];
+
+  const cookie =
+    cookies.find((item) =>
+      item.startsWith(`${name}=`)
+    );
+
+  if (!cookie) {
+    return null;
+  }
+
+  return decodeURIComponent(
+    cookie.slice(name.length + 1)
+  );
+};
+
+const getOauthCookieOptions = () => ({
+  httpOnly: true,
+  secure:
+    getServerUrl().startsWith(
+      "https://"
+    ),
+  sameSite: "lax",
+});
 
 /* =========================================
     REFRESH TOKEN
@@ -295,6 +333,21 @@ export const githubLogin = (
       });
     }
 
+    const state =
+      crypto
+        .randomBytes(24)
+        .toString("hex");
+
+    res.cookie(
+      oauthStateCookieName,
+      state,
+      {
+        ...getOauthCookieOptions(),
+        maxAge:
+          10 * 60 * 1000,
+      }
+    );
+
     const params =
       new URLSearchParams({
         client_id:
@@ -306,6 +359,8 @@ export const githubLogin = (
 
         scope:
           "read:user user:email",
+
+        state,
 
         allow_signup:
           "true",
@@ -334,7 +389,10 @@ export const githubLogin = (
 export const githubCallback =
   async (req, res) => {
     try {
-      const { code } =
+      const {
+        code,
+        state,
+      } =
         req.query;
 
       /* =====================
@@ -345,6 +403,28 @@ export const githubCallback =
         return redirectWithError(
           res,
           "GitHub authorization code missing"
+        );
+      }
+
+      const storedState =
+        getCookieValue(
+          req,
+          oauthStateCookieName
+        );
+
+      res.clearCookie(
+        oauthStateCookieName,
+        getOauthCookieOptions()
+      );
+
+      if (
+        !state ||
+        !storedState ||
+        state !== storedState
+      ) {
+        return redirectWithError(
+          res,
+          "Invalid GitHub authorization state"
         );
       }
 
