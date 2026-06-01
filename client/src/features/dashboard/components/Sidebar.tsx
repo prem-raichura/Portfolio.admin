@@ -15,9 +15,9 @@ import {
 
 import SidebarItem from "./SidebarItem";
 
-import PageLoader from "../ui/PageLoader";
+import PageLoader from "@shared/components/ui/PageLoader";
 
-import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { usePageNavigation } from "@shared/hooks/usePageNavigation";
 import { useState } from "react";
 
 function Sidebar({

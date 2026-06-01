@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 
 import PageLoader
-from "../components/ui/PageLoader";
+from "@shared/components/ui/PageLoader";
 
 function AuthCallback() {
 

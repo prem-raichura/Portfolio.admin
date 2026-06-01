@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 
 import {
-  useEffect,
   useState,
 } from "react";
 
@@ -16,11 +15,21 @@ import type {
 
 import {
   createProject,
-} from "../services/projects/project.service";
+} from "@features/projects/services/project.service";
 
 import { toast } from "react-hot-toast";
+import { isAxiosError } from "axios";
 
-import DashboardLayout from "../layouts/DashboardLayout";
+import DashboardLayout from "@layouts/DashboardLayout";
+
+const createSlug = (
+  value: string
+) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
 
 function CreateProject() {
   /* =========================
@@ -29,7 +38,7 @@ function CreateProject() {
 
   const [title, setTitle] = useState("");
 
-  const [slug, setSlug] = useState("");
+  const slug = createSlug(title);
 
   const [
     description,
@@ -103,20 +112,6 @@ function CreateProject() {
         value: "",
       },
     ]);
-
-  /* =========================
-      AUTO SLUG
-  ========================= */
-
-  useEffect(() => {
-    const generatedSlug = title
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
-
-    setSlug(generatedSlug);
-  }, [title]);
 
   /* =========================
       URL VALIDATION
@@ -405,7 +400,6 @@ const handleSubmit = async (
       );
 
       setTitle("");
-      setSlug("");
       setDescription("");
       setPublisher("");
 
@@ -443,16 +437,23 @@ const handleSubmit = async (
       );
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
 
     console.error(
       error
     );
 
+    const message =
+      isAxiosError<{
+        message?: string;
+      }>(error)
+        ? error.response
+          ?.data
+          ?.message
+        : undefined;
+
     toast.error(
-      error?.response
-        ?.data
-        ?.message ||
+      message ||
       "Failed to create project"
     );
 

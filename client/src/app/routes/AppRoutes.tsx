@@ -4,19 +4,21 @@ import {
   Route,
 } from "react-router-dom";
 
-import Landing from "../pages/Landing";
+import Landing from "@features/landing/pages/Landing";
 
-import Login from "../pages/Login";
+import Login from "@features/auth/pages/Login";
 
-import AuthCallback from "../pages/AuthCallback";
+import AuthCallback from "@features/auth/pages/AuthCallback";
 
-import Dashboard from "../pages/Dashboard";
+import Dashboard from "@features/dashboard/pages/Dashboard";
 
-import Projects from "../pages/Projects";
+import Projects from "@features/projects/pages/Projects";
 
-import CreateProject from "../pages/CreateProject";
+import CreateProject from "@features/projects/pages/CreateProject";
 
-import ProtectedRoute from "./ProtectedRoute";
+import ProtectedRoute from "@app/routes/ProtectedRoute";
+
+import NotFound from "@app/pages/NotFound";
 
 function AppRoutes() {
   return (
@@ -74,6 +76,11 @@ function AppRoutes() {
               <CreateProject />
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="*"
+          element={<NotFound />}
         />
 
       </Routes>

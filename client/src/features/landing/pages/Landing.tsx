@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useState } from "react";
 
-import PageLoader from "../components/ui/PageLoader";
+import PageLoader from "@shared/components/ui/PageLoader";
 
 function App() {
   const { theme, setTheme } = useTheme();
