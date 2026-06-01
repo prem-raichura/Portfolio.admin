@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import {
+  useEffect,
   useState,
 } from "react";
 
@@ -15,14 +16,16 @@ import type {
 } from "react";
 
 import {
-  createProject,
+  getProject,
+  updateProject,
 } from "@features/projects/services/project.service";
 
 import { toast } from "react-hot-toast";
 import { isAxiosError } from "axios";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
+import PageLoader from "@shared/components/ui/PageLoader";
 
 const createSlug = (
   value: string
@@ -33,8 +36,15 @@ const createSlug = (
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
-function CreateProject() {
+function EditProject() {
+  const { slug: routeSlug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+
+  /* =========================
+      PAGE LOADING
+  ========================= */
+
+  const [pageLoading, setPageLoading] = useState(true);
 
   /* =========================
       MAIN STATES
@@ -42,7 +52,7 @@ function CreateProject() {
 
   const [title, setTitle] = useState("");
 
-  const slug = createSlug(title);
+  const [slug, setSlug] = useState("");
 
   const [
     description,
@@ -116,6 +126,87 @@ function CreateProject() {
         value: "",
       },
     ]);
+
+  /* =========================
+      FETCH PROJECT DATA
+  ========================= */
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!routeSlug) return;
+
+      try {
+        const response = await getProject(routeSlug);
+
+        if (response?.success && response.project) {
+          const p = response.project;
+
+          setTitle(p.title || "");
+          setSlug(p.slug || "");
+          setDescription(p.description || "");
+          setPublisher(p.publisher || "");
+          setType(p.type || "project");
+          setStatus(p.status || "ongoing");
+          setFeatured(p.featured || false);
+
+          if (p.date_time) {
+            const d = new Date(p.date_time);
+            setDateTime(d.toISOString().split("T")[0]);
+          }
+
+          // Thumbnail
+          if (p.thumbnail) {
+            let url = p.thumbnail;
+
+            if (typeof url === "object" && url !== null) {
+              url = url.secure_url || url.url || url.src || "";
+            }
+
+            if (typeof url === "string" && url.trim()) {
+              setThumbnailPreview(url);
+            }
+          }
+
+          // Tags
+          if (Array.isArray(p.tags)) {
+            setTags(p.tags);
+          } else if (typeof p.tags === "string") {
+            try {
+              const parsed = JSON.parse(p.tags);
+              if (Array.isArray(parsed)) setTags(parsed);
+            } catch { /* ignore */ }
+          }
+
+          // Contributors
+          if (Array.isArray(p.authors_contributors)) {
+            setContributors(p.authors_contributors);
+          } else if (typeof p.authors_contributors === "string") {
+            try {
+              const parsed = JSON.parse(p.authors_contributors);
+              if (Array.isArray(parsed)) setContributors(parsed);
+            } catch { /* ignore */ }
+          }
+
+          // Links
+          if (Array.isArray(p.links) && p.links.length > 0) {
+            setLinks(p.links);
+          } else if (typeof p.links === "string") {
+            try {
+              const parsed = JSON.parse(p.links);
+              if (Array.isArray(parsed) && parsed.length > 0) setLinks(parsed);
+            } catch { /* ignore */ }
+          }
+        }
+      } catch (error: unknown) {
+        console.error("Failed to fetch project", error);
+        toast.error("Failed to load project");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+
+    void fetchProject();
+  }, [routeSlug]);
 
   /* =========================
       URL VALIDATION
@@ -254,183 +345,127 @@ function CreateProject() {
     }
   };
 
-const handleSubmit = async (
-  e?: React.FormEvent
-) => {
+  /* =========================
+      SUBMIT (UPDATE)
+  ========================= */
 
-  if (e) {
-    e.preventDefault();
-  }
+  const handleSubmit = async (
+    e?: React.FormEvent
+  ) => {
 
-  if (!title.trim()) {
+    if (e) {
+      e.preventDefault();
+    }
 
-    toast.error(
-      "Project title is required"
-    );
+    if (!title.trim()) {
+      toast.error("Project title is required");
+      return;
+    }
 
-    return;
-  }
+    if (!slug.trim()) {
+      toast.error("Project slug is required");
+      return;
+    }
 
-  if (!slug.trim()) {
+    if (!description.trim()) {
+      toast.error("Project description is required");
+      return;
+    }
 
-    toast.error(
-      "Project slug is required"
-    );
+    const invalidLink =
+      links.find(
+        (link) =>
+          link.value &&
+          !isValidUrl(link.value)
+      );
 
-    return;
-  }
+    if (invalidLink) {
+      toast.error(
+        `Invalid URL in ${invalidLink.key}`
+      );
+      return;
+    }
 
-  if (!description.trim()) {
+    try {
+      setLoading(true);
 
-    toast.error(
-      "Project description is required"
-    );
+      const formData = new FormData();
 
-    return;
-  }
+      formData.append("title", title.trim());
+      formData.append("slug", slug.trim());
+      formData.append("description", description.trim());
+      formData.append("publisher", publisher.trim());
+      formData.append("status", status);
+      formData.append("type", type);
+      formData.append("featured", String(featured));
 
-  const invalidLink =
-    links.find(
-      (link) =>
-        link.value &&
-        !isValidUrl(
-          link.value
-        )
-    );
-
-  if (invalidLink) {
-
-    toast.error(
-      `Invalid URL in ${invalidLink.key}`
-    );
-
-    return;
-  }
-
-  try {
-
-    setLoading(true);
-
-    const formData =
-      new FormData();
-
-    formData.append(
-      "title",
-      title.trim()
-    );
-
-    formData.append(
-      "slug",
-      slug.trim()
-    );
-
-    formData.append(
-      "description",
-      description.trim()
-    );
-
-    formData.append(
-      "publisher",
-      publisher.trim()
-    );
-
-    formData.append(
-      "status",
-      status
-    );
-
-    formData.append(
-      "type",
-      type
-    );
-
-    formData.append(
-      "featured",
-      String(featured)
-    );
-
-    if (dateTime) {
+      if (dateTime) {
+        formData.append("date_time", dateTime);
+      }
 
       formData.append(
-        "date_time",
-        dateTime
+        "authors_contributors",
+        JSON.stringify(contributors)
       );
-    }
-
-    formData.append(
-      "authors_contributors",
-      JSON.stringify(
-        contributors
-      )
-    );
-
-    formData.append(
-      "tags",
-      JSON.stringify(
-        tags
-      )
-    );
-
-    formData.append(
-      "links",
-      JSON.stringify(
-        links.filter(
-          (link) =>
-            link.value.trim()
-        )
-      )
-    );
-
-    if (thumbnail) {
 
       formData.append(
-        "thumbnail",
-        thumbnail
+        "tags",
+        JSON.stringify(tags)
       );
+
+      formData.append(
+        "links",
+        JSON.stringify(
+          links.filter(
+            (link) => link.value.trim()
+          )
+        )
+      );
+
+      if (thumbnail) {
+        formData.append("thumbnail", thumbnail);
+      }
+
+      const response =
+        await updateProject(
+          routeSlug!,
+          formData
+        );
+
+      if (response?.success) {
+        toast.success(
+          response.message ||
+          "Project updated successfully"
+        );
+
+        navigate("/projects");
+      }
+
+    } catch (error: unknown) {
+      console.error(error);
+
+      const message =
+        isAxiosError<{
+          message?: string;
+        }>(error)
+          ? error.response
+            ?.data
+            ?.message
+          : undefined;
+
+      toast.error(
+        message ||
+        "Failed to update project"
+      );
+
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const response =
-      await createProject(
-        formData
-      );
-
-    if (
-      response?.success
-    ) {
-
-      toast.success(
-        response.message ||
-        "Project created successfully"
-      );
-
-      navigate("/projects");
-    }
-
-  } catch (error: unknown) {
-
-    console.error(
-      error
-    );
-
-    const message =
-      isAxiosError<{
-        message?: string;
-      }>(error)
-        ? error.response
-          ?.data
-          ?.message
-        : undefined;
-
-    toast.error(
-      message ||
-      "Failed to create project"
-    );
-
-  } finally {
-
-    setLoading(false);
+  if (pageLoading) {
+    return <PageLoader />;
   }
-};
 
   return (
     <DashboardLayout>
@@ -476,7 +511,7 @@ const handleSubmit = async (
               font-bold
             "
           >
-            Create Project
+            Edit Project
           </h1>
 
           <p
@@ -485,13 +520,12 @@ const handleSubmit = async (
               text-[var(--text-secondary)]
             "
           >
-            Create and publish a new
-            portfolio project.
+            Update your project details.
           </p>
 
         </div>
 
-        {/* Publish */}
+        {/* Save */}
 
         <button
           type="button"
@@ -513,8 +547,8 @@ const handleSubmit = async (
         >
           {
             loading
-              ? "Publishing..."
-              : "Publish Project"
+              ? "Saving..."
+              : "Save Changes"
           }
         </button>
 
@@ -567,11 +601,10 @@ const handleSubmit = async (
                 required
                 type="text"
                 value={title}
-                onChange={(e) =>
-                  setTitle(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setSlug(createSlug(e.target.value));
+                }}
                 placeholder="Enter project title"
                 className="
                   w-full
@@ -584,6 +617,20 @@ const handleSubmit = async (
                   outline-none
                 "
               />
+
+              {/* SLUG PREVIEW */}
+
+              {slug && (
+                <p
+                  className="
+                    mt-2
+                    text-xs
+                    text-[var(--text-muted)]
+                  "
+                >
+                  Slug: {slug}
+                </p>
+              )}
 
             </div>
 
@@ -1068,7 +1115,7 @@ const handleSubmit = async (
                 font-semibold
               "
             >
-              Thumbnail *
+              Thumbnail
             </h2>
 
             <input
@@ -1602,4 +1649,4 @@ const handleSubmit = async (
   );
 }
 
-export default CreateProject;
+export default EditProject;
