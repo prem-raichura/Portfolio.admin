@@ -19,16 +19,18 @@ export const createExperience = async (req, res) => {
     } = req.body;
 
     const existingSlug =
-      await prisma.experience.findUnique({
+      await prisma.experience.findFirst({
         where: {
           slug,
+          user_id: userId,
         },
       });
 
     if (existingSlug) {
       return res.status(400).json({
         success: false,
-        message: "Slug already exists",
+        message:
+          "You already have an experience with this slug",
       });
     }
 
@@ -167,6 +169,7 @@ export const updateExperience = async (req, res) => {
         await prisma.experience.findFirst({
           where: {
             slug: newSlug,
+            user_id: userId,
             NOT: {
               id: existingExperience.id,
             },
@@ -177,7 +180,7 @@ export const updateExperience = async (req, res) => {
         return res.status(400).json({
           success: false,
           message:
-            "This slug is already present, try different slug",
+            "You already have an experience with this slug",
         });
       }
     }

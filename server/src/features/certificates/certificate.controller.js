@@ -36,9 +36,11 @@ export const createCertificate =
       }
 
       const existingSlug =
-        await prisma.certificates.findUnique({
+        await prisma.certificates.findFirst({
           where: {
             slug,
+            user_id:
+              userId,
           },
         });
 
@@ -46,7 +48,7 @@ export const createCertificate =
         return res.status(400).json({
           success: false,
           message:
-            "Slug already exists",
+            "You already have a certificate with this slug",
         });
       }
 
@@ -258,6 +260,9 @@ export const updateCertificate =
               slug:
                 newSlug,
 
+              user_id:
+                userId,
+
               NOT: {
                 id:
                   existingCertificate.id,
@@ -269,7 +274,7 @@ export const updateCertificate =
           return res.status(400).json({
             success: false,
             message:
-              "This slug is already present, try different slug",
+              "You already have a certificate with this slug",
           });
         }
       }

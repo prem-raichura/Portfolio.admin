@@ -40,9 +40,11 @@ export const createProject =
       }
 
       const existingSlug =
-        await prisma.projects.findUnique({
+        await prisma.projects.findFirst({
           where: {
             slug,
+            user_id:
+              userId,
           },
         });
 
@@ -50,7 +52,7 @@ export const createProject =
         return res.status(400).json({
           success: false,
           message:
-            "Slug already exists",
+            "You already have a project with this slug",
         });
       }
 
@@ -275,6 +277,9 @@ export const updateProject =
               slug:
                 newSlug,
 
+              user_id:
+                userId,
+
               NOT: {
                 id:
                   existingProject.id,
@@ -286,7 +291,7 @@ export const updateProject =
           return res.status(400).json({
             success: false,
             message:
-              "This slug is already present, try different slug",
+              "You already have a project with this slug",
           });
         }
       }
