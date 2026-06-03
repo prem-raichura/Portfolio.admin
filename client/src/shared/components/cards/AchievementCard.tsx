@@ -15,6 +15,8 @@ type AchievementCardProps = {
   image?: string;
   isVisible: boolean;
   onToggleVisibility: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
 function AchievementCard({
@@ -26,6 +28,8 @@ function AchievementCard({
   image,
   isVisible,
   onToggleVisibility,
+  onEdit,
+  onDelete,
 }: AchievementCardProps) {
   return (
     <div
@@ -132,23 +136,30 @@ function AchievementCard({
           "
         >
           <div className="flex items-center gap-2">
-            <button
-              className="
-                rounded-xl
-                border
-                border-[var(--border-color)]
-                p-2
-                transition-all
-                duration-300
-                hover:bg-[var(--bg-secondary)]
-              "
-              disabled={!link}
-              title={link ? "Open link" : "No link"}
-            >
-              <ExternalLink size={16} />
-            </button>
+            {link && (
+              <a
+                href={link}
+                target="_blank"
+                rel="noreferrer"
+                className="
+                  rounded-xl
+                  border
+                  border-[var(--border-color)]
+                  p-2
+                  transition-all
+                  duration-300
+                  hover:bg-[var(--bg-secondary)]
+                "
+                aria-label="View certificate"
+                title="View certificate"
+              >
+                <ExternalLink size={16} />
+              </a>
+            )}
 
             <button
+              type="button"
+              onClick={onEdit}
               className="
                 rounded-xl
                 border
@@ -158,11 +169,15 @@ function AchievementCard({
                 duration-300
                 hover:bg-[var(--bg-secondary)]
               "
+              aria-label="Edit certificate"
+              title="Edit certificate"
             >
               <Pencil size={16} />
             </button>
 
             <button
+              type="button"
+              onClick={onDelete}
               className="
                 rounded-xl
                 border
@@ -173,6 +188,8 @@ function AchievementCard({
                 duration-300
                 hover:bg-red-50
               "
+              aria-label="Delete certificate"
+              title="Delete certificate"
             >
               <Trash2 size={16} />
             </button>

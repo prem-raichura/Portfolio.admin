@@ -20,12 +20,15 @@ import CreateProject from "@features/projects/pages/CreateProject";
 
 import EditProject from "@features/projects/pages/EditProject";
 
+import Certificates from "@features/certificates/pages/Certificates";
+
+import CreateCertificate from "@features/certificates/pages/CreateCertificate";
+
+import EditCertificate from "@features/certificates/pages/EditCertificate";
+
 import ProtectedRoute from "@app/routes/ProtectedRoute";
 
 import NotFound from "@app/pages/NotFound";
-
-import Achievements from "@pages/Achievements";
-import CreateAchievement from "@pages/CreateAchievement";
 
 function AppRoutes() {
   return (
@@ -104,19 +107,36 @@ function AppRoutes() {
         />
 
         <Route
-          path="*"
-          element={<NotFound />}
+          path="/certificates"
+          element={
+            <ProtectedRoute>
+              <Certificates />
+            </ProtectedRoute>
+          }
         />
 
         <Route
-  path="/achievements"
-  element={<Achievements />}
-/>
+          path="/certificates/create"
+          element={
+            <ProtectedRoute>
+              <CreateCertificate />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/achievements/create"
-  element={<CreateAchievement />}
-/>
+        <Route
+          path="/certificates/:slug/edit"
+          element={
+            <ProtectedRoute>
+              <EditCertificate />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
 
       </Routes>
     </BrowserRouter>
