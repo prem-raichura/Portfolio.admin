@@ -2,7 +2,6 @@ import {
   Calendar,
   ExternalLink,
   GitBranch,
-  ImageIcon,
   Pencil,
   Star,
   Trash2,
