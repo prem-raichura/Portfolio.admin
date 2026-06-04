@@ -3,9 +3,7 @@ import {
   Moon,
   Sun,
   Shield,
-  Zap,
   LayoutDashboard,
-  Key,
 } from "lucide-react";
 
 import { useTheme } from "next-themes";
@@ -20,12 +18,12 @@ const FEATURES = [
   {
     icon: <LayoutDashboard size={20} />,
     title: "Analytics Dashboard",
-    desc:  "Real-time portfolio metrics, visitor insights, and traffic source breakdowns — all in one place.",
+    desc: "Real-time portfolio metrics, visitor insights, and traffic source breakdowns — all in one place.",
   },
   {
     icon: <Shield size={20} />,
     title: "Secure Multi-Tenant",
-    desc:  "OAuth 2.0 via GitHub. No passwords, no friction — just instant, safe access to your admin panel.",
+    desc: "OAuth 2.0 via GitHub. No passwords, no friction — just instant, safe access to your admin panel.",
   },
 ];
 
@@ -33,8 +31,8 @@ function Login() {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
-  const [loading, setLoading]             = useState(false);
-  const [searchParams, setSearchParams]   = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [githubHovered, setGithubHovered] = useState(false);
 
   useEffect(() => {
@@ -76,14 +74,14 @@ function Login() {
           className="pointer-events-none absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full"
           style={{
             background: "radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 65%)",
-            animation:  "orb-pulse 10s ease-in-out infinite alternate",
+            animation: "orb-pulse 10s ease-in-out infinite alternate",
           }}
         />
         <div
           className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full"
           style={{
             background: "radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 65%)",
-            animation:  "orb-pulse 8s ease-in-out infinite alternate-reverse",
+            animation: "orb-pulse 8s ease-in-out infinite alternate-reverse",
           }}
         />
         <div
@@ -100,7 +98,7 @@ function Login() {
           className="relative z-10 flex h-16 items-center justify-between px-6 lg:px-10"
           style={{
             borderBottom: "1px solid var(--border-color)",
-            background:   "var(--bg-navbar)",
+            background: "var(--bg-navbar)",
             backdropFilter: "blur(20px)",
           }}
         >
@@ -113,7 +111,7 @@ function Login() {
               className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white"
               style={{
                 background: "linear-gradient(135deg, var(--grad-start), var(--grad-end))",
-                boxShadow:  "0 4px 14px var(--accent-glow)",
+                boxShadow: "0 4px 14px var(--accent-glow)",
               }}
             >
               P
@@ -139,19 +137,17 @@ function Login() {
           >
             <Sun
               size={16}
-              className={`absolute transition-all duration-500 ${
-                theme === "dark"
+              className={`absolute transition-all duration-500 ${theme === "dark"
                   ? "scale-0 rotate-90 opacity-0"
                   : "scale-100 rotate-0 opacity-100 text-amber-500"
-              }`}
+                }`}
             />
             <Moon
               size={16}
-              className={`absolute transition-all duration-500 ${
-                theme === "dark"
+              className={`absolute transition-all duration-500 ${theme === "dark"
                   ? "scale-100 rotate-0 opacity-100 text-indigo-400"
                   : "scale-0 -rotate-90 opacity-0"
-              }`}
+                }`}
             />
           </button>
         </header>
@@ -208,8 +204,8 @@ function Login() {
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
                     style={{
                       background: "linear-gradient(135deg, var(--grad-start), var(--grad-end))",
-                      boxShadow:  "0 4px 12px var(--accent-glow)",
-                      color:      "white",
+                      boxShadow: "0 4px 12px var(--accent-glow)",
+                      color: "white",
                     }}
                   >
                     {feature.icon}
@@ -253,7 +249,7 @@ function Login() {
                   className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-xl font-bold text-white"
                   style={{
                     background: "linear-gradient(135deg, var(--grad-start), var(--grad-end))",
-                    boxShadow:  "0 8px 24px var(--accent-glow)",
+                    boxShadow: "0 8px 24px var(--accent-glow)",
                   }}
                 >
                   P
@@ -301,11 +297,10 @@ function Login() {
 
                 <ArrowRight
                   size={18}
-                  className={`ml-auto transition-all duration-300 ${
-                    githubHovered
+                  className={`ml-auto transition-all duration-300 ${githubHovered
                       ? "translate-x-1 text-[var(--accent)]"
                       : "text-[var(--text-muted)]"
-                  }`}
+                    }`}
                 />
               </button>
 
