@@ -47,6 +47,7 @@ model User {
   logs Logs[]
   refresh_tokens RefreshToken[]
   dashboard_analytics DashboardAnalytics[]
+  visitor_sessions VisitorSession[]
 }
 
 
@@ -263,9 +264,55 @@ model DashboardAnalytics {
 
   type String
 
+  session_id String? @db.VarChar(255)
+  visitor_id String? @db.VarChar(255)
+
+  path String? @db.VarChar(500)
+  referrer String? @db.VarChar(500)
+  source String? @db.VarChar(100)
+  country String? @db.VarChar(100)
+  device_type String? @db.VarChar(50)
+  browser String? @db.VarChar(100)
+  os String? @db.VarChar(100)
+
+  project_id Int?
+  project_slug String? @db.VarChar(255)
+
+  user_agent String? @db.VarChar(500)
+  ip_address String? @db.VarChar(100)
+
   metadata Json?
 
   created_at DateTime @default(now())
 
   user User @relation( fields: [user_id], references: [id], onDelete: Cascade )
+
+  @@index([user_id, created_at])
+  @@index([user_id, type])
+  @@index([user_id, country])
+}
+
+model VisitorSession {
+
+  id Int @id @default(autoincrement())
+
+  user_id Int
+
+  visitor_id String @db.VarChar(255)
+  session_id String? @db.VarChar(255)
+
+  source String? @db.VarChar(100)
+  country String? @db.VarChar(100)
+  device_type String? @db.VarChar(50)
+  browser String? @db.VarChar(100)
+  os String? @db.VarChar(100)
+
+  first_seen DateTime @default(now())
+  last_seen DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, visitor_id])
+  @@index([user_id, country])
+  @@index([user_id, last_seen])
 }
