@@ -35,4 +35,15 @@ export const API_ROUTES = {
     /** GET | PUT | DELETE — Single certificate by slug or id */
     detail: (slug: string | number) => `/api/certificates/${slug}`,
   },
+
+  apiKeys: {
+    /** GET — List all API keys for the authenticated user, POST — Create a new API key */
+    list: "/api/keys",
+    /** PUT — Regenerate an existing API key */
+    regenerate: (id: string | number) => `/api/keys/regenerate/${id}`,
+    /** PUT — Toggle the active status of an API key */
+    toggle: (id: string | number) => `/api/keys/toggle/${id}`,
+    /** DELETE — Permanently delete an API key */
+    detail: (id: string | number) => `/api/keys/${id}`,
+  },
 } as const;
