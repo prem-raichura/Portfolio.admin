@@ -25,7 +25,7 @@ import { isAxiosError } from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
-import PageLoader from "@shared/components/ui/PageLoader";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 const LINK_OPTIONS = [
   { value: "github", label: "GitHub" },
@@ -47,12 +47,6 @@ const createSlug = (
 function EditProject() {
   const { slug: routeSlug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-
-  /* =========================
-      PAGE LOADING
-  ========================= */
-
-  const [pageLoading, setPageLoading] = useState(true);
 
   /* =========================
       MAIN STATES
@@ -209,7 +203,7 @@ function EditProject() {
         console.error("Failed to fetch project", error);
         toast.error("Failed to load project");
       } finally {
-        setPageLoading(false);
+        // no splash screen while loading edit data
       }
     };
 
@@ -471,12 +465,9 @@ function EditProject() {
     }
   };
 
-  if (pageLoading) {
-    return <PageLoader />;
-  }
-
   return (
     <DashboardLayout>
+      {loading && <PublishLoadingOverlay message="Saving..." />}
 
       {/* =========================
           HEADER
@@ -553,11 +544,7 @@ function EditProject() {
             dark:text-black
           "
         >
-          {
-            loading
-              ? "Saving..."
-              : "Save Changes"
-          }
+          Save Changes
         </button>
 
       </div>

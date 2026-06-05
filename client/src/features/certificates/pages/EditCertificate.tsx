@@ -26,7 +26,7 @@ import {
   updateCertificate,
 } from "@features/certificates/services/certificate.service";
 import DashboardLayout from "@layouts/DashboardLayout";
-import PageLoader from "@shared/components/ui/PageLoader";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 const createSlug = (
   value: string
@@ -81,11 +81,6 @@ function EditCertificate() {
 
   const navigate =
     useNavigate();
-
-  const [
-    pageLoading,
-    setPageLoading,
-  ] = useState(true);
 
   const [title, setTitle] =
     useState("");
@@ -207,7 +202,7 @@ function EditCertificate() {
             "Failed to load certificate"
           );
         } finally {
-          setPageLoading(false);
+          // no splash screen while loading edit data
         }
       };
 
@@ -397,12 +392,10 @@ function EditCertificate() {
       }
     };
 
-  if (pageLoading) {
-    return <PageLoader />;
-  }
-
   return (
     <DashboardLayout>
+      {loading && <PublishLoadingOverlay message="Saving..." />}
+
       <div
         className="
           flex
@@ -464,9 +457,7 @@ function EditCertificate() {
             dark:text-black
           "
         >
-          {loading
-            ? "Saving..."
-            : "Save Changes"}
+          Save Changes
         </button>
       </div>
 

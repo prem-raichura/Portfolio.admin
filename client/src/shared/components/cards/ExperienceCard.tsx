@@ -50,7 +50,8 @@ function ExperienceCard({
 }: ExperienceCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
 
-  const hasActions = editAction || deleteAction;
+  const hasActions = Boolean(editAction || deleteAction);
+  const mainImage = images && images.length > 0 ? images[0] : null;
 
   const formatDate = (dateString: string) => {
     try {
@@ -65,12 +66,14 @@ function ExperienceCard({
     }
   };
 
-  // Get the first image if available
-  const mainImage = images && images.length > 0 ? images[0] : null;
+  const dateLabel = `${formatDate(start_date)} – ${is_current ? "Present" : end_date ? formatDate(end_date) : "N/A"}`;
 
   return (
     <div
       className="
+        flex
+        h-full
+        flex-col
         overflow-hidden
         rounded-[32px]
         border
@@ -80,21 +83,14 @@ function ExperienceCard({
         duration-300
         hover:-translate-y-1
         hover:shadow-xl
-        flex
-        flex-col
-        h-full
       "
     >
-      {/* Upper Cover: Grid or Image */}
       <div
         className="
           relative
-          h-44
+          h-52
           overflow-hidden
           bg-[var(--bg-secondary)]
-          flex
-          items-center
-          justify-center
         "
       >
         {mainImage && !imageFailed ? (
@@ -102,117 +98,102 @@ function ExperienceCard({
             src={mainImage}
             alt={company}
             onError={() => setImageFailed(true)}
-            className="
-              h-full
-              w-full
-              object-cover
-            "
+            className="h-full w-full object-cover"
           />
         ) : (
           <div
             className="
-              absolute
-              inset-0
+              flex
+              h-full
+              w-full
+              items-center
+              justify-center
               bg-gradient-to-br
               from-indigo-600
               to-purple-600
-              opacity-85
-              flex
-              items-center
-              justify-center
             "
           >
             <Briefcase size={48} className="text-white/30" />
           </div>
         )}
 
+        <div className="absolute inset-0 bg-black/10" />
 
-        {/* Current / Active status indicator */}
         {is_current && (
+          <div
+            className="
+              absolute
+              left-4
+              top-4
+              rounded-full
+              bg-green-500/15
+              px-3
+              py-1
+              text-xs
+              font-medium
+              text-green-600
+              backdrop-blur-sm
+            "
+          >
+            Current
+          </div>
+        )}
+
+        {mode && (
           <div
             className="
               absolute
               right-4
               top-4
               rounded-full
-              bg-green-500/10
-              text-green-500
-              border
-              border-green-500/20
+              bg-[var(--bg-card)]/90
               px-3
               py-1
               text-xs
               font-medium
-              flex
-              items-center
-              gap-1.5
+              text-[var(--text-secondary)]
+              backdrop-blur-sm
             "
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-            Current
+            {mode}
           </div>
         )}
       </div>
 
-      {/* Main Content */}
-      <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-xl font-bold leading-snug">
-          {company} - <span className="italic font-normal">{title}</span>
-        </h3>
+      <div className="flex flex-1 flex-col p-6">
+        <div>
+          <div className="min-w-0">
+            <h3 className="text-xl font-semibold text-[var(--text-primary)]">
+              {company}
+            </h3>
+            <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+              {title}
+            </p>
+          </div>
+        </div>
 
-        {/* Location & Mode Row */}
-        <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)] font-medium">
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-[var(--text-muted)]">
           {location && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <MapPin size={13} />
               <span>{location}</span>
             </div>
           )}
+
           {mode && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <Monitor size={13} />
               <span className="capitalize">{mode}</span>
             </div>
           )}
         </div>
 
-        {/* Description */}
         {description && (
-          <p
-            className="
-              mt-4
-              line-clamp-3
-              text-sm
-              leading-relaxed
-              text-[var(--text-secondary)]
-              flex-1
-             font-normal
-            "
-          >
+          <p className="mt-4 line-clamp-3 flex-1 text-sm leading-relaxed text-[var(--text-secondary)]">
             {description}
           </p>
         )}
 
-        {/* Multi-Image Previews (if more than 1 image) */}
-        {images && images.length > 1 && (
-          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-            {images.slice(1, 5).map((imgUrl, idx) => (
-              <img
-                key={idx}
-                src={imgUrl}
-                alt={`${company} workspace ${idx + 1}`}
-                className="h-9 w-9 rounded-lg object-cover border border-[var(--border-color)] shrink-0"
-              />
-            ))}
-            {images.length > 5 && (
-              <div className="h-9 w-9 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center text-xs font-semibold text-[var(--text-muted)] border border-[var(--border-color)] shrink-0">
-                +{images.length - 5}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Links display if any */}
         {links && links.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {links.map((link) => (
@@ -226,16 +207,16 @@ function ExperienceCard({
                   items-center
                   gap-1
                   rounded-xl
-                  bg-[var(--bg-secondary)]
                   border
                   border-[var(--border-color)]
+                  bg-[var(--bg-secondary)]
                   px-2.5
                   py-1
                   text-xs
                   font-medium
                   text-[var(--text-primary)]
-                  hover:bg-[var(--bg-card)]
                   transition-colors
+                  hover:bg-[var(--bg-card)]
                 "
               >
                 <span className="capitalize">{link.key}</span>
@@ -245,37 +226,23 @@ function ExperienceCard({
           </div>
         )}
 
-        {/* Card Footer: Date Label & Action Buttons */}
         <div
           className="
             mt-6
-            border-t
-            border-[var(--border-color)]
-            pt-4
             flex
             items-center
             justify-between
             gap-4
+            border-t
+            border-[var(--border-color)]
+            pt-4
           "
         >
-          {/* Date Label */}
-          <div
-            className="
-              flex
-              items-center
-              gap-2
-              text-xs
-              font-medium
-              text-[var(--text-secondary)]
-            "
-          >
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
             <Calendar size={14} />
-            <span>
-              {formatDate(start_date)} — {is_current ? "Present" : (end_date ? formatDate(end_date) : "N/A")}
-            </span>
+            <span>{dateLabel}</span>
           </div>
 
-          {/* Actions */}
           {hasActions && (
             <div className="flex items-center gap-1.5">
               {editAction && (
@@ -288,9 +255,9 @@ function ExperienceCard({
                     border-[var(--border-color)]
                     p-2
                     text-[var(--text-secondary)]
-                    hover:bg-[var(--bg-secondary)]
                     transition-all
-                    duration-200
+                    duration-300
+                    hover:bg-[var(--bg-secondary)]
                   "
                   title="Edit Experience"
                   aria-label="Edit Experience"
@@ -308,9 +275,9 @@ function ExperienceCard({
                     border-red-200
                     p-2
                     text-red-500
-                    hover:bg-red-50
                     transition-all
-                    duration-200
+                    duration-300
+                    hover:bg-red-50
                   "
                   title="Delete Experience"
                   aria-label="Delete Experience"

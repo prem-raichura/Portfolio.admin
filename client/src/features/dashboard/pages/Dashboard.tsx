@@ -37,6 +37,7 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
+import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
 
 type Range = "7d" | "30d" | "90d" | "1y";
 type DashboardView = "analytics" | "added";
@@ -330,45 +331,6 @@ function ChartTooltip({
   );
 }
 
-function DashboardLoadingState() {
-  return (
-    <DashboardLayout>
-      <div className="space-y-6 animate-pulse">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <div className="h-3 w-44 rounded bg-[var(--bg-secondary)]" />
-            <div className="h-8 w-72 rounded bg-[var(--bg-secondary)]" />
-            <div className="h-4 w-[520px] max-w-full rounded bg-[var(--bg-secondary)]" />
-          </div>
-          <div className="flex gap-2">
-            <div className="h-10 w-20 rounded-xl bg-[var(--bg-secondary)]" />
-            <div className="h-10 w-28 rounded-xl bg-[var(--bg-secondary)]" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {Array.from({ length: 12 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-28 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]"
-            />
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <div className="xl:col-span-2 h-[360px] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]" />
-          <div className="h-[360px] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <div className="h-[360px] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]" />
-          <div className="h-[360px] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]" />
-        </div>
-      </div>
-    </DashboardLayout>
-  );
-}
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const [range, setRange] = useState<Range>("7d");
@@ -545,7 +507,7 @@ export default function Dashboard() {
   );
 
   if (loading && !data) {
-    return <DashboardLoadingState />;
+    return <DashboardLoadingState variant="dashboard" />;
   }
 
   return (

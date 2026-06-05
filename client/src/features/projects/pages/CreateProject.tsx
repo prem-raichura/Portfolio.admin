@@ -23,6 +23,7 @@ import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 const LINK_OPTIONS = [
   { value: "github", label: "GitHub" },
@@ -442,6 +443,7 @@ const handleSubmit = async (
 
   return (
     <DashboardLayout>
+      {loading && <PublishLoadingOverlay />}
 
       {/* =========================
           HEADER
@@ -519,11 +521,7 @@ const handleSubmit = async (
             dark:text-black
           "
         >
-          {
-            loading
-              ? "Publishing..."
-              : "Publish Project"
-          }
+          Publish Project
         </button>
 
       </div>

@@ -12,7 +12,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
 import SidebarItem from "./SidebarItem";
 
 const NAV_ITEMS = [
@@ -50,18 +49,6 @@ function Sidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ name: string; avatar: string | null }>({
-    name: "Admin",
-    avatar: null,
-  });
-
-  useEffect(() => {
-    const storedName = localStorage.getItem("userName");
-    const storedAvatar = localStorage.getItem("userAvatar");
-    if (storedName || storedAvatar) {
-      setUser({ name: storedName || "Admin", avatar: storedAvatar || null });
-    }
-  }, []);
 
   return (
     <aside
@@ -134,33 +121,6 @@ function Sidebar({
       </nav>
 
       <div className="border-t border-[var(--border-color)] p-3 space-y-2">
-        {sidebarOpen && (
-          <div className="flex items-center gap-3 rounded-xl px-3 py-2.5">
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="h-8 w-8 rounded-xl object-cover ring-2 ring-[var(--border-accent)]"
-              />
-            ) : (
-              <div
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white"
-                style={{
-                  background: "linear-gradient(135deg, var(--grad-start), var(--grad-end))",
-                }}
-              >
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="text-sm font-medium leading-tight text-[var(--text-primary)] truncate">
-                {user.name}
-              </p>
-              <p className="text-[10px] text-[var(--text-muted)]">Administrator</p>
-            </div>
-          </div>
-        )}
-
         <button
           onClick={() => navigate("/logout")}
           data-tooltip={!sidebarOpen ? "Logout" : undefined}
