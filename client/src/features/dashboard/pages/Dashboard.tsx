@@ -586,7 +586,7 @@ export default function Dashboard() {
       </div>
 
 
-      <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {(dashboardView === "analytics" ? analyticsCards : addedCards).map((card) => (
           <KpiCard
             key={card.title}
@@ -598,7 +598,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="xl:col-span-2">
           <SectionCard
             title="Activity over time"
@@ -721,7 +721,7 @@ export default function Dashboard() {
         </SectionCard>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SectionCard
           title="Country breakdown"
           subtitle="Visits by country for the selected range"
@@ -796,7 +796,7 @@ export default function Dashboard() {
         </SectionCard>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SectionCard
           title="Top projects"
           subtitle="Projects getting the most clicks"
