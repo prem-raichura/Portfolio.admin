@@ -155,7 +155,7 @@ function Login() {
         {/* ═══════════════════════════════
             MAIN
         ═══════════════════════════════ */}
-        <main className="relative z-10 mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl grid-cols-1 items-center gap-12 px-6 py-12 lg:grid-cols-2 lg:px-10">
+        <main className="relative z-10 mx-auto grid min-h-[calc(100vh-64px)] max-w-7xl grid-cols-1 items-center gap-12 px-4 py-8 lg:grid-cols-2 lg:px-10 lg:py-12">
 
           {/* ── LEFT SIDE ── */}
           <div className="hidden lg:block animate-fade-in-up">

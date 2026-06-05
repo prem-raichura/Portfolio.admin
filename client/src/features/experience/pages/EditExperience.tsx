@@ -384,11 +384,11 @@ function EditExperience() {
       {/* =========================
           MAIN GRID
       ========================= */}
-      <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* =========================
             LEFT COLUMN
         ========================= */}
-        <div className="xl:col-span-2">
+        <div className="lg:col-span-2">
           <div className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
             
             {/* JOB TITLE */}

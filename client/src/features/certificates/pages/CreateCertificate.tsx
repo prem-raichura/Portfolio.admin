@@ -344,10 +344,10 @@ function CreateCertificate() {
           grid
           grid-cols-1
           gap-6
-          xl:grid-cols-3
+          lg:grid-cols-3
         "
       >
-        <div className="xl:col-span-2">
+        <div className="lg:col-span-2">
           <div
             className="
               rounded-[32px]
