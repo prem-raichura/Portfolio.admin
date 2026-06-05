@@ -21,6 +21,7 @@ import {
   createCertificate,
 } from "@features/certificates/services/certificate.service";
 import DashboardLayout from "@layouts/DashboardLayout";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 const createSlug = (
   value: string
@@ -270,6 +271,8 @@ function CreateCertificate() {
 
   return (
     <DashboardLayout>
+      {loading && <PublishLoadingOverlay />}
+
       <div
         className="
           flex
@@ -331,9 +334,7 @@ function CreateCertificate() {
             dark:text-black
           "
         >
-          {loading
-            ? "Publishing..."
-            : "Publish Certificate"}
+          Publish Certificate
         </button>
       </div>
 

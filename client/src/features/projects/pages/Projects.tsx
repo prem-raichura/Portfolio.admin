@@ -16,8 +16,9 @@ import {
 
 import DashboardLayout from "@layouts/DashboardLayout";
 import PortfolioItemCard from "@shared/components/cards/PortfolioItemCard";
+import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 import { useNavigate } from "react-router-dom";
-import PageLoader from "@shared/components/ui/PageLoader";
 import { toast } from "react-hot-toast";
 import { getProjects, deleteProject, updateProject } from "@features/projects/services/project.service";
 
@@ -359,11 +360,17 @@ function Projects() {
   }, [projects, activeTypeFilter, activeStatusFilter]);
 
   if (projectsLoading) {
-    return <PageLoader />;
+    return (
+      <DashboardLoadingState
+        variant={viewMode === "grid" ? "project-grid" : "project-list"}
+        count={viewMode === "grid" ? 6 : 4}
+      />
+    );
   }
 
   return (
     <DashboardLayout>
+      {isDeleting && <PublishLoadingOverlay message="Deleting..." />}
 
       {/* =========================
           TOP SECTION
@@ -981,7 +988,7 @@ function Projects() {
                 disabled={isDeleting}
                 className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-red-600 disabled:opacity-50"
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                Delete
               </button>
             </div>
           </div>

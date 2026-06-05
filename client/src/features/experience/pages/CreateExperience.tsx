@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 import { createExperience } from "@features/experience/services/experience.service";
 import DashboardLayout from "@layouts/DashboardLayout";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 const LINK_OPTIONS = [
   { value: "website", label: "Company Website" },
@@ -228,6 +229,8 @@ function CreateExperience() {
 
   return (
     <DashboardLayout>
+      {loading && <PublishLoadingOverlay />}
+
       {/* =========================
           HEADER
       ========================= */}
@@ -276,7 +279,7 @@ function CreateExperience() {
             dark:text-black
           "
         >
-          {loading ? "Publishing..." : "Publish Experience"}
+          Publish Experience
         </button>
       </div>
 

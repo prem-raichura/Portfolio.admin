@@ -3,7 +3,7 @@ import { Key, Plus, Trash2, RefreshCw, Power, PowerOff, Check, Copy, CalendarDay
 import { toast } from "react-hot-toast";
 
 import DashboardLayout from "@layouts/DashboardLayout";
-import PageLoader from "@shared/components/ui/PageLoader";
+import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
 import {
   type ApiKey,
   getApiKeys,
@@ -129,7 +129,7 @@ function ApiKeys() {
     toast.success("API key copied to clipboard");
   };
 
-  if (loading) return <PageLoader />;
+  if (loading) return <DashboardLoadingState variant="api-keys" count={5} />;
 
   return (
     <DashboardLayout>

@@ -14,7 +14,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { getExperience, updateExperience } from "@features/experience/services/experience.service";
 import DashboardLayout from "@layouts/DashboardLayout";
-import PageLoader from "@shared/components/ui/PageLoader";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 const LINK_OPTIONS = [
   { value: "website", label: "Company Website" },
@@ -41,9 +41,8 @@ function EditExperience() {
   const navigate = useNavigate();
 
   /* =========================
-      PAGE LOADING & SUBMIT STATES
+      SUBMIT STATE
   ========================= */
-  const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
 
   /* =========================
@@ -149,7 +148,7 @@ function EditExperience() {
         console.error(error);
         toast.error("Failed to load experience details");
       } finally {
-        setPageLoading(false);
+        // no splash screen while loading edit data
       }
     };
 
@@ -326,12 +325,10 @@ function EditExperience() {
     }
   };
 
-  if (pageLoading) {
-    return <PageLoader />;
-  }
-
   return (
     <DashboardLayout>
+      {loading && <PublishLoadingOverlay message="Saving..." />}
+
       {/* =========================
           HEADER
       ========================= */}
@@ -380,7 +377,7 @@ function EditExperience() {
             dark:text-black
           "
         >
-          {loading ? "Saving..." : "Save Changes"}
+          Save Changes
         </button>
       </div>
 

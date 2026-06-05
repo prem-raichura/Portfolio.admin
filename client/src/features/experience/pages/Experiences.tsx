@@ -14,7 +14,8 @@ import { toast } from "react-hot-toast";
 
 import DashboardLayout from "@layouts/DashboardLayout";
 import ExperienceCard from "@shared/components/cards/ExperienceCard";
-import PageLoader from "@shared/components/ui/PageLoader";
+import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 import { getExperiences, deleteExperience } from "@features/experience/services/experience.service";
 
 interface ExperienceLink {
@@ -146,11 +147,18 @@ function Experiences() {
   }, [experiences, activeModeFilter]);
 
   if (loading) {
-    return <PageLoader />;
+    return (
+      <DashboardLoadingState
+        variant={viewMode === "grid" ? "experience-grid" : "experience-list"}
+        count={viewMode === "grid" ? 6 : 4}
+      />
+    );
   }
 
   return (
     <DashboardLayout>
+      {isDeleting && <PublishLoadingOverlay message="Deleting..." />}
+
       {/* =========================
           TOP SECTION
       ========================= */}
@@ -491,7 +499,7 @@ function Experiences() {
                 disabled={isDeleting}
                 className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-red-600 disabled:opacity-50"
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                Delete
               </button>
             </div>
           </div>

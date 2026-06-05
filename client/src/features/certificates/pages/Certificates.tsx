@@ -26,7 +26,8 @@ import {
 } from "@features/certificates/services/certificate.service";
 import DashboardLayout from "@layouts/DashboardLayout";
 import AchievementCard from "@shared/components/cards/AchievementCard";
-import PageLoader from "@shared/components/ui/PageLoader";
+import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 type CertificateType =
   | "achievement"
@@ -353,11 +354,18 @@ function Certificates() {
   if (
     certificatesLoading
   ) {
-    return <PageLoader />;
+    return (
+      <DashboardLoadingState
+        variant={viewMode === "grid" ? "certificate-grid" : "certificate-list"}
+        count={viewMode === "grid" ? 6 : 4}
+      />
+    );
   }
 
   return (
     <DashboardLayout>
+      {isDeleting && <PublishLoadingOverlay message="Deleting..." />}
+
       <div
         className="
           flex
@@ -905,9 +913,7 @@ function Certificates() {
                 disabled={isDeleting}
                 className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-red-600 disabled:opacity-50"
               >
-                {isDeleting
-                  ? "Deleting..."
-                  : "Delete"}
+                Delete
               </button>
             </div>
           </div>
