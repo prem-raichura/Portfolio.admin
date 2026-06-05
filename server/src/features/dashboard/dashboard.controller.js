@@ -1,6 +1,6 @@
 import { prisma } from "../../config/db.js";
 
-function parseRange(filter = "30d") {
+function parseRange(filter = "7d") {
   const normalized = String(filter).toLowerCase();
 
   const days =
@@ -12,7 +12,7 @@ function parseRange(filter = "30d") {
           ? 90
           : normalized === "1y"
             ? 365
-            : 30;
+            : 7;
 
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
@@ -37,6 +37,17 @@ function emptySummary() {
     resumeDownloads: 0,
     projectClicks: 0,
     contactSubmissions: 0,
+  };
+}
+
+function emptyAddedCounts() {
+  return {
+    totalProjectsAdded: 0,
+    researchsAdded: 0,
+    experienceAdded: 0,
+    achievementsAdded: 0,
+    certificationsAdded: 0,
+    apiKeysAdded: 0,
   };
 }
 
@@ -99,7 +110,7 @@ export const getDashboardAnalytics = async (req, res) => {
       where.country = selectedCountry;
     }
 
-    const [dashboard, analytics, sessions, allSessions, projects] = await Promise.all([
+    const [dashboard, analytics, sessions, allSessions, projects, certificates, experienceCount, apiKeyCount] = await Promise.all([
       prisma.dashboard.findUnique({
         where: {
           user_id: userId,
@@ -143,7 +154,31 @@ export const getDashboardAnalytics = async (req, res) => {
           type: true,
         },
       }),
+      prisma.certificates.findMany({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          id: true,
+          type: true,
+        },
+      }),
+      prisma.experience.count({
+        where: {
+          user_id: userId,
+        },
+      }),
+      prisma.aPI.count({
+        where: {
+          user_id: userId,
+        },
+      }),
     ]);
+
+    const projectCount = projects.filter(p => (p.type || "").toLowerCase().includes("project")).length;
+    const researchCount = projects.filter(p => (p.type || "").toLowerCase().includes("research")).length;
+    const achievementCount = certificates.filter(c => (c.type || "").toLowerCase().includes("achievement")).length;
+    const certificationCount = certificates.filter(c => (c.type || "").toLowerCase().includes("certificate")).length;
 
     const projectMap = new Map(
       projects.map((project) => [
@@ -153,6 +188,7 @@ export const getDashboardAnalytics = async (req, res) => {
     );
 
     const summary = emptySummary();
+    const addedCounts = emptyAddedCounts();
     const timeline = buildTimelineMap(startDate);
     const countryMap = new Map();
     const deviceMap = new Map();
@@ -208,6 +244,12 @@ export const getDashboardAnalytics = async (req, res) => {
     }
 
     summary.uniqueVisitors = sessions.length;
+    addedCounts.totalProjectsAdded = projectCount;
+    addedCounts.researchsAdded = researchCount;
+    addedCounts.experienceAdded = experienceCount;
+    addedCounts.achievementsAdded = achievementCount;
+    addedCounts.certificationsAdded = certificationCount;
+    addedCounts.apiKeysAdded = apiKeyCount;
 
     const countryBreakdown = Array.from(countryMap.entries())
       .map(([country, visits]) => ({
@@ -257,6 +299,7 @@ export const getDashboardAnalytics = async (req, res) => {
       selectedCountry,
       dashboard,
       summary,
+      addedCounts,
       totalEvents: analytics.length,
       graphData: Array.from(timeline.values()),
       countryBreakdown,
