@@ -71,9 +71,7 @@ function ExperienceCard({
   return (
     <div
       className="
-        flex
-        h-full
-        flex-col
+        self-start
         overflow-hidden
         rounded-[32px]
         border
@@ -88,7 +86,7 @@ function ExperienceCard({
       <div
         className="
           relative
-          h-52
+          h-40
           overflow-hidden
           bg-[var(--bg-secondary)]
         "
@@ -160,49 +158,48 @@ function ExperienceCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
+      <div className="p-3">
         <div>
           <div className="min-w-0">
-            <h3 className="text-xl font-semibold text-[var(--text-primary)]">
+            <h3 className="text-lg font-semibold leading-tight text-[var(--text-primary)]">
               {company}
             </h3>
-            <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
               {title}
             </p>
           </div>
-        </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-[var(--text-muted)]">
-          {location && (
-            <div className="flex items-center gap-1.5">
-              <MapPin size={13} />
-              <span>{location}</span>
-            </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]">
+            {location && (
+              <div className="flex items-center gap-1.5">
+                <MapPin size={13} />
+                <span>{location}</span>
+              </div>
+            )}
+
+            {mode && (
+              <div className="flex items-center gap-1.5">
+                <Monitor size={13} />
+                <span className="capitalize">{mode}</span>
+              </div>
+            )}
+          </div>
+
+          {description && (
+            <p className="mt-1 line-clamp-3 text-sm leading-snug text-[var(--text-secondary)]">
+              {description}
+            </p>
           )}
 
-          {mode && (
-            <div className="flex items-center gap-1.5">
-              <Monitor size={13} />
-              <span className="capitalize">{mode}</span>
-            </div>
-          )}
-        </div>
-
-        {description && (
-          <p className="mt-4 line-clamp-3 flex-1 text-sm leading-relaxed text-[var(--text-secondary)]">
-            {description}
-          </p>
-        )}
-
-        {links && links.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {links.map((link) => (
-              <a
-                key={link.key}
-                href={link.value}
-                target="_blank"
-                rel="noreferrer"
-                className="
+          {links && links.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-2">
+              {links.map((link) => (
+                <a
+                  key={link.key}
+                  href={link.value}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="
                   inline-flex
                   items-center
                   gap-1
@@ -218,24 +215,25 @@ function ExperienceCard({
                   transition-colors
                   hover:bg-[var(--bg-card)]
                 "
-              >
-                <span className="capitalize">{link.key}</span>
-                <ExternalLink size={11} className="opacity-70" />
-              </a>
-            ))}
-          </div>
-        )}
+                >
+                  <span className="capitalize">{link.key}</span>
+                  <ExternalLink size={11} className="opacity-70" />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div
           className="
-            mt-6
+            mt-2
             flex
             items-center
             justify-between
             gap-4
             border-t
             border-[var(--border-color)]
-            pt-4
+            pt-2
           "
         >
           <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
