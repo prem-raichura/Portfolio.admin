@@ -26,7 +26,7 @@ import {
 } from "@features/certificates/services/certificate.service";
 import DashboardLayout from "@layouts/DashboardLayout";
 import AchievementCard from "@shared/components/cards/AchievementCard";
-import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 
 type CertificateType =
@@ -351,14 +351,20 @@ function Certificates() {
       }
     };
 
-  if (
-    certificatesLoading
-  ) {
+  if (certificatesLoading) {
     return (
-      <DashboardLoadingState
-        variant={viewMode === "grid" ? "certificate-grid" : "certificate-list"}
-        count={viewMode === "grid" ? 6 : 4}
-      />
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="h-8 w-52 rounded bg-[var(--bg-secondary)] animate-pulse" />
+              <div className="h-4 w-80 rounded bg-[var(--bg-secondary)] animate-pulse" />
+            </div>
+            <div className="h-11 w-36 rounded-2xl bg-[var(--bg-secondary)] animate-pulse" />
+          </div>
+          <CardSkeletonGrid type="achievement" count={viewMode === "grid" ? 6 : 4} cols={viewMode === "list" ? "grid-cols-1" : undefined} />
+        </div>
+      </DashboardLayout>
     );
   }
 

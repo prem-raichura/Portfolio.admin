@@ -16,7 +16,7 @@ import {
 
 import DashboardLayout from "@layouts/DashboardLayout";
 import PortfolioItemCard from "@shared/components/cards/PortfolioItemCard";
-import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -361,10 +361,18 @@ function Projects() {
 
   if (projectsLoading) {
     return (
-      <DashboardLoadingState
-        variant={viewMode === "grid" ? "project-grid" : "project-list"}
-        count={viewMode === "grid" ? 6 : 4}
-      />
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="h-8 w-40 rounded bg-[var(--bg-secondary)] animate-pulse" />
+              <div className="h-4 w-72 rounded bg-[var(--bg-secondary)] animate-pulse" />
+            </div>
+            <div className="h-11 w-32 rounded-2xl bg-[var(--bg-secondary)] animate-pulse" />
+          </div>
+          <CardSkeletonGrid type="portfolio" count={viewMode === "grid" ? 6 : 4} cols={viewMode === "list" ? "grid-cols-1" : undefined} />
+        </div>
+      </DashboardLayout>
     );
   }
 

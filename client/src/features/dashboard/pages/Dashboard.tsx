@@ -37,7 +37,7 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
-import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import SectionLoadingState from "@shared/components/ui/SectionLoadingState";
 import { toast } from "react-hot-toast";
 
 type Range = "7d" | "30d" | "90d" | "1y";
@@ -508,7 +508,8 @@ export default function Dashboard() {
   );
 
   if (loading && !data) {
-    return <DashboardLoadingState variant="dashboard" />;
+    return <SectionLoadingState />;
+
   }
 
   return (

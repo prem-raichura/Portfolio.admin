@@ -3,7 +3,7 @@ import { Key, Plus, Trash2, RefreshCw, Power, PowerOff, Check, Copy, CalendarDay
 import { toast } from "react-hot-toast";
 
 import DashboardLayout from "@layouts/DashboardLayout";
-import DashboardLoadingState from "@shared/components/ui/DashboardLoadingState";
+import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import {
   type ApiKey,
   getApiKeys,
@@ -129,7 +129,28 @@ function ApiKeys() {
     toast.success("API key copied to clipboard");
   };
 
-  if (loading) return <DashboardLoadingState variant="api-keys" count={5} />;
+  if (loading) return (
+    <DashboardLayout>
+      <div className="space-y-6 animate-pulse">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-32 rounded bg-[var(--bg-secondary)]" />
+            <div className="h-4 w-72 rounded bg-[var(--bg-secondary)]" />
+          </div>
+          <div className="h-10 w-36 rounded-xl bg-[var(--bg-secondary)]" />
+        </div>
+        <div className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+          <div className="h-5 w-40 rounded bg-[var(--bg-secondary)]" />
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row">
+            <div className="h-10 flex-1 rounded-xl bg-[var(--bg-secondary)]" />
+            <div className="h-10 w-36 rounded-xl bg-[var(--bg-secondary)]" />
+            <div className="h-10 w-24 rounded-xl bg-[var(--bg-secondary)]" />
+          </div>
+        </div>
+        <CardSkeletonGrid type="stat" count={5} cols="grid-cols-1" />
+      </div>
+    </DashboardLayout>
+  );
 
   return (
     <DashboardLayout>
