@@ -1,5 +1,4 @@
 import {
-  Briefcase,
   Calendar,
   ExternalLink,
   MapPin,
@@ -94,7 +93,7 @@ function ExperienceCard({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Briefcase size={52} className="text-white/25" />
+            {/* <Briefcase size={52} className="text-white/25" /> */}
           </div>
         )}
 
