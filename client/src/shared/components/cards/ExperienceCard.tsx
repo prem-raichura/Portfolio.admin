@@ -1,11 +1,11 @@
 import {
+  Briefcase,
   Calendar,
   ExternalLink,
   MapPin,
+  Monitor,
   Pencil,
   Trash2,
-  Briefcase,
-  Monitor,
 } from "lucide-react";
 
 import { useState } from "react";
@@ -50,7 +50,6 @@ function ExperienceCard({
 }: ExperienceCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
 
-  const hasActions = Boolean(editAction || deleteAction);
   const mainImage = images && images.length > 0 ? images[0] : null;
 
   const formatDate = (dateString: string) => {
@@ -66,12 +65,13 @@ function ExperienceCard({
     }
   };
 
-  const dateLabel = `${formatDate(start_date)} – ${is_current ? "Present" : end_date ? formatDate(end_date) : "N/A"}`;
+  const dateLabel = `${formatDate(start_date)} – ${
+    is_current ? "Present" : end_date ? formatDate(end_date) : "N/A"
+  }`;
 
   return (
     <div
       className="
-        self-start
         overflow-hidden
         rounded-[32px]
         border
@@ -83,14 +83,8 @@ function ExperienceCard({
         hover:shadow-xl
       "
     >
-      <div
-        className="
-          relative
-          h-40
-          overflow-hidden
-          bg-[var(--bg-secondary)]
-        "
-      >
+      {/* ── Header image / gradient (same h-52 as AchievementCard) ── */}
+      <div className="relative h-52 bg-gradient-to-br from-indigo-600 to-purple-600">
         {mainImage && !imageFailed ? (
           <img
             src={mainImage}
@@ -99,24 +93,15 @@ function ExperienceCard({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div
-            className="
-              flex
-              h-full
-              w-full
-              items-center
-              justify-center
-              bg-gradient-to-br
-              from-indigo-600
-              to-purple-600
-            "
-          >
-            <Briefcase size={48} className="text-white/30" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Briefcase size={52} className="text-white/25" />
           </div>
         )}
 
-        <div className="absolute inset-0 bg-black/10" />
+        {/* Subtle dark overlay */}
+        <div className="absolute inset-0 bg-black/15" />
 
+        {/* Current badge (top-left) — mirrors type badge in AchievementCard */}
         {is_current && (
           <div
             className="
@@ -124,19 +109,19 @@ function ExperienceCard({
               left-4
               top-4
               rounded-full
-              bg-green-500/15
+              bg-green-100
               px-3
               py-1
               text-xs
               font-medium
-              text-green-600
-              backdrop-blur-sm
+              text-green-700
             "
           >
             Current
           </div>
         )}
 
+        {/* Mode badge (top-right) */}
         {mode && (
           <div
             className="
@@ -144,12 +129,12 @@ function ExperienceCard({
               right-4
               top-4
               rounded-full
-              bg-[var(--bg-card)]/90
+              bg-white/15
               px-3
               py-1
               text-xs
               font-medium
-              text-[var(--text-secondary)]
+              text-white
               backdrop-blur-sm
             "
           >
@@ -158,48 +143,49 @@ function ExperienceCard({
         )}
       </div>
 
-      <div className="p-3">
-        <div>
+      {/* ── Body (p-6, same as AchievementCard) ── */}
+      <div className="p-6">
+        {/* Title row */}
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h3 className="text-lg font-semibold leading-tight text-[var(--text-primary)]">
-              {company}
-            </h3>
-            <p className="text-sm font-medium text-[var(--text-secondary)]">
-              {title}
-            </p>
+            <h3 className="text-xl font-semibold">{company}</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">{title}</p>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]">
+          {/* Location / mode meta */}
+          <div className="flex shrink-0 flex-col items-end gap-1 text-right">
             {location && (
-              <div className="flex items-center gap-1.5">
-                <MapPin size={13} />
-                <span>{location}</span>
-              </div>
+              <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                <MapPin size={12} />
+                {location}
+              </span>
             )}
-
             {mode && (
-              <div className="flex items-center gap-1.5">
-                <Monitor size={13} />
+              <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                <Monitor size={12} />
                 <span className="capitalize">{mode}</span>
-              </div>
+              </span>
             )}
           </div>
+        </div>
 
-          {description && (
-            <p className="mt-1 line-clamp-3 text-sm leading-snug text-[var(--text-secondary)]">
-              {description}
-            </p>
-          )}
+        {/* Description */}
+        {description && (
+          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+            {description}
+          </p>
+        )}
 
-          {links && links.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-2">
-              {links.map((link) => (
-                <a
-                  key={link.key}
-                  href={link.value}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="
+        {/* Links */}
+        {links && links.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {links.map((link) => (
+              <a
+                key={link.key}
+                href={link.value}
+                target="_blank"
+                rel="noreferrer"
+                className="
                   inline-flex
                   items-center
                   gap-1
@@ -215,76 +201,79 @@ function ExperienceCard({
                   transition-colors
                   hover:bg-[var(--bg-card)]
                 "
-                >
-                  <span className="capitalize">{link.key}</span>
-                  <ExternalLink size={11} className="opacity-70" />
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
+              >
+                <span className="capitalize">{link.key}</span>
+                <ExternalLink size={11} className="opacity-70" />
+              </a>
+            ))}
+          </div>
+        )}
 
+        {/* ── Footer (border-top, same as AchievementCard) ── */}
         <div
           className="
-            mt-2
-            flex
-            items-center
-            justify-between
-            gap-4
+            mt-5
             border-t
             border-[var(--border-color)]
-            pt-2
+            pt-5
+            flex
+            flex-wrap
+            items-end
+            justify-between
+            gap-4
+            text-sm
+            text-[var(--text-secondary)]
           "
         >
-          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
-            <Calendar size={14} />
-            <span>{dateLabel}</span>
+          {/* Date */}
+          <div className="flex items-center gap-2">
+            <Calendar size={15} />
+            {dateLabel}
           </div>
 
-          {hasActions && (
-            <div className="flex items-center gap-1.5">
-              {editAction && (
-                <button
-                  type="button"
-                  onClick={editAction.onClick}
-                  className="
-                    rounded-xl
-                    border
-                    border-[var(--border-color)]
-                    p-2
-                    text-[var(--text-secondary)]
-                    transition-all
-                    duration-300
-                    hover:bg-[var(--bg-secondary)]
-                  "
-                  title="Edit Experience"
-                  aria-label="Edit Experience"
-                >
-                  <Pencil size={15} />
-                </button>
-              )}
-              {deleteAction && (
-                <button
-                  type="button"
-                  onClick={deleteAction.onClick}
-                  className="
-                    rounded-xl
-                    border
-                    border-red-200
-                    p-2
-                    text-red-500
-                    transition-all
-                    duration-300
-                    hover:bg-red-50
-                  "
-                  title="Delete Experience"
-                  aria-label="Delete Experience"
-                >
-                  <Trash2 size={15} />
-                </button>
-              )}
-            </div>
-          )}
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            {editAction && (
+              <button
+                type="button"
+                onClick={editAction.onClick}
+                className="
+                  rounded-xl
+                  border
+                  border-[var(--border-color)]
+                  p-2
+                  transition-all
+                  duration-300
+                  hover:bg-[var(--bg-secondary)]
+                "
+                aria-label="Edit experience"
+                title="Edit experience"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+
+            {deleteAction && (
+              <button
+                type="button"
+                onClick={deleteAction.onClick}
+                className="
+                  rounded-xl
+                  border
+                  border-red-200
+                  p-2
+                  text-red-500
+                  transition-all
+                  duration-300
+                  hover:bg-red-50
+                "
+                aria-label="Delete experience"
+                title="Delete experience"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
