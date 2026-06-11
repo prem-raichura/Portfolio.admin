@@ -99,6 +99,7 @@ function PortfolioItemCard({
   return (
     <div
       className="
+        self-start
         overflow-hidden
         rounded-[32px]
         border
@@ -189,11 +190,12 @@ function PortfolioItemCard({
       {/* Content */}
 
       <div className="p-6">
-        {/* Header */}
-
         <div>
+          {/* Header */}
 
-          <div className="flex items-start justify-between gap-4">
+          <div>
+
+            <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3
                 className="
@@ -302,6 +304,7 @@ function PortfolioItemCard({
             ))}
           </div>
         )}
+        </div>
 
         {/* Footer */}
 
