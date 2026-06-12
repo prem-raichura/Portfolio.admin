@@ -554,15 +554,16 @@ export const githubCallback =
         !existingLinks.github ||
         existingLinks.github !== githubUrl;
 
-      const updateData = needsLinkUpdate
-        ? {
-            ...userData,
-            users_links: {
-              ...existingLinks,
-              github: githubUrl,
-            },
-          }
-        : userData;
+      const updateData = {
+        ...userData,
+        name: existingUser.name,
+        ...(needsLinkUpdate && {
+          users_links: {
+            ...existingLinks,
+            github: githubUrl,
+          },
+        }),
+      };
 
       /* =====================
           CREATE / UPDATE
