@@ -537,6 +537,13 @@ export const githubCallback =
           getISTTime(),
       };
 
+      const createData = {
+        ...userData,
+        users_links: {
+          github: `https://github.com/${githubUser.login}`,
+        },
+      };
+
       /* =====================
           CREATE / UPDATE
       ===================== */
@@ -569,7 +576,7 @@ export const githubCallback =
             )
           : await prisma.user.create(
               {
-                data: userData,
+                data: createData,
 
                 select: {
                   id: true,
