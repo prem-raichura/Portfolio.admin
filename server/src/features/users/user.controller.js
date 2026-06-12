@@ -1,5 +1,6 @@
 import { prisma } from "../../config/db.js";
 import { uploadToCloudinary } from "../../utils/cloudinaryUpload.js";
+import { redis } from "../../config/redis.js";
 
 export const getCurrentUser = async (req, res) => {
   try {
@@ -106,6 +107,8 @@ export const updateCurrentUser = async (req, res) => {
         created_at: true,
       },
     });
+
+    await redis.del(`portfolio:${req.user.userId}`);
 
     return res.status(200).json({
       success: true,
