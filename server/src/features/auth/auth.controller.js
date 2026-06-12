@@ -537,12 +537,32 @@ export const githubCallback =
           getISTTime(),
       };
 
+      const githubUrl = `https://github.com/${githubUser.login}`;
+
       const createData = {
         ...userData,
-        users_links: {
-          github: `https://github.com/${githubUser.login}`,
-        },
+        users_links: { github: githubUrl },
       };
+
+      const existingLinks =
+        (existingUser?.users_links &&
+          typeof existingUser.users_links === "object")
+          ? existingUser.users_links
+          : {};
+
+      const needsLinkUpdate =
+        !existingLinks.github ||
+        existingLinks.github !== githubUrl;
+
+      const updateData = needsLinkUpdate
+        ? {
+            ...userData,
+            users_links: {
+              ...existingLinks,
+              github: githubUrl,
+            },
+          }
+        : userData;
 
       /* =====================
           CREATE / UPDATE
@@ -557,7 +577,7 @@ export const githubCallback =
                     existingUser.id,
                 },
 
-                data: userData,
+                data: updateData,
 
                 select: {
                   id: true,
