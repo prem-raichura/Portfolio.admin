@@ -29,20 +29,16 @@ function Navbar({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
-  const [user, setUser] = useState<{ name: string; avatar: string | null }>({
-    name: "Admin User",
-    avatar: null,
+  const [user] = useState<{ name: string; avatar: string | null }>(() => {
+    const storedName   = localStorage.getItem("userName");
+    const storedAvatar = localStorage.getItem("userAvatar");
+    return {
+      name: storedName || "Admin User",
+      avatar: storedAvatar || null,
+    };
   });
 
   const notifRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const storedName   = localStorage.getItem("userName");
-    const storedAvatar = localStorage.getItem("userAvatar");
-    if (storedName || storedAvatar) {
-      setUser({ name: storedName || "Admin User", avatar: storedAvatar || null });
-    }
-  }, []);
 
   // Close notif dropdown on outside click
   useEffect(() => {

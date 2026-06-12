@@ -24,7 +24,7 @@ function App() {
     verifySession().then((isValid) => {
       if (isValid) navigate("/dashboard", { replace: true });
     });
-  }, []);
+  }, [navigate]);
 
   const handleNavigation = (path: string) => {
     setLoading(true);

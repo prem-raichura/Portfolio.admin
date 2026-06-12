@@ -95,12 +95,15 @@ function Certificates() {
     setIsDeleting,
   ] = useState(false);
 
-  const fetchCertificates =
-    async () => {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const fetchCertificates = async () => {
       try {
         const data = await getCertificates();
 
-        if (data.success) {
+        if (active && data.success) {
           setCertificates(data.certificates);
         }
       } catch (error) {
@@ -113,14 +116,14 @@ function Certificates() {
           "Failed to load certificates"
         );
       } finally {
-        setCertificatesLoading(false);
+        if (active) setCertificatesLoading(false);
       }
     };
-
-
-  useEffect(() => {
     void fetchCertificates();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [refreshKey]);
 
   const filteredCertificates =
     useMemo(
@@ -328,7 +331,7 @@ function Certificates() {
             null
           );
 
-          void fetchCertificates();
+          setRefreshKey((k) => k + 1);
         }
       } catch (error) {
         console.error(error);

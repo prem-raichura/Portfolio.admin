@@ -405,7 +405,6 @@ export default function Dashboard() {
 
   const chartData = data?.graphData || [];
   const countryBreakdown = data?.countryBreakdown || [];
-  const deviceBreakdown = data?.deviceBreakdown || [];
   const sourceBreakdown = data?.sourceBreakdown || [];
   const topProjects = data?.topProjects || [];
   const recentActivity = data?.recentActivity || [];
@@ -499,12 +498,12 @@ export default function Dashboard() {
 
   const deviceChartData = useMemo(
     () =>
-      deviceBreakdown.map((item) => ({
+      (data?.deviceBreakdown || []).map((item) => ({
         ...item,
         value: safeNumber(item.value),
         color: DEVICE_COLORS[item.device.toLowerCase()] || DEVICE_COLORS.unknown,
       })),
-    [deviceBreakdown]
+    [data?.deviceBreakdown]
   );
 
   if (loading && !data) {

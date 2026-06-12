@@ -651,7 +651,7 @@ function EditExperience() {
               <select
                 required
                 value={mode}
-                onChange={(e) => setMode(e.target.value as any)}
+                onChange={(e) => setMode(e.target.value as "on-site" | "remote" | "hybrid")}
                 className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-main)] px-4 py-3 outline-none"
               >
                 <option value="on-site">On-site</option>

@@ -40,23 +40,25 @@ function ApiKeys() {
   };
 
   useEffect(() => {
-    fetchKeys();
-  }, []);
-
-  const fetchKeys = async () => {
-    try {
-      setLoading(true);
-      const res = await getApiKeys();
-      if (res.success) {
-        setKeys(res.apis);
+    let active = true;
+    const fetchKeys = async () => {
+      try {
+        const res = await getApiKeys();
+        if (active && res.success) {
+          setKeys(res.apis);
+        }
+      } catch (error) {
+        console.error("Failed to fetch API keys", error);
+        toast.error("Failed to load API keys");
+      } finally {
+        if (active) setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch API keys", error);
-      toast.error("Failed to load API keys");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchKeys();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) {

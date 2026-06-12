@@ -32,37 +32,40 @@ function Profile() {
   const [avatarPreview, setAvatarPreview] = useState("");
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    let active = true;
+    const fetchProfile = async () => {
+      try {
+        const data = await getProfile();
+        if (active && data?.success && data.user) {
+          setProfile(data.user);
+          if (data.user.avatar) setAvatarPreview(data.user.avatar);
 
-  const fetchProfile = async () => {
-    try {
-      const data = await getProfile();
-      if (data?.success && data.user) {
-        setProfile(data.user);
-        if (data.user.avatar) setAvatarPreview(data.user.avatar);
+          if (data.user.skills && Array.isArray(data.user.skills)) {
+            setSkills(data.user.skills);
+          }
 
-        if (data.user.skills && Array.isArray(data.user.skills)) {
-          setSkills(data.user.skills);
-        }
-
-        if (data.user.users_links && typeof data.user.users_links === "object") {
-          const entries = Object.entries(data.user.users_links);
-          if (entries.length > 0) {
-            const linksArr = entries.map(([k, v]) => ({
-              platform: k,
-              url: v as string,
-            }));
-            setLinks(linksArr);
+          if (data.user.users_links && typeof data.user.users_links === "object") {
+            const entries = Object.entries(data.user.users_links);
+            if (entries.length > 0) {
+              const linksArr = entries.map(([k, v]) => ({
+                platform: k,
+                url: v as string,
+              }));
+              setLinks(linksArr);
+            }
           }
         }
+      } catch {
+        toast.error("Failed to load profile");
+      } finally {
+        if (active) setLoading(false);
       }
-    } catch (error) {
-      toast.error("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchProfile();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   /* =========================
       VALIDATION
@@ -170,8 +173,9 @@ function Profile() {
       } else {
         throw new Error("Update failed");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update profile");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update profile";
+      toast.error(message);
     } finally {
       setSaving(false);
     }

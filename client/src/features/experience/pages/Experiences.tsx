@@ -61,6 +61,7 @@ function Experiences() {
   const [activeModeFilter, setActiveModeFilter] = useState<ModeFilter>("all");
   const [expToDelete, setExpToDelete] = useState<Experience | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const parseJsonArray = <T,>(value: unknown): T[] => {
     if (Array.isArray(value)) {
@@ -97,20 +98,6 @@ function Experiences() {
     }).format(date);
   };
 
-  const fetchExperiences = async () => {
-    try {
-      const data = await getExperiences();
-      if (data.success) {
-        setExperiences(data.experiences);
-      }
-    } catch (error) {
-      console.error("Failed to fetch experiences", error);
-      toast.error("Failed to load experiences");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteConfirm = async () => {
     if (!expToDelete?.slug) return;
     try {
@@ -119,7 +106,7 @@ function Experiences() {
       if (res?.success) {
         toast.success("Experience deleted successfully");
         setExpToDelete(null);
-        fetchExperiences();
+        setRefreshKey((k) => k + 1);
       }
     } catch (error) {
       console.error(error);
@@ -130,8 +117,25 @@ function Experiences() {
   };
 
   useEffect(() => {
+    let active = true;
+    const fetchExperiences = async () => {
+      try {
+        const data = await getExperiences();
+        if (active && data.success) {
+          setExperiences(data.experiences);
+        }
+      } catch (error) {
+        console.error("Failed to fetch experiences", error);
+        toast.error("Failed to load experiences");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
     fetchExperiences();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [refreshKey]);
 
   const filteredExperiences = useMemo(() => {
     return experiences.filter((exp) => {
