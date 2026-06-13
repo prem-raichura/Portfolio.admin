@@ -43,6 +43,11 @@ export const API_ROUTES = {
     detail: (slug: string | number) => `/api/certificates/${slug}`,
   },
 
+  dashboard: {
+    /** GET — Aggregated analytics + library counts for the authenticated user */
+    summary: "/api/dashboard",
+  },
+
   apiKeys: {
     /** GET — List all API keys for the authenticated user, POST — Create a new API key */
     list: "/api/keys",

@@ -187,6 +187,12 @@ export const getDashboardAnalytics = async (req, res) => {
       ])
     );
 
+    const projectSlugMap = new Map(
+      projects
+        .filter((project) => project.slug)
+        .map((project) => [project.slug, project])
+    );
+
     const summary = emptySummary();
     const addedCounts = emptyAddedCounts();
     const timeline = buildTimelineMap(startDate);
@@ -227,18 +233,26 @@ export const getDashboardAnalytics = async (req, res) => {
       if (item.type === "project_click") {
         summary.projectClicks += 1;
 
-        const projectKey = item.project_id || item.project_slug || "unknown";
-        const current = projectClicksMap.get(projectKey) || {
-          project_id: item.project_id || null,
-          project_slug: item.project_slug || null,
-          title: item.project_id && projectMap.get(item.project_id)
-            ? projectMap.get(item.project_id).title
-            : item.project_slug || "Unknown Project",
-          clicks: 0,
-        };
+        // Resolve to a currently-existing project. If the project has been
+        // deleted (no id match AND no slug match), skip the click so it
+        // doesn't surface in "Top projects".
+        const resolved =
+          (item.project_id && projectMap.get(item.project_id)) ||
+          (item.project_slug && projectSlugMap.get(item.project_slug)) ||
+          null;
 
-        current.clicks += 1;
-        projectClicksMap.set(projectKey, current);
+        if (resolved) {
+          const projectKey = resolved.id;
+          const current = projectClicksMap.get(projectKey) || {
+            project_id: resolved.id,
+            project_slug: resolved.slug || null,
+            title: resolved.title,
+            clicks: 0,
+          };
+
+          current.clicks += 1;
+          projectClicksMap.set(projectKey, current);
+        }
       }
       if (item.type === "contact_submission") summary.contactSubmissions += 1;
     }

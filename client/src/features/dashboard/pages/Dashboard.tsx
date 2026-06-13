@@ -39,6 +39,9 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@layouts/DashboardLayout";
 import SectionLoadingState from "@shared/components/ui/SectionLoadingState";
 import { toast } from "react-hot-toast";
+import api from "@shared/lib/api";
+import { API_ROUTES } from "@shared/lib/apiRoutes";
+import type { AxiosError } from "axios";
 
 type Range = "7d" | "30d" | "90d" | "1y";
 type DashboardView = "analytics" | "added";
@@ -216,23 +219,6 @@ function DashboardToggle({
   );
 }
 
-function getAuthToken() {
-  const keys = [
-    "accessToken",
-    "access_token",
-    "token",
-    "authToken",
-    "jwt",
-  ];
-
-  for (const key of keys) {
-    const value = localStorage.getItem(key);
-    if (value) return value;
-  }
-
-  return null;
-}
-
 function KpiCard({
   title,
   value,
@@ -350,25 +336,21 @@ export default function Dashboard() {
       try {
         setLoading(true);
 
-        const apiUrl = import.meta.env.VITE_API_URL || "";
-        const token = getAuthToken();
-        const query = new URLSearchParams({
-          filter: range,
-          country,
-        });
+        // Uses the shared axios instance: attaches the access token
+        // automatically, and the response interceptor handles refresh/retry
+        // on 401 without us having to thread tokens through here.
+        const { data: payload } = await api.get<DashboardResponse>(
+          API_ROUTES.dashboard.summary,
+          {
+            params: {
+              filter: range,
+              country,
+            },
+          }
+        );
 
-        const response = await fetch(`${apiUrl}/api/dashboard?${query.toString()}`, {
-          headers: token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : undefined,
-        });
-
-        const payload = (await response.json()) as DashboardResponse & { message?: string };
-
-        if (!response.ok || !payload.success) {
-          throw new Error(payload?.message || "Unable to load dashboard data.");
+        if (!payload?.success) {
+          throw new Error("Unable to load dashboard data.");
         }
 
         if (alive) {
@@ -376,8 +358,11 @@ export default function Dashboard() {
         }
       } catch (err) {
         if (alive) {
-          const errorMessage = err instanceof Error ? err.message : "Unable to load dashboard data.";
-          toast.error(errorMessage);
+          const axiosErr = err as AxiosError<{ message?: string }>;
+          const errorMessage =
+            axiosErr?.response?.data?.message ||
+            (err instanceof Error ? err.message : "Unable to load dashboard data.");
+          toast.error(errorMessage, { id: "dashboard-load-error" });
         }
       } finally {
         if (alive) {
