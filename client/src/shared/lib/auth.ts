@@ -1,32 +1,36 @@
+import type { AxiosError } from "axios";
 import api from "./api";
 import { API_ROUTES } from "./apiRoutes";
+
+export type SessionStatus = "valid" | "auth-failed" | "network-error" | "missing";
 
 /**
  * Validates the current session by verifying the access token with the backend.
  *
- * Flow:
- * 1. Checks if an access token exists in localStorage.
- * 2. Makes a GET request to /api/user/me.
- * 3. If the access token is expired, the Axios interceptor in api.ts will
- *    automatically attempt to use the refresh token to get a new access token.
- * 4. If the refresh token is also expired or invalid, api.ts will redirect
- *    the user to the global /logout route.
+ * Returns one of:
+ *   - "valid"          → access (or refreshed) token works
+ *   - "missing"        → no access token in localStorage
+ *   - "auth-failed"    → server explicitly rejected refresh (401/403)
+ *   - "network-error"  → no response or 5xx; session likely still valid
  *
- * @returns {Promise<boolean>} True if the session is valid (or successfully refreshed).
+ * Callers (e.g. ProtectedRoute) must treat "network-error" as transient
+ * and NOT log the user out.
  */
-export const verifySession = async (): Promise<boolean> => {
+export const verifySession = async (): Promise<SessionStatus> => {
   const token = localStorage.getItem("accessToken");
 
   if (!token) {
-    return false;
+    return "missing";
   }
 
   try {
     await api.get(API_ROUTES.user.me);
-    return true;
-  } catch {
-    // Both access and refresh tokens failed (or a network error occurred).
-    // api.ts handles the /logout redirection in the 401/403 case.
-    return false;
+    return "valid";
+  } catch (err) {
+    const status = (err as AxiosError)?.response?.status;
+    if (status === 401 || status === 403) {
+      return "auth-failed";
+    }
+    return "network-error";
   }
 };

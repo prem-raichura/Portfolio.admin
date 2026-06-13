@@ -21,8 +21,8 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    verifySession().then((isValid) => {
-      if (isValid) navigate("/dashboard", { replace: true });
+    verifySession().then((status) => {
+      if (status === "valid") navigate("/dashboard", { replace: true });
     });
   }, [navigate]);
 

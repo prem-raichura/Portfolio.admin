@@ -118,15 +118,46 @@ api.interceptors.response.use(
           throw new Error("Failed to retrieve a new token");
         }
       } catch (refreshError: unknown) {
-        processQueue(refreshError, null);
+        // ── One-shot retry for transient failures ─────────────────────────
+        // No response (network/CORS/timeout) or 5xx → retry once after a brief
+        // backoff before deciding whether to log the user out. This keeps
+        // the session intact across short network blips.
+        const firstStatus = (refreshError as AxiosError)?.response?.status;
+        const isTransient = !firstStatus || firstStatus >= 500;
+
+        let finalError: unknown = refreshError;
+
+        if (isTransient) {
+          await new Promise((r) => setTimeout(r, 1500));
+          try {
+            const retry = await axios.post(
+              `${import.meta.env.VITE_API_URL || ""}${API_ROUTES.token.refresh}`,
+              {},
+              { withCredentials: true }
+            );
+
+            if (retry.data?.success && retry.data.accessToken) {
+              const newAccessToken = retry.data.accessToken;
+              localStorage.setItem("accessToken", newAccessToken);
+              processQueue(null, newAccessToken);
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+              return api(originalRequest);
+            }
+            finalError = new Error("Failed to retrieve a new token");
+          } catch (retryErr) {
+            finalError = retryErr;
+          }
+        }
+
+        processQueue(finalError, null);
 
         // Only force logout if the server explicitly rejects the refresh token (401/403).
-        // A temporary 500 should NOT wipe the user's session.
-        const refreshStatus = (refreshError as AxiosError)?.response?.status;
+        // Anything else (network drop, 5xx, CORS) is treated as transient.
+        const refreshStatus = (finalError as AxiosError)?.response?.status;
         if (
           refreshStatus === 401 ||
           refreshStatus === 403 ||
-          (refreshError as Error)?.message === "No refresh token available"
+          (finalError as Error)?.message === "No refresh token available"
         ) {
           window.location.href = "/logout?error=Session expired";
         } else {
@@ -136,7 +167,7 @@ api.interceptors.response.use(
           );
         }
 
-        return Promise.reject(refreshError);
+        return Promise.reject(finalError);
       } finally {
         isRefreshing = false;
       }
