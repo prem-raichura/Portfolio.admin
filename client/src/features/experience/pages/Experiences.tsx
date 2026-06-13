@@ -492,9 +492,9 @@ function Experiences() {
       {expToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-main)] p-6 shadow-2xl">
-            <h3 className="text-xl font-bold">Delete Experience</h3>
+            <h3 className="text-xl font-bold">Move Experience to Bin?</h3>
             <p className="mt-2 text-[var(--text-secondary)]">
-              Are you sure you want to delete your experience at "{expToDelete.company}"? This action cannot be undone.
+              Your experience at "{expToDelete.company}" will be moved to the Bin. You can restore it for 30 days before it's permanently deleted.
             </p>
 
             <div className="mt-6 flex items-center justify-end gap-3">
@@ -511,7 +511,7 @@ function Experiences() {
                 disabled={isDeleting}
                 className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-red-600 disabled:opacity-50"
               >
-                Delete
+                Move to Bin
               </button>
             </div>
           </div>
