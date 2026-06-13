@@ -99,8 +99,15 @@ function ApiKeys() {
       if (type === "delete") {
         const res = await deleteApiKey(keyData.id);
         if (res.success) {
-          toast.success("API key deleted");
-          setKeys(keys.filter((k) => k.id !== keyData.id));
+          if (res.deactivated && res.api) {
+            // Step 1: server deactivated an active key. Keep the row, swap the status.
+            toast.success("API key deactivated. Delete again to move to Bin.");
+            setKeys(keys.map((k) => (k.id === keyData.id ? res.api! : k)));
+          } else {
+            // Step 2: server soft-deleted an inactive key. Drop it from the list.
+            toast.success("API key moved to Bin");
+            setKeys(keys.filter((k) => k.id !== keyData.id));
+          }
         }
       } else if (type === "toggle") {
         const res = await toggleApiStatus(keyData.id);
@@ -378,12 +385,18 @@ function ApiKeys() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-main)] p-6 shadow-2xl">
             <h3 className="text-xl font-bold">
-              {actionModal.type === "delete" && "Delete API Key"}
+              {actionModal.type === "delete" &&
+                (actionModal.keyData.status === "active"
+                  ? "Deactivate API Key?"
+                  : "Move API Key to Bin?")}
               {actionModal.type === "toggle" && (actionModal.keyData.status === "active" ? "Deactivate API Key" : "Activate API Key")}
               {actionModal.type === "regenerate" && "Regenerate API Key"}
             </h3>
             <p className="mt-2 text-[var(--text-secondary)]">
-              {actionModal.type === "delete" && `Are you sure you want to permanently delete "${actionModal.keyData.name}"? This action cannot be undone.`}
+              {actionModal.type === "delete" &&
+                (actionModal.keyData.status === "active"
+                  ? `"${actionModal.keyData.name}" is active. Delete will first deactivate it. Click Delete again on the deactivated key to move it to the Bin.`
+                  : `"${actionModal.keyData.name}" will be moved to the Bin. You can restore it for 30 days before it's permanently deleted.`)}
               {actionModal.type === "toggle" && `Are you sure you want to ${actionModal.keyData.status === "active" ? "deactivate" : "activate"} "${actionModal.keyData.name}"?`}
               {actionModal.type === "regenerate" && `Are you sure you want to regenerate "${actionModal.keyData.name}"? This will invalidate the old key immediately.`}
             </p>

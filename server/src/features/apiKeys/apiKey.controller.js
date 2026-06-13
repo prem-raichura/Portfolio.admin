@@ -2,6 +2,11 @@ import crypto from "crypto";
 
 import { prisma } from "../../config/db.js";
 
+import {
+  activeWhere,
+  softDelete,
+} from "../../shared/utils/softDelete.js";
+
 export const createApiKey = async (
   req,
   res
@@ -62,9 +67,9 @@ export const getApiKeys = async (
 
     const apis =
       await prisma.aPI.findMany({
-        where: {
+        where: activeWhere({
           user_id: userId,
-        },
+        }),
         orderBy: {
           created_at: "desc",
         },
@@ -121,10 +126,10 @@ export const regenerateApiKey = async (
 
     const existingApi =
       await prisma.aPI.findFirst({
-        where: {
+        where: activeWhere({
           id: apiId,
           user_id: userId,
-        },
+        }),
       });
 
     if (!existingApi) {
@@ -175,10 +180,10 @@ export const toggleApiStatus = async (
 
     const existingApi =
       await prisma.aPI.findFirst({
-        where: {
+        where: activeWhere({
           id: apiId,
           user_id: userId,
-        },
+        }),
       });
 
     if (!existingApi) {
@@ -228,10 +233,10 @@ export const deleteApiKey = async (
 
     const existingApi =
       await prisma.aPI.findFirst({
-        where: {
+        where: activeWhere({
           id: apiId,
           user_id: userId,
-        },
+        }),
       });
 
     if (!existingApi) {
@@ -241,15 +246,37 @@ export const deleteApiKey = async (
       });
     }
 
-    await prisma.aPI.delete({
-      where: {
-        id: existingApi.id,
-      },
+    // Two-step destroy: an active key is first deactivated. Only a delete
+    // on an already-inactive key actually moves it to the Bin. The client
+    // surfaces this as a clear "Deactivated. Delete again to move to Bin."
+    if (existingApi.status === "active") {
+      const deactivated =
+        await prisma.aPI.update({
+          where: {
+            id: existingApi.id,
+          },
+          data: {
+            status: "inactive",
+          },
+        });
+
+      return res.status(200).json({
+        success: true,
+        deactivated: true,
+        message:
+          "API key deactivated. Delete again to move it to the Bin.",
+        api: deactivated,
+      });
+    }
+
+    await softDelete(prisma.aPI, {
+      id: existingApi.id,
     });
 
     return res.status(200).json({
       success: true,
-      message: "API key deleted",
+      deactivated: false,
+      message: "API key moved to Bin",
     });
 
   } catch (error) {

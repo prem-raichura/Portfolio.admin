@@ -70,13 +70,26 @@ export const toggleApiStatus = async (
   return response.data;
 };
 
+export interface DeleteApiKeyResponse {
+  success: boolean;
+  /** True when the server only deactivated the key (first step). */
+  deactivated: boolean;
+  message?: string;
+  /** Present when the server deactivated the key — caller should swap it in. */
+  api?: ApiKey;
+}
+
 /**
- * Permanently delete an API key.
- * @param id The ID of the API key to delete
+ * Two-step destroy.
+ *
+ *   1st call on an active key   → server deactivates it; deactivated = true
+ *   2nd call on an inactive key → server soft-deletes it; deactivated = false
+ *
+ * Callers should branch on `deactivated` to surface the right UX.
  */
 export const deleteApiKey = async (
   id: number
-): Promise<{ success: boolean; message?: string }> => {
+): Promise<DeleteApiKeyResponse> => {
   const response = await api.delete(API_ROUTES.apiKeys.detail(id));
   return response.data;
 };

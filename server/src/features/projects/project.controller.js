@@ -6,6 +6,11 @@ import {
   uploadToCloudinary,
 } from "../../utils/cloudinaryUpload.js";
 
+import {
+  activeWhere,
+  softDelete,
+} from "../../shared/utils/softDelete.js";
+
 export const createProject =
   async (req, res) => {
     try {
@@ -41,11 +46,11 @@ export const createProject =
 
       const existingSlug =
         await prisma.projects.findFirst({
-          where: {
+          where: activeWhere({
             slug,
             user_id:
               userId,
-          },
+          }),
         });
 
       if (existingSlug) {
@@ -157,10 +162,10 @@ export const getProjects =
 
       const projects =
         await prisma.projects.findMany({
-          where: {
+          where: activeWhere({
             user_id:
               userId,
-          },
+          }),
 
           orderBy: {
             created_at:
@@ -197,11 +202,11 @@ export const getSingleProject =
 
       const project =
         await prisma.projects.findFirst({
-          where: {
+          where: activeWhere({
             slug,
             user_id:
               userId,
-          },
+          }),
         });
 
       if (!project) {
@@ -246,13 +251,13 @@ export const updateProject =
 
       const existingProject =
         await prisma.projects.findFirst({
-          where: {
+          where: activeWhere({
             slug:
               currentSlug,
 
             user_id:
               userId,
-          },
+          }),
         });
 
       if (
@@ -273,7 +278,7 @@ export const updateProject =
 
         const slugExists =
           await prisma.projects.findFirst({
-            where: {
+            where: activeWhere({
               slug:
                 newSlug,
 
@@ -284,7 +289,7 @@ export const updateProject =
                 id:
                   existingProject.id,
               },
-            },
+            }),
           });
 
         if (slugExists) {
@@ -425,11 +430,11 @@ export const deleteProject =
 
       const existingProject =
         await prisma.projects.findFirst({
-          where: {
+          where: activeWhere({
             slug,
             user_id:
               userId,
-          },
+          }),
         });
 
       if (
@@ -442,11 +447,8 @@ export const deleteProject =
         });
       }
 
-      await prisma.projects.delete({
-        where: {
-          id:
-            existingProject.id,
-        },
+      await softDelete(prisma.projects, {
+        id: existingProject.id,
       });
 
       await redis.del(
@@ -456,7 +458,7 @@ export const deleteProject =
       return res.status(200).json({
         success: true,
         message:
-          "Project deleted",
+          "Project moved to Bin",
       });
 
     } catch (error) {

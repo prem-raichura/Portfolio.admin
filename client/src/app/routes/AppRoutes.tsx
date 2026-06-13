@@ -36,6 +36,8 @@ import EditExperience from "@features/experience/pages/EditExperience";
 
 import ApiKeys from "@features/apiKeys/pages/ApiKeys";
 
+import Bin from "@features/bin/pages/Bin";
+
 import ProtectedRoute from "@app/routes/ProtectedRoute";
 
 import NotFound from "@app/pages/NotFound";
@@ -180,6 +182,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <ApiKeys />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/bin"
+          element={
+            <ProtectedRoute>
+              <Bin />
             </ProtectedRoute>
           }
         />

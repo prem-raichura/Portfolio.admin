@@ -24,6 +24,7 @@ import tokenRoutes from "./features/tokens/token.routes.js";
 import "./jobs/analytics/analytics.worker.js";
 import "./jobs/logs/logs.worker.js";
 import "./jobs/tokens/tokens.worker.js";
+import "./jobs/bin/bin.worker.js";
 
 import healthRoutes from "./features/health/health.routes.js";
 import authRoutes from "./features/auth/auth.routes.js";
@@ -36,6 +37,7 @@ import apiRoutes from "./features/apiKeys/apiKey.routes.js";
 import dashboardRoutes from "./features/dashboard/dashboard.routes.js";
 import analyticsRoutes from "./features/analytics/analytics.routes.js";
 import logsRoutes from "./features/logs/logs.routes.js";
+import binRoutes from "./features/bin/bin.routes.js";
 
 
 dotenv.config();
@@ -94,6 +96,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/token", tokenRoutes);
 app.use("/api/logs", logsRoutes);
+app.use("/api/bin", binRoutes);
 
 const PORT = process.env.PORT || 8000;
 

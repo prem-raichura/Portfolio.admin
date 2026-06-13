@@ -6,6 +6,11 @@ import {
   uploadToCloudinary,
 } from "../../utils/cloudinaryUpload.js";
 
+import {
+  activeWhere,
+  softDelete,
+} from "../../shared/utils/softDelete.js";
+
 export const createCertificate =
   async (req, res) => {
     try {
@@ -37,11 +42,11 @@ export const createCertificate =
 
       const existingSlug =
         await prisma.certificates.findFirst({
-          where: {
+          where: activeWhere({
             slug,
             user_id:
               userId,
-          },
+          }),
         });
 
       if (existingSlug) {
@@ -140,10 +145,10 @@ export const getCertificates =
 
       const certificates =
         await prisma.certificates.findMany({
-          where: {
+          where: activeWhere({
             user_id:
               userId,
-          },
+          }),
 
           orderBy: {
             created_at:
@@ -180,11 +185,11 @@ export const getSingleCertificate =
 
       const certificate =
         await prisma.certificates.findFirst({
-          where: {
+          where: activeWhere({
             slug,
             user_id:
               userId,
-          },
+          }),
         });
 
       if (!certificate) {
@@ -229,13 +234,13 @@ export const updateCertificate =
 
       const existingCertificate =
         await prisma.certificates.findFirst({
-          where: {
+          where: activeWhere({
             slug:
               currentSlug,
 
             user_id:
               userId,
-          },
+          }),
         });
 
       if (
@@ -256,7 +261,7 @@ export const updateCertificate =
 
         const slugExists =
           await prisma.certificates.findFirst({
-            where: {
+            where: activeWhere({
               slug:
                 newSlug,
 
@@ -267,7 +272,7 @@ export const updateCertificate =
                 id:
                   existingCertificate.id,
               },
-            },
+            }),
           });
 
         if (slugExists) {
@@ -389,11 +394,11 @@ export const deleteCertificate =
 
       const existingCertificate =
         await prisma.certificates.findFirst({
-          where: {
+          where: activeWhere({
             slug,
             user_id:
               userId,
-          },
+          }),
         });
 
       if (
@@ -406,11 +411,8 @@ export const deleteCertificate =
         });
       }
 
-      await prisma.certificates.delete({
-        where: {
-          id:
-            existingCertificate.id,
-        },
+      await softDelete(prisma.certificates, {
+        id: existingCertificate.id,
       });
 
       await redis.del(
@@ -420,7 +422,7 @@ export const deleteCertificate =
       return res.status(200).json({
         success: true,
         message:
-          "Certificate deleted",
+          "Certificate moved to Bin",
       });
 
     } catch (error) {

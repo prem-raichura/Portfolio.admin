@@ -48,6 +48,15 @@ export const API_ROUTES = {
     summary: "/api/dashboard",
   },
 
+  bin: {
+    /** GET — All soft-deleted items grouped by type */
+    list: "/api/bin",
+    /** POST — Restore a soft-deleted item: body { type, id } */
+    restore: "/api/bin/restore",
+    /** DELETE — Permanently remove a soft-deleted item */
+    detail: (type: string, id: string | number) => `/api/bin/${type}/${id}`,
+  },
+
   apiKeys: {
     /** GET — List all API keys for the authenticated user, POST — Create a new API key */
     list: "/api/keys",

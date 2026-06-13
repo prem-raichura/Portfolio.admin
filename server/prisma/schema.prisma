@@ -68,9 +68,12 @@ model API {
 
   created_at DateTime @default(now())
 
+  deleted_at DateTime?
+
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+  @@index([user_id, deleted_at])
 }
 
 model Projects {
@@ -102,10 +105,15 @@ model Projects {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  deleted_at DateTime?
+
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, slug])
+  // Uniqueness on (user_id, slug) is enforced by a partial unique index
+  // (WHERE deleted_at IS NULL) declared in the soft-delete migration.
+  // Do not re-add `@@unique([user_id, slug])` here.
   @@index([user_id])
+  @@index([user_id, deleted_at])
 }
 
 model Certificates {
@@ -132,10 +140,14 @@ model Certificates {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  deleted_at DateTime?
+
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, slug])
+  // Uniqueness on (user_id, slug) is enforced by a partial unique index
+  // (WHERE deleted_at IS NULL) declared in the soft-delete migration.
   @@index([user_id])
+  @@index([user_id, deleted_at])
 }
 
 model Experience {
@@ -166,10 +178,14 @@ model Experience {
   location String? @db.VarChar(255)
   mode String? @db.VarChar(255)
 
+  deleted_at DateTime?
+
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, slug])
+  // Uniqueness on (user_id, slug) is enforced by a partial unique index
+  // (WHERE deleted_at IS NULL) declared in the soft-delete migration.
   @@index([user_id])
+  @@index([user_id, deleted_at])
 }
 
 model Contact {

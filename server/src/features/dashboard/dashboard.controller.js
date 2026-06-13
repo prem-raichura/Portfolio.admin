@@ -146,6 +146,7 @@ export const getDashboardAnalytics = async (req, res) => {
       prisma.projects.findMany({
         where: {
           user_id: userId,
+          deleted_at: null,
         },
         select: {
           id: true,
@@ -157,6 +158,7 @@ export const getDashboardAnalytics = async (req, res) => {
       prisma.certificates.findMany({
         where: {
           user_id: userId,
+          deleted_at: null,
         },
         select: {
           id: true,
@@ -166,11 +168,13 @@ export const getDashboardAnalytics = async (req, res) => {
       prisma.experience.count({
         where: {
           user_id: userId,
+          deleted_at: null,
         },
       }),
       prisma.aPI.count({
         where: {
           user_id: userId,
+          deleted_at: null,
         },
       }),
     ]);
@@ -180,6 +184,9 @@ export const getDashboardAnalytics = async (req, res) => {
     const achievementCount = certificates.filter(c => (c.type || "").toLowerCase().includes("achievement")).length;
     const certificationCount = certificates.filter(c => (c.type || "").toLowerCase().includes("certificate")).length;
 
+    // Both maps are built only from live (non-soft-deleted) projects, so
+    // a click that resolves through either map is guaranteed to point at
+    // an existing project. Deleted projects never appear in Top Projects.
     const projectMap = new Map(
       projects.map((project) => [
         project.id,

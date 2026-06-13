@@ -3,6 +3,10 @@ import { redis } from "../../config/redis.js";
 import {
   uploadToCloudinary,
 } from "../../utils/cloudinaryUpload.js";
+import {
+  activeWhere,
+  softDelete,
+} from "../../shared/utils/softDelete.js";
 
 export const createExperience = async (req, res) => {
   try {
@@ -23,10 +27,10 @@ export const createExperience = async (req, res) => {
 
     const existingSlug =
       await prisma.experience.findFirst({
-        where: {
+        where: activeWhere({
           slug,
           user_id: userId,
-        },
+        }),
       });
 
     if (existingSlug) {
@@ -98,9 +102,9 @@ export const getExperiences = async (req, res) => {
 
     const experiences =
       await prisma.experience.findMany({
-        where: {
+        where: activeWhere({
           user_id: userId,
-        },
+        }),
         orderBy: {
           start_date: "desc",
         },
@@ -129,10 +133,10 @@ export const getSingleExperience = async (req, res) => {
 
     const experience =
       await prisma.experience.findFirst({
-        where: {
+        where: activeWhere({
           slug,
           user_id: userId,
-        },
+        }),
       });
 
     if (!experience) {
@@ -169,10 +173,10 @@ export const updateExperience = async (req, res) => {
 
     const existingExperience =
       await prisma.experience.findFirst({
-        where: {
+        where: activeWhere({
           slug: currentSlug,
           user_id: userId,
-        },
+        }),
       });
 
     if (!existingExperience) {
@@ -188,13 +192,13 @@ export const updateExperience = async (req, res) => {
     ) {
       const slugExists =
         await prisma.experience.findFirst({
-          where: {
+          where: activeWhere({
             slug: newSlug,
             user_id: userId,
             NOT: {
               id: existingExperience.id,
             },
-          },
+          }),
         });
 
       if (slugExists) {
@@ -275,10 +279,10 @@ export const deleteExperience = async (req, res) => {
 
     const existingExperience =
       await prisma.experience.findFirst({
-        where: {
+        where: activeWhere({
           slug,
           user_id: userId,
-        },
+        }),
       });
 
     if (!existingExperience) {
@@ -288,16 +292,14 @@ export const deleteExperience = async (req, res) => {
       });
     }
 
-    await prisma.experience.delete({
-      where: {
-        id: existingExperience.id,
-      },
+    await softDelete(prisma.experience, {
+      id: existingExperience.id,
     });
 
     await redis.del(`portfolio:${userId}`);
     return res.status(200).json({
       success: true,
-      message: "Experience deleted",
+      message: "Experience moved to Bin",
     });
 
   } catch (error) {

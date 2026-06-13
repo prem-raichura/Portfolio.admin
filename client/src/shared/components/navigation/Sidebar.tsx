@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   Key,
+  Trash2,
   X,
 } from "lucide-react";
 
@@ -149,6 +150,29 @@ function Sidebar({
         </nav>
 
         <div className="border-t border-[var(--border-color)] p-3 space-y-2">
+          <button
+            onClick={() => {
+              navigate("/bin");
+              if (window.innerWidth < 1024) {
+                setSidebarOpen(false);
+              }
+            }}
+            data-tooltip={!sidebarOpen ? "Bin" : undefined}
+            className={`
+              flex w-full items-center gap-3 rounded-xl px-3 py-2.5
+              text-sm font-medium transition-all duration-200
+              ${
+                location.pathname === "/bin"
+                  ? "bg-[var(--accent-light)] text-[var(--accent)]"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--accent-light)] hover:text-[var(--accent)]"
+              }
+              ${!sidebarOpen ? "justify-center" : ""}
+            `}
+          >
+            <Trash2 size={18} />
+            {sidebarOpen && <span>Bin</span>}
+          </button>
+
           <button
             onClick={() => {
               navigate("/logout");
