@@ -108,9 +108,9 @@ function App() {
               P
             </div>
             <div>
-              <h1 className="text-sm font-semibold">Portfolio Admin</h1>
+              <h1 className="text-sm font-semibold">PortOS</h1>
               <p className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
-                Developer Portfolio Platform
+                Personal Portfolio Operating System
               </p>
             </div>
           </a>

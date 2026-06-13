@@ -117,9 +117,9 @@ function Login() {
               P
             </div>
             <div>
-              <h1 className="text-sm font-semibold">Portfolio Admin</h1>
+              <h1 className="text-sm font-semibold">PortOS</h1>
               <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
-                Developer Platform
+                Personal Portfolio Operating System
               </p>
             </div>
           </a>

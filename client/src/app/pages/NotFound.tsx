@@ -93,7 +93,7 @@ function NotFound() {
 
             <span>
               <span className="block text-lg font-semibold">
-                Portfolio Admin
+                PortOS
               </span>
 
               <span

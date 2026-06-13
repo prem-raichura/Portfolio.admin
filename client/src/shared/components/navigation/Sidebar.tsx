@@ -105,7 +105,7 @@ function Sidebar({
           {sidebarOpen && (
             <div className="min-w-0 flex-1">
               <h1 className="text-sm font-semibold leading-tight text-[var(--text-primary)] truncate">
-                Portfolio Admin
+                PortOS
               </h1>
               <p className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider">
                 Developer Platform
