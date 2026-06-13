@@ -188,9 +188,9 @@ function App() {
 
             {/* Heading */}
             <h1 className="mt-8 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Manage Your
+              PortOS
               <span className="block gradient-text">
-                Portfolio Ecosystem
+                Personal Portfolio Operating System
               </span>
             </h1>
 
