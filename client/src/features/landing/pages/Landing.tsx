@@ -182,7 +182,7 @@ function App() {
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
               </span>
               <p className="text-sm font-medium text-[var(--text-secondary)]">
-                Modern SaaS Portfolio Infrastructure
+                Modern Portfolio Infrastructure
               </p>
             </div>
 
