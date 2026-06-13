@@ -324,7 +324,7 @@ function Certificates() {
           response?.success
         ) {
           toast.success(
-            "Certificate deleted successfully"
+            "Certificate moved to Bin"
           );
 
           setCertificateToDelete(

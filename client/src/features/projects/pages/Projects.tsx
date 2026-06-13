@@ -289,7 +289,7 @@ function Projects() {
       const res = await deleteProject(slug);
       
       if (res?.success) {
-        toast.success("Project deleted successfully");
+        toast.success("Project moved to Bin");
         setProjectToDelete(null);
         fetchProjects();
       }

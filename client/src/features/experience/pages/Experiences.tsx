@@ -104,7 +104,7 @@ function Experiences() {
       setIsDeleting(true);
       const res = await deleteExperience(expToDelete.slug);
       if (res?.success) {
-        toast.success("Experience deleted successfully");
+        toast.success("Experience moved to Bin");
         setExpToDelete(null);
         setRefreshKey((k) => k + 1);
       }
