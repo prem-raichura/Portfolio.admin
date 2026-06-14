@@ -206,7 +206,7 @@ function App() {
                   flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold transition-all duration-300 hover:bg-[var(--accent-light)] hover:border-[var(--accent)] hover:-translate-y-0.5
                 "
               >
-                Documentation <ArrowRight size={16} />
+                Documentation
               </button>
             </div>
           </div>
@@ -330,12 +330,12 @@ function App() {
                   className="relative h-16 w-16 rounded-full p-1 bg-gradient-to-tr from-[var(--grad-start)] to-[var(--grad-end)] shadow-md"
                 >
                   <div className="h-full w-full rounded-full bg-[var(--bg-card)] flex items-center justify-center text-[var(--accent)] font-extrabold text-xl animate-pulse">
-                    JD
+                    PO
                   </div>
                   <Sparkles size={16} className="absolute -top-1 -right-1 text-amber-400 animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-[var(--text-primary)]">Jane Doe</h3>
+                  <h3 className="text-base font-extrabold text-[var(--text-primary)]">PortOS</h3>
                   <p className="text-xs text-[var(--text-secondary)] font-medium">Software Engineer</p>
                 </div>
                 <div className="flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-1 text-[10px] text-[var(--text-muted)] font-semibold">
