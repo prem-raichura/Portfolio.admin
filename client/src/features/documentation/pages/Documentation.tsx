@@ -19,6 +19,14 @@ import {
   ArrowUpRight,
   ChevronRight,
   Settings,
+  User,
+  Briefcase,
+  Award,
+  Key,
+  Eye,
+  TrendingUp,
+  MapPin,
+  Laptop,
 } from "lucide-react";
 
 // Types for Navigation & Sections
@@ -38,13 +46,13 @@ function Documentation() {
   // Sidebar fold states
   const [folders, setFolders] = useState({
     overview: true,
-    frontend: true,
-    backend: true,
-    publicApi: true,
+    features: true,
+    integrations: true,
+    analytics: true,
   });
 
   // Current selected page ID
-  const [selectedPage, setSelectedPage] = useState<string>("project-overview");
+  const [selectedPage, setSelectedPage] = useState<string>("system-overview");
 
   // Search Modal state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -91,7 +99,7 @@ function Documentation() {
     }));
   };
 
-  // Mock datasets for API reference page
+  // API reference tab state
   const [apiTab, setApiTab] = useState<"curl" | "fetch">("curl");
 
   const curlCode = `curl -X GET "https://api.portos.dev/api/public" \\
@@ -112,588 +120,385 @@ function Documentation() {
   const responseJson = `{
   "success": true,
   "source": "redis-cache",
-  "portfolio": {
+  "profile": {
     "name": "Jane Doe",
-    "headline": "Full Stack Engineer",
-    "bio": "Building developer infrastructure.",
-    "skills": ["TypeScript", "React", "Node.js", "Redis"],
-    "projects": [
-      {
-        "title": "PortOS API",
-        "description": "API Gateway and CDN for assets."
+    "headline": "Senior Full Stack Engineer",
+    "bio": "Building developer tooling and high-performance applications.",
+    "avatar": "https://res.cloudinary.com/portos/image/upload/jane_avatar.png",
+    "skills": ["TypeScript", "React", "Node.js", "Redis", "Docker", "PostgreSQL"],
+    "links": {
+      "github": "https://github.com/janedoe",
+      "linkedin": "https://linkedin.com/in/janedoe",
+      "twitter": "https://twitter.com/janedoe",
+      "website": "https://janedoe.dev"
+    }
+  },
+  "projects": [
+    {
+      "title": "PortOS CLI",
+      "slug": "portos-cli",
+      "description": "A terminal companion to bootstrap custom portfolio designs.",
+      "techStack": ["TypeScript", "Vite", "React"],
+      "featured": true,
+      "links": {
+        "demo": "https://cli.portos-app.com",
+        "github": "https://github.com/janedoe/portos-cli"
       }
-    ]
-  }
+    }
+  ],
+  "experience": [
+    {
+      "company": "Stark Tech",
+      "role": "Senior Engineer",
+      "startDate": "2024-01-15",
+      "endDate": null,
+      "isCurrent": true,
+      "description": "Architecting decoupled user interfaces and high throughput cache pipelines."
+    }
+  ],
+  "certificates": [
+    {
+      "title": "AWS Solutions Architect Associate",
+      "issuer": "Amazon Web Services",
+      "credentialId": "AWS-ASA-99812",
+      "url": "https://aws.amazon.com/verification/AWS-ASA-99812"
+    }
+  ]
 }`;
 
   // Documentation Pages Definitions
   const pages: Record<string, DocPage> = {
-    "project-overview": {
-      id: "project-overview",
-      title: "Project Overview",
+    "system-overview": {
+      id: "system-overview",
+      title: "System Overview",
       category: "Getting Started",
       attributes: [
-        { name: "Framework Base", value: "React & Express" },
-        { name: "Recommended For", value: "Full Stack Developers" },
-        { name: "Database Model", value: "Relational (PostgreSQL)" },
-        { name: "License", value: "MIT Open Source" },
+        { name: "Primary Concept", value: "Decoupled Portfolio CMS" },
+        { name: "Workspace Access", value: "Instant via GitHub OAuth" },
+        { name: "Data Sync Mode", value: "Real-time Cache Invalidation" },
       ],
       headings: [
-        { id: "what-is-portos", text: "What Is PortOS?" },
-        { id: "core-concept", text: "The Core Concept" },
-        { id: "target-audience", text: "Target Audience" },
+        { id: "what-is-portos", text: "What is PortOS?" },
+        { id: "decoupled-approach", text: "The Decoupled Approach" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS acts as a personal database system for developers. Instead of writing separate backend models, configuration, and API systems for your personal websites, PortOS exposes a developer dashboard interface to build project cards, manage professional experiences, upload achievements/certificates, and retrieve them on the fly.
+            Welcome to the PortOS User Guide! PortOS (Personal Portfolio Operating System) is a developer-focused content management system designed to act as the single source of truth for your professional profile.
           </p>
 
           <h3 id="what-is-portos" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> What Is PortOS?
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> What is PortOS?
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS is an open-source tool built to decouple the presentation layer of a developer's portfolio from their content registry. Users deploy the admin dashboard panel, configure their resume materials once, and fetch them over a secured API CDN to render custom visual themes in React, Vue, Next.js, or HTML static sites.
+            Instead of hardcoding projects, copying and pasting markdown resume logs, or configuring individual database backends every time you update your personal web page, PortOS provides a centralized workspace dashboard. Here, you configure your bio, work history, certification credentials, and showcase projects once, and feed them securely to any frontend layout.
           </p>
 
-          <h3 id="core-concept" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> The Core Concept
+          <h3 id="decoupled-approach" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> The Decoupled Approach
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            By shifting content management to a self-contained operating system, developers gain real-time analytics (visitor counts, geographical data, project click rates) while keeping their codebases lightweight.
+            By shifting content management to a decoupled administrator dashboard, you separate your professional data from your presentation layer. This means you can create multiple, unique portfolio themes (a terminal CLI style, a sleek minimalist design, or a full 3D interactive view) all fetching from the same updated database payload.
           </p>
 
-          {/* Visual Alert Box */}
+          {/* Alert Box */}
           <div className="rounded-2xl border border-l-4 border-l-[var(--accent)] border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 text-sm text-[var(--text-secondary)] relative overflow-hidden">
             <div className="pointer-events-none absolute -right-6 -bottom-6 h-20 w-20 rounded-full opacity-10" style={{ background: "radial-gradient(circle, var(--accent), transparent 70%)" }} />
             <div className="flex items-center gap-2 font-bold text-[var(--text-primary)] mb-1">
               <Info size={16} className="text-[var(--accent)]" />
-              <span>Performance Boost</span>
+              <span>Fast Page Load Guarantee</span>
             </div>
-            All portfolio queries are run through an automatic caching model that guarantees response times under 50 milliseconds by bypassing the database entirely for cached entries.
+            All portfolio data queries are delivered over an integrated caching model. By leveraging Redis in-memory storage, your public data queries load in less than 50 milliseconds globally.
           </div>
-
-          <h3 id="target-audience" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Target Audience
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Engineers, designers, and systems architects who want total control over their portfolio frontend markup but do not want to hardcode projects or manually spin up backend servers for database storage.
-          </p>
         </div>
       ),
     },
-    "system-architecture": {
-      id: "system-architecture",
-      title: "System Architecture",
-      category: "Getting Started",
-      headings: [
-        { id: "infrastructure-layers", text: "Infrastructure Layers" },
-        { id: "database-cache-synchronization", text: "Database & Cache Synchronization" },
-      ],
-      content: (
-        <div className="space-y-6">
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS uses a decoupled architecture ensuring high availability, bulletproof security, and non-blocking background queue tasks.
-          </p>
-
-          {/* Architecture Chart */}
-          <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 text-center space-y-4 shadow-sm">
-            <h4 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
-              System Flow Diagram
-            </h4>
-            <div className="flex flex-col md:flex-row items-center justify-around gap-4 py-4 text-xs font-semibold">
-              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 py-3 shadow-sm transition-all hover:scale-105">
-                <p className="font-bold">Portfolio Client</p>
-                <span className="text-[10px] text-[var(--text-muted)]">User Portfolio Web</span>
-              </div>
-              <ChevronRight className="rotate-90 md:rotate-0 text-[var(--text-muted)]" />
-              <div className="rounded-xl border border-[var(--accent)] bg-[var(--accent-light)] px-4 py-3 shadow-sm transition-all hover:scale-105">
-                <p className="font-bold text-[var(--accent)]">Express API Gateway</p>
-                <span className="text-[10px] text-[var(--text-muted)]">Rate Limit / Auth Check</span>
-              </div>
-              <ChevronRight className="rotate-90 md:rotate-0 text-[var(--text-muted)]" />
-              <div className="flex flex-col gap-2">
-                <div className="rounded-xl border border-emerald-500 bg-emerald-500/10 px-4 py-2 text-emerald-500 font-bold transition-all hover:scale-105">
-                  Redis Cache (EX 1h)
-                </div>
-                <div className="rounded-xl border border-indigo-500 bg-indigo-500/10 px-4 py-2 text-indigo-500 font-bold transition-all hover:scale-105">
-                  BullMQ Queue (Async Jobs)
-                </div>
-                <div className="rounded-xl border border-purple-500 bg-purple-500/10 px-4 py-2 text-purple-500 font-bold transition-all hover:scale-105">
-                  PostgreSQL DB (Prisma)
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h3 id="infrastructure-layers" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Infrastructure Layers
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            The stack is composed of a decoupled frontend dashboard, a REST API server built in NodeJS, a fast in-memory key-value cache (Redis), and an transactional database (PostgreSQL).
-          </p>
-
-          <h3 id="database-cache-synchronization" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Database &amp; Cache Synchronization
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            When user data is updated in the dashboard panel, the Redis cached payload for that user is immediately purged. The subsequent request to the public endpoint queries PostgreSQL, updates Redis, and returns the response.
-          </p>
-        </div>
-      ),
-    },
-    "github-oauth": {
-      id: "github-oauth",
-      title: "GitHub OAuth Authentication",
+    "how-to-start": {
+      id: "how-to-start",
+      title: "How to Start",
       category: "Getting Started",
       attributes: [
-        { name: "OAuth Provider", value: "GitHub" },
-        { name: "Scope Required", value: "read:user user:email" },
-        { name: "Token Type", value: "Bearer (JWT) & HTTP-Only Refresh" },
-        { name: "Session Validity", value: "7 Days" },
+        { name: "Estimated Setup", value: "Under 2 Minutes" },
+        { name: "Identity Provider", value: "GitHub OAuth Secure Login" },
+        { name: "Onboarding State", value: "Auto-generated Workspace" },
+        { name: "Requirements", value: "Public GitHub Account" },
       ],
       headings: [
-        { id: "oauth-overview", text: "OAuth Overview" },
-        { id: "authentication-flow", text: "Authentication Flow" },
-        { id: "data-sync-mapping", text: "Data Synchronization" },
+        { id: "github-onboarding", text: "1. GitHub Authorization" },
+        { id: "dashboard-setup", text: "2. Setting Up Your Profile" },
+        { id: "api-generation", text: "3. Generating Your First API Key" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS leverages GitHub OAuth to securely manage user authentication and create matching portfolio workspaces. By utilizing GitHub as our core identity provider, we bypass standard password risks and automatically sync your public github account link.
+            Getting your workspace set up in PortOS takes less than two minutes. Follow these simple onboarding steps to configure your dashboard:
           </p>
 
-          <h3 id="oauth-overview" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> OAuth Overview
+          <h3 id="github-onboarding" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> 1. GitHub Authorization
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            When a developer clicks "Get Started" or logs in, the client directs the browser to the backend server authentication route. This initiates the handshake protocol directly with GitHub's authorization server.
+            Click the **Get Started** button on the home page. You will be redirected to GitHub to authorize the PortOS app. This establishes your identity and link mapping without passwords. We fetch only public details like your name, primary email, avatar image, and username.
           </p>
 
-          <h3 id="authentication-flow" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Authentication Flow
-          </h3>
-          <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3 shadow-sm text-sm">
-            <p className="font-bold text-[var(--text-primary)]">Handshake Progression:</p>
-            <ol className="list-decimal pl-5 space-y-2.5 text-xs text-[var(--text-secondary)]">
-              <li>
-                <strong>Initialize Request:</strong> Frontend queries <code>GET /api/auth/github</code>. The server generates a random <code>state</code> cookie to prevent CSRF attacks and redirects the browser to GitHub with parameters: client ID, state, scopes (<code>read:user user:email</code>), and client callback URI.
-              </li>
-              <li>
-                <strong>User Authorization:</strong> The user reviews requested scopes on GitHub and confirms consent. GitHub redirects the client browser back to our server callback: <code>GET /api/auth/github/callback?code=CODE&state=STATE</code>.
-              </li>
-              <li>
-                <strong>State &amp; Token Validation:</strong> The server asserts that the returning state matches the state stored in the secure cookie. If correct, the server requests an access token from GitHub using the code and secret environment variables.
-              </li>
-              <li>
-                <strong>Profile Registration:</strong> Using the token, the backend requests user details and emails from GitHub. It locates the primary verified email and matching user record in our database.
-              </li>
-              <li>
-                <strong>Session Issuance:</strong> An Access Token (JWT) is generated and returned to the client in the redirect URL parameters. A secure, HTTP-only Refresh Token is cookies under sameSite policy.
-              </li>
-            </ol>
-          </div>
-
-          <h3 id="data-sync-mapping" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Data Synchronization
+          <h3 id="dashboard-setup" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> 2. Setting Up Your Profile
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            During the callback mapping phase, the server automatically updates the user's links metadata with their public GitHub path (<code>https://github.com/username</code>) and registers their profile image on Cloudinary to prevent broken image referrers.
+            Once authorized, you will land on the primary Dashboard. Navigate to the **Profile** feature to edit your headline, bio, list your top technical skills, and link your professional social accounts.
+          </p>
+
+          <h3 id="api-generation" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> 3. Generating Your First API Key
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            To fetch this data on your custom web layout, navigate to the **API Keys** section in your dashboard side menu. Click **Create New Key**, give it a name (e.g., "Main Portfolio Site"), and copy the token. You will use this token to authenticate requests on your external websites.
           </p>
         </div>
       ),
     },
-    "database-schema": {
-      id: "database-schema",
-      title: "Database Schema Models",
-      category: "Getting Started",
+    "profile-socials": {
+      id: "profile-socials",
+      title: "Profile & Social Links",
+      category: "Core Features",
+      attributes: [
+        { name: "Custom Fields", value: "Headline, Biography, Technical Skills" },
+        { name: "Image Storage", value: "Cloudinary Cloud Hosting" },
+        { name: "Link Types", value: "GitHub, LinkedIn, Twitter, Custom Web" },
+        { name: "Tags Limit", value: "Up to 30 custom tech tags" },
+      ],
       headings: [
-        { id: "user-model", text: "User Model" },
-        { id: "projects-model", text: "Projects Model" },
-        { id: "experience-model", text: "Experience Model" },
+        { id: "personal-details", text: "Personal Details & Headlines" },
+        { id: "avatar-hosting", text: "Avatar & Image Uploads" },
+        { id: "social-linking", text: "Connecting Social Links" },
+        { id: "skills-tagging", text: "Configuring Technical Skills" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS is backed by a PostgreSQL database orchestrated using Prisma ORM. Below are the key schemas:
+            The profile configuration page manages the top-level parameters of your digital resume.
           </p>
 
-          <h3 id="user-model" className="text-base font-bold text-[var(--text-primary)] scroll-mt-20">
-            User Model
+          <h3 id="personal-details" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Personal Details &amp; Headlines
           </h3>
-          <div className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-tertiary)]">
-            <div className="flex h-9 items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 text-xs font-semibold text-[var(--text-muted)]">
-              <span>schema.prisma</span>
-              <button
-                onClick={() => handleCopy(`model User {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  username    String?  @unique @db.VarChar(100)
-  email       String   @unique @db.VarChar(255)
-  avatar      String?  @db.VarChar(500)
-  bio         String?
-  users_links Json?
-  skills      Json?
-  headline    String?  @db.VarChar(255)
-}`, "user-model-code")}
-                className="flex items-center gap-1 hover:text-[var(--text-primary)]"
-              >
-                {copiedText === "user-model-code" ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-              </button>
-            </div>
-            <pre className="p-4 text-[11px] font-mono leading-relaxed text-[var(--text-primary)] overflow-x-auto">
-{`model User {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  username    String?  @unique @db.VarChar(100)
-  email       String   @unique @db.VarChar(255)
-  avatar      String?  @db.VarChar(500)
-  bio         String?
-  users_links Json?
-  skills      Json?
-  headline    String?  @db.VarChar(255)
-}`}
-            </pre>
-          </div>
-
-          <h3 id="projects-model" className="text-base font-bold text-[var(--text-primary)] scroll-mt-20">
-            Projects Model
-          </h3>
-          <div className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-tertiary)]">
-            <div className="flex h-9 items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 text-xs font-semibold text-[var(--text-muted)]">
-              <span>schema.prisma</span>
-              <button
-                onClick={() => handleCopy(`model Projects {
-  id          Int      @id @default(autoincrement())
-  user_id     Int
-  title       String   @db.VarChar(255)
-  slug        String?  @db.VarChar(255)
-  description String?
-  thumbnail   String?  @db.VarChar(500)
-  featured    Boolean  @default(false)
-  type        String   @db.VarChar(255)
-}`, "projects-model-code")}
-                className="flex items-center gap-1 hover:text-[var(--text-primary)]"
-              >
-                {copiedText === "projects-model-code" ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-              </button>
-            </div>
-            <pre className="p-4 text-[11px] font-mono leading-relaxed text-[var(--text-primary)] overflow-x-auto">
-{`model Projects {
-  id          Int      @id @default(autoincrement())
-  user_id     Int
-  title       String   @db.VarChar(255)
-  slug        String?  @db.VarChar(255)
-  description String?
-  thumbnail   String?  @db.VarChar(500)
-  featured    Boolean  @default(false)
-  type        String   @db.VarChar(255)
-}`}
-            </pre>
-          </div>
-
-          <h3 id="experience-model" className="text-base font-bold text-[var(--text-primary)] scroll-mt-20">
-            Experience Model
-          </h3>
-          <div className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-tertiary)]">
-            <div className="flex h-9 items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 text-xs font-semibold text-[var(--text-muted)]">
-              <span>schema.prisma</span>
-              <button
-                onClick={() => handleCopy(`model Experience {
-  id          Int       @id @default(autoincrement())
-  user_id     Int
-  title       String    @db.VarChar(255)
-  slug        String    @db.VarChar(255)
-  company     String    @db.VarChar(255)
-  start_date  DateTime
-  end_date    DateTime?
-  is_current  Boolean   @default(false)
-}`, "experience-model-code")}
-                className="flex items-center gap-1 hover:text-[var(--text-primary)]"
-              >
-                {copiedText === "experience-model-code" ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-              </button>
-            </div>
-            <pre className="p-4 text-[11px] font-mono leading-relaxed text-[var(--text-primary)] overflow-x-auto">
-{`model Experience {
-  id          Int       @id @default(autoincrement())
-  user_id     Int
-  title       String    @db.VarChar(255)
-  slug        String    @db.VarChar(255)
-  company     String    @db.VarChar(255)
-  start_date  DateTime
-  end_date    DateTime?
-  is_current  Boolean   @default(false)
-}`}
-            </pre>
-          </div>
-        </div>
-      ),
-    },
-    "frontend-stack": {
-      id: "frontend-stack",
-      title: "Frontend Stack",
-      category: "Frontend Docs",
-      headings: [
-        { id: "framework-vite", text: "Framework & Bundle Engine" },
-        { id: "component-architecture", text: "Component Architecture" },
-      ],
-      content: (
-        <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            The frontend interface operates as a highly responsive dashboard built using React 18, Vite, and TypeScript.
+            Update your full professional name, add a punchy developer headline (e.g., "Full Stack Developer specializing in Web Infrastructure"), and write a brief biography describing your focus areas and work interests.
           </p>
 
-          <h3 id="framework-vite" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Framework &amp; Bundle Engine
+          <h3 id="avatar-hosting" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Avatar &amp; Image Uploads
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Vite compiles single file components and routes instantly, utilizing hot module reloading (HMR) to provide immediate developer feedback in the client workspaces.
+            By default, PortOS utilizes your GitHub profile picture. If you wish to change it, the dashboard features an integrated drag-and-drop uploader. Images are optimized and hosted securely on Cloudinary CDN, ensuring fast load times.
           </p>
 
-          <h3 id="component-architecture" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Component Architecture
+          <h3 id="social-linking" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Connecting Social Links
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Features are arranged cleanly inside directories separated by concern: <code>features/projects</code>, <code>features/experience</code>, <code>features/apiKeys</code>, and <code>shared/components</code> for layout, icons, loader modules, and helper libraries.
+            Input direct profile links for GitHub, LinkedIn, Twitter, and your personal homepage. These links are packaged neatly in the public API payload under the <code>links</code> object.
+          </p>
+
+          <h3 id="skills-tagging" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Configuring Technical Skills
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Manage your technical skill tags dynamically. Type tech stacks like "React", "TypeScript", or "GraphQL" and press enter to tag them. These are returned as a simple array, perfect for rendering custom badges or filters on your personal website.
           </p>
         </div>
       ),
     },
-    "routing-auth": {
-      id: "routing-auth",
-      title: "Routing & Authentication",
-      category: "Frontend Docs",
+    "project-showcase": {
+      id: "project-showcase",
+      title: "Project Showcase",
+      category: "Core Features",
+      attributes: [
+        { name: "Visual Media", value: "Custom Thumbnail Uploader" },
+        { name: "Featured Toggle", value: "Yes (Pin to top of lists)" },
+        { name: "Asset Optimization", value: "Auto-compression to WebP" },
+        { name: "Slug Generator", value: "Automatic URL-safe slugs" },
+      ],
       headings: [
-        { id: "client-side-routing", text: "Client-Side Routing" },
-        { id: "session-security", text: "Session Security & Access Token" },
+        { id: "creating-project", text: "Creating Showcase Cards" },
+        { id: "managing-metadata", text: "Managing Hyperlinks & Tags" },
+        { id: "featured-flag", text: "Featured Projects Pinning" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Protecting dashboard credentials and tracking authentication credentials safely across routes is vital.
+            Showcase your open-source projects, personal software, and key client works dynamically.
           </p>
 
-          <h3 id="client-side-routing" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Client-Side Routing
+          <h3 id="creating-project" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Creating Showcase Cards
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Routes are created dynamically inside <code>AppRoutes.tsx</code> using the React Router library. Public routes (Landing, Login, Callback) sit side-by-side with Dashboard operations nested inside a specialized <code>ProtectedRoute</code> component.
+            Add a project card by specifying a title and a description. PortOS automatically generates a URL-safe slug (e.g. <code>portos-cli</code>). Upload a thumbnail card or mock image which gets compressed automatically to the WebP format for fast delivery.
           </p>
 
-          <h3 id="session-security" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Session Security &amp; Access Token
+          <h3 id="managing-metadata" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Managing Hyperlinks &amp; Tags
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            A secure access token is loaded into memory (and localStorage), while a secure cookie manages token expiration. If the token expires or returns a <code>401</code>, axios interceptor automatically prompts the backend to verify the cookies and retrieve a refreshed access token silently.
+            For each project, assign a Github Repository URL and a Live Demo URL. You can also specify the exact tech stack tags (e.g., Node, Tailwind, React) utilized during build development.
+          </p>
+
+          <h3 id="featured-flag" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Featured Projects Pinning
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Toggle the **Featured** switch on your highest quality projects. This flags the project as <code>featured: true</code> in the API response, allowing your portfolio layout to pin these highlight cards to the front page or list them in a hero grid.
           </p>
         </div>
       ),
     },
-    "theme-config": {
-      id: "theme-config",
-      title: "Theme Configuration",
-      category: "Frontend Docs",
+    "experience-history": {
+      id: "experience-history",
+      title: "Experience & History",
+      category: "Core Features",
+      attributes: [
+        { name: "Entry Type", value: "Employment, Internships, Freelance" },
+        { name: "Sorting order", value: "Reverse chronological" },
+        { name: "Current Role", value: "Present Status Toggle" },
+        { name: "Rich Text", value: "Bullets and highlights support" },
+      ],
       headings: [
-        { id: "css-variables", text: "CSS Variables Design System" },
-        { id: "theme-toggle-integration", text: "Integration with next-themes" },
+        { id: "work-history-setup", text: "Adding Experience Records" },
+        { id: "current-employment", text: "Tracking Current Roles" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS features dynamic, harmonious colors for both light and dark mode operations using native browser values.
+            Maintain an interactive timeline of your employment history, internships, and consulting engagements.
           </p>
 
-          <h3 id="css-variables" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> CSS Variables Design System
+          <h3 id="work-history-setup" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Adding Experience Records
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Colors, borders, shadows, backgrounds, and buttons are set using standard CSS Custom Properties in <code>src/index.css</code>. In light mode (defined on <code>:root</code>), we use clean backgrounds and teal/grey colors, while in dark mode (on <code>.dark</code> class), we switch variables dynamically to dark indigo and slate colors.
+            Input the company name, your professional title, start date, and end date. Describe key achievements, architectures built, and technical milestones accomplished during your stay.
           </p>
 
-          <h3 id="theme-toggle-integration" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Integration with next-themes
+          <h3 id="current-employment" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Tracking Current Roles
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            The theme toggle updates the root element's class list dynamically between light and dark. Components watch this state change and adjust accordingly.
+            If you are currently employed at a company, check the **I presently work here** box. This sets the end date parameter to null and tags the record as <code>isCurrent: true</code> in the public API payload. Your portfolio site can render this dynamically as "Present" or display a special "Available for freelance" indicator.
           </p>
         </div>
       ),
     },
-    "express-server": {
-      id: "express-server",
-      title: "Express Server Setup",
-      category: "Backend Docs",
+    "certifications": {
+      id: "certifications",
+      title: "Certifications",
+      category: "Core Features",
+      attributes: [
+        { name: "Categories", value: "Awards, Accreditations, Degrees" },
+        { name: "Validation", value: "External Credential URL support" },
+        { name: "Media Badge", value: "Issuer logo uploads" },
+      ],
       headings: [
-        { id: "routing-architecture", text: "Routing Architecture" },
-        { id: "security-middlewares", text: "Security Middlewares" },
+        { id: "register-certificates", text: "Logging Credentials & Licenses" },
+        { id: "issuer-verification", text: "Verification Link Verification" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            The core server uses NodeJS with Express, running on port 8000 by default.
+            Manage your credentials, professional exam licenses, bootcamp certificates, and tech hackathon awards.
           </p>
 
-          <h3 id="routing-architecture" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Routing Architecture
+          <h3 id="register-certificates" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Logging Credentials &amp; Licenses
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Express routes API suffixes to controller files, dividing logic into authentication, project registries, certificates, and metrics loggers.
+            Provide the name of the certification (e.g. "Google Professional Cloud Architect") and the official issuing organization (e.g. "Google Cloud"). Specify the unique Credential ID issued to verify authenticity.
           </p>
 
-          <h3 id="security-middlewares" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Security Middlewares
+          <h3 id="issuer-verification" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Verification Link Verification
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Standard guards protect controllers from abuse: Helmet shields HTTP headers, CORS config routes allowed domains, and cookie parser parses secure JSON Web Tokens.
+            Include the direct credential lookup link provided by the issuer (like Credly or university portal). In the JSON payload, these are delivered under <code>url</code>, allowing portfolio users to click directly to verify your credentials.
           </p>
         </div>
       ),
     },
-    "redis-cache-layer": {
-      id: "redis-cache-layer",
-      title: "Redis Cache Layer",
-      category: "Backend Docs",
+    "managing-api-keys": {
+      id: "managing-api-keys",
+      title: "Managing API Keys",
+      category: "Integrations & API",
+      attributes: [
+        { name: "Key Format", value: "Secure hex-encoded string" },
+        { name: "Access Type", value: "Read-only GET requests" },
+        { name: "Revocation", value: "Instant, real-time revocation" },
+        { name: "Limits", value: "Up to 5 active client keys" },
+      ],
       headings: [
-        { id: "performance-benefits", text: "Performance Benefits" },
-        { id: "cache-invalidation-flow", text: "Cache Invalidation Flow" },
+        { id: "generating-keys", text: "Generating API Keys" },
+        { id: "key-security", text: "Key Access & Security" },
+        { id: "revoking-keys", text: "Revoking & Rotating Keys" },
       ],
       content: (
         <div className="space-y-6">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            PortOS routes high-volume public portfolio queries through Redis to guarantee fast load times for end users.
+            Connect your custom client portfolio layouts to the PortOS data infrastructure using secure access keys.
           </p>
 
-          <h3 id="performance-benefits" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Performance Benefits
+          <h3 id="generating-keys" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Generating API Keys
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Caching portfolio outputs reduces SQL parsing bottlenecks, reducing public page requests to sub-20ms.
+            Navigate to the **API Keys** panel in your dashboard menu. Click **Create New Key**, specify a descriptive label (like "NextJS Production", "Staging Resume"), and hit create. Copy the generated string immediately—it will not be shown again for security reasons.
           </p>
 
-          <h3 id="cache-invalidation-flow" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Cache Invalidation Flow
+          <h3 id="key-security" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Key Access &amp; Security
           </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            All generated keys are strictly read-only. They permit external services to fetch your public portfolio metrics, experience, certificates, and profiles using GET requests, but prevent any write, update, or deletion operations.
+          </p>
+
+          {/* Warning Alert */}
           <div className="rounded-2xl border border-l-4 border-l-amber-500 border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 text-sm text-[var(--text-secondary)]">
             <div className="flex items-center gap-2 font-bold text-[var(--text-primary)] mb-1">
               <AlertTriangle size={16} className="text-amber-500" />
-              <span>Expiry Policy</span>
+              <span>Keep Keys Secret</span>
             </div>
-            Cache key is stored with a 3600 second TTL. Modifying certificates, links, or projects in the administrator dashboard commands the backend to wipe the cache key immediately.
+            Do not bundle your API keys inside public git repositories. If you are using React or Next.js, store keys in server environments (like <code>.env.local</code>) or configure proxy API routing to prevent exposing the token in client browser requests.
           </div>
-        </div>
-      ),
-    },
-    "bullmq-worker": {
-      id: "bullmq-worker",
-      title: "BullMQ Worker Queue",
-      category: "Backend Docs",
-      headings: [
-        { id: "analytics-processing", text: "Asynchronous Analytics Processing" },
-        { id: "event-tracking-jobs", text: "Event Tracking Jobs" },
-      ],
-      content: (
-        <div className="space-y-6">
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Analytics metrics are processed asynchronously using BullMQ.
-          </p>
 
-          <h3 id="analytics-processing" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Asynchronous Analytics Processing
+          <h3 id="revoking-keys" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Revoking &amp; Rotating Keys
           </h3>
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Geographic lookups, browser client logging, and click counters are processed in background tasks using BullMQ worker threads, guaranteeing zero UI freeze.
-          </p>
-
-          <h3 id="event-tracking-jobs" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Event Tracking Jobs
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Background workers process tracking triggers including: <code>trackPortfolioVisit</code>, <code>githubClick</code>, <code>liveDemoClick</code>, and <code>contactSubmission</code>.
+            If an API key is accidentally leaked or compromised, click **Revoke** next to the key entry in the dashboard. The key will be deleted instantly, and any subsequent queries using that key on your portfolio sites will return a <code>401 Unauthorized</code> error. You can then generate a new key to replace it.
           </p>
         </div>
       ),
     },
-    "getting-started-api": {
-      id: "getting-started-api",
-      title: "Getting Started (API)",
-      category: "Public API Docs",
-      headings: [
-        { id: "api-purpose", text: "What is the Public API?" },
-        { id: "base-url", text: "API Base URL" },
-      ],
-      content: (
-        <div className="space-y-6">
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            The PortOS Public API enables developers to query portfolio contents securely from any external static or server-rendered website.
-          </p>
-
-          <h3 id="api-purpose" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> What is the Public API?
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            It is a single read-only GET endpoint that aggregates User details, links, projects, experiences, and certificates.
-          </p>
-
-          <h3 id="base-url" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> API Base URL
-          </h3>
-          <div className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] p-4">
-            <code className="text-sm font-semibold text-[var(--accent)]">
-              https://api.portos.dev/api
-            </code>
-          </div>
-        </div>
-      ),
-    },
-    "api-authentication": {
-      id: "api-authentication",
-      title: "API Authentication",
-      category: "Public API Docs",
-      headings: [
-        { id: "header-auth", text: "Header Key Authorization" },
-        { id: "security-principles", text: "Security Principles" },
-      ],
-      content: (
-        <div className="space-y-6">
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            The Public API requires key validation to route portfolio parameters safely.
-          </p>
-
-          <h3 id="header-auth" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Header Key Authorization
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Requests must supply a valid key via the <code>x-api-key</code> request header.
-          </p>
-
-          <h3 id="security-principles" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Security Principles
-          </h3>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Keys generated have a configured rate limit and expiry date. If the key expires, the request returns a <code>401 Unauthorized</code> status and flags the key as inactive.
-          </p>
-        </div>
-      ),
-    },
-    "public-api-reference": {
-      id: "public-api-reference",
-      title: "Public API Reference",
-      category: "Public API Docs",
+    "fetching-data": {
+      id: "fetching-data",
+      title: "Fetching Your Data",
+      category: "Integrations & API",
       attributes: [
-        { name: "Endpoint", value: "GET /api/public" },
-        { name: "Format", value: "JSON" },
-        { name: "Auth Required", value: "Yes (x-api-key)" },
-        { name: "Rate Limit", value: "1,000 req/day" },
+        { name: "Public Endpoint", value: "GET /api/public" },
+        { name: "Authorization", value: "Header: x-api-key" },
+        { name: "Cache Strategy", value: "Redis Cache Layer Enabled" },
+        { name: "Format", value: "Application/JSON" },
       ],
       headings: [
         { id: "endpoint-details", text: "Endpoint Details" },
         { id: "request-headers", text: "Request Headers" },
         { id: "code-examples", text: "Code Examples" },
-        { id: "response-json", text: "Response JSON Schema" },
+        { id: "response-json", text: "JSON Payload Structure" },
       ],
       content: (
         <div className="space-y-6">
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Query your aggregated developer profile details securely using our public endpoints.
+          </p>
+
           <h3 id="endpoint-details" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Endpoint Details
           </h3>
@@ -705,9 +510,6 @@ function Documentation() {
               /api/public
             </code>
           </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Returns details about the profile, certificates, experience items, and projects connected to the authorized API key owner.
-          </p>
 
           <h3 id="request-headers" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Request Headers
@@ -726,7 +528,7 @@ function Documentation() {
                 <tr className="border-b border-[var(--border-color)]">
                   <td className="p-3 font-semibold text-[var(--accent)]">x-api-key</td>
                   <td className="p-3 text-[var(--text-secondary)]">String</td>
-                  <td className="p-3 text-[var(--text-muted)]">The API Key generated in your admin dashboard panel.</td>
+                  <td className="p-3 text-[var(--text-muted)]">The active API Key generated in your admin dashboard.</td>
                   <td className="p-3 text-red-500 font-bold">Yes</td>
                 </tr>
               </tbody>
@@ -789,7 +591,7 @@ function Documentation() {
           </div>
 
           <h3 id="response-json" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Response JSON Schema
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> JSON Payload Structure
           </h3>
           <div className="relative overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-tertiary)]">
             <div className="flex h-10 items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 text-xs font-semibold text-[var(--text-muted)]">
@@ -804,15 +606,59 @@ function Documentation() {
                   </>
                 ) : (
                   <>
-                    <Copy size={12} /> Copy Code
+                    <Copy size={12} /> Copy Payload
                   </>
                 )}
               </button>
             </div>
-            <pre className="max-h-[300px] overflow-y-auto p-4 overflow-x-auto text-[11px] font-mono leading-relaxed text-[var(--text-primary)]">
+            <pre className="max-h-[350px] overflow-y-auto p-4 overflow-x-auto text-[11px] font-mono leading-relaxed text-[var(--text-primary)]">
               {responseJson}
             </pre>
           </div>
+        </div>
+      ),
+    },
+    "analytics-dashboard": {
+      id: "analytics-dashboard",
+      title: "Analytics & Tracking",
+      category: "Analytics",
+      attributes: [
+        { name: "Primary Views Log", value: "Page views & Unique visitors" },
+        { name: "Geolocation Map", value: "Visitor country distribution chart" },
+        { name: "Device Statistics", value: "Browser & OS percentages" },
+        { name: "Outbound tracking", value: "Link clicks (GitHub/Demo)" },
+      ],
+      headings: [
+        { id: "visitor-stats", text: "Visitor Metrics & Page Views" },
+        { id: "geography-metrics", text: "Geographic Heatmaps" },
+        { id: "engagement-events", text: "Link Click Event Tracking" },
+      ],
+      content: (
+        <div className="space-y-6">
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Gain immediate visibility into who is visiting your portfolio, which projects they review, and where they click.
+          </p>
+
+          <h3 id="visitor-stats" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Visitor Metrics &amp; Page Views
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            The **Dashboard Overview** displays real-time visitor stats. Analyze total visual hits, filter unique daily visits, and view timelines showing weekly traffic trends.
+          </p>
+
+          <h3 id="geography-metrics" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Geographic Heatmaps
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            PortOS includes IP geolocation parsing. Our analytics dashboard maps visitor IPs to their country of origin and showcases distribution metrics, allowing you to see which global regions visit your portfolio.
+          </p>
+
+          <h3 id="engagement-events" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Link Click Event Tracking
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Track outbound links instantly. We record click actions when a user opens your GitHub repositories, clicks "Live Demo" links, or submits contact info. This event log gives you direct insight into which projects attract the most engagement.
+          </p>
         </div>
       ),
     },
@@ -823,23 +669,19 @@ function Documentation() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activePageData = pages[selectedPage] || pages["project-overview"];
+  const activePageData = pages[selectedPage] || pages["system-overview"];
 
   // Filter sections for Search Modal
   const allDocLinks = [
-    { id: "project-overview", title: "Project Overview", category: "Getting Started" },
-    { id: "system-architecture", title: "System Architecture", category: "Getting Started" },
-    { id: "github-oauth", title: "GitHub OAuth Authentication", category: "Getting Started" },
-    { id: "database-schema", title: "Database Schema Models", category: "Getting Started" },
-    { id: "frontend-stack", title: "Frontend Stack", category: "Frontend Docs" },
-    { id: "routing-auth", title: "Routing & Authentication", category: "Frontend Docs" },
-    { id: "theme-config", title: "Theme Configuration", category: "Frontend Docs" },
-    { id: "express-server", title: "Express Server Setup", category: "Backend Docs" },
-    { id: "redis-cache-layer", title: "Redis Cache Layer", category: "Backend Docs" },
-    { id: "bullmq-worker", title: "BullMQ Worker Queue", category: "Backend Docs" },
-    { id: "getting-started-api", title: "Getting Started (API)", category: "Public API Docs" },
-    { id: "api-authentication", title: "API Authentication", category: "Public API Docs" },
-    { id: "public-api-reference", title: "Public API Reference", category: "Public API Docs" },
+    { id: "system-overview", title: "System Overview", category: "Getting Started" },
+    { id: "how-to-start", title: "How to Start", category: "Getting Started" },
+    { id: "profile-socials", title: "Profile & Social Links", category: "Core Features" },
+    { id: "project-showcase", title: "Project Showcase", category: "Core Features" },
+    { id: "experience-history", title: "Experience & History", category: "Core Features" },
+    { id: "certifications", title: "Certifications", category: "Core Features" },
+    { id: "managing-api-keys", title: "Managing API Keys", category: "Integrations & API" },
+    { id: "fetching-data", title: "Fetching Your Data", category: "Integrations & API" },
+    { id: "analytics-dashboard", title: "Analytics & Tracking", category: "Analytics" },
   ];
 
   const filteredLinks = allDocLinks.filter(
@@ -882,7 +724,7 @@ function Documentation() {
               P
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold leading-tight">PortOS Docs</h1>
+              <h1 className="text-sm font-semibold leading-tight">PortOS User Docs</h1>
               <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)] font-bold">
                 Guides, Explanations &amp; References
               </p>
@@ -938,10 +780,10 @@ function Documentation() {
           <div className="space-y-6">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                Project Documentation
+                PortOS User Guide
               </p>
               <span className="text-[11px] text-[var(--text-muted)] block mt-0.5">
-                Guides, Explanations &amp; References
+                Features &amp; Settings Walkthroughs
               </span>
             </div>
 
@@ -956,7 +798,7 @@ function Documentation() {
                 >
                   <span className="flex items-center gap-2.5">
                     <BookOpen size={16} className="text-[var(--text-muted)]" />
-                    Overview Docs
+                    Getting Started
                   </span>
                   <ChevronDown
                     size={14}
@@ -968,203 +810,163 @@ function Documentation() {
                 {folders.overview && (
                   <div className="ml-5 mt-1 border-l border-[var(--border-color)] pl-3 space-y-1 animate-fade-in-up">
                     <button
-                      onClick={() => handlePageSelect("project-overview")}
+                      onClick={() => handlePageSelect("system-overview")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "project-overview"
+                        selectedPage === "system-overview"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Project Overview
+                      <FileText size={12} /> System Overview
                     </button>
                     <button
-                      onClick={() => handlePageSelect("system-architecture")}
+                      onClick={() => handlePageSelect("how-to-start")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "system-architecture"
+                        selectedPage === "how-to-start"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> System Architecture
-                    </button>
-                    <button
-                      onClick={() => handlePageSelect("database-schema")}
-                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "database-schema"
-                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                      }`}
-                    >
-                      <FileText size={12} /> Database Schema
-                    </button>
-                    <button
-                      onClick={() => handlePageSelect("github-oauth")}
-                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "github-oauth"
-                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                      }`}
-                    >
-                      <FileText size={12} /> GitHub Auth Flow
+                      <FileText size={12} /> How to Start
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Category: Frontend Folder */}
+              {/* Category: Core Features Folder */}
               <div>
                 <button
-                  onClick={() => toggleFolder("frontend")}
+                  onClick={() => toggleFolder("features")}
                   className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--accent-light)] transition-all"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Code size={16} className="text-[var(--text-muted)]" />
-                    Frontend
+                    <User size={16} className="text-[var(--text-muted)]" />
+                    Core Features
                   </span>
                   <ChevronDown
                     size={14}
                     className={`text-[var(--text-muted)] transition-transform duration-200 ${
-                      folders.frontend ? "" : "-rotate-90"
+                      folders.features ? "" : "-rotate-90"
                     }`}
                   />
                 </button>
-                {folders.frontend && (
+                {folders.features && (
                   <div className="ml-5 mt-1 border-l border-[var(--border-color)] pl-3 space-y-1 animate-fade-in-up">
                     <button
-                      onClick={() => handlePageSelect("frontend-stack")}
+                      onClick={() => handlePageSelect("profile-socials")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "frontend-stack"
+                        selectedPage === "profile-socials"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Frontend Stack
+                      <FileText size={12} /> Profile &amp; Socials
                     </button>
                     <button
-                      onClick={() => handlePageSelect("routing-auth")}
+                      onClick={() => handlePageSelect("project-showcase")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "routing-auth"
+                        selectedPage === "project-showcase"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Routing &amp; Auth
+                      <FileText size={12} /> Project Showcase
                     </button>
                     <button
-                      onClick={() => handlePageSelect("theme-config")}
+                      onClick={() => handlePageSelect("experience-history")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "theme-config"
+                        selectedPage === "experience-history"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Theme Config
+                      <FileText size={12} /> Experience &amp; History
+                    </button>
+                    <button
+                      onClick={() => handlePageSelect("certifications")}
+                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
+                        selectedPage === "certifications"
+                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
+                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                      }`}
+                    >
+                      <FileText size={12} /> Certifications
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Category: Backend Folder */}
+              {/* Category: Integrations & API Folder */}
               <div>
                 <button
-                  onClick={() => toggleFolder("backend")}
+                  onClick={() => toggleFolder("integrations")}
                   className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--accent-light)] transition-all"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Server size={16} className="text-[var(--text-muted)]" />
-                    Backend &amp; Server
+                    <Key size={16} className="text-[var(--text-muted)]" />
+                    Integrations &amp; API
                   </span>
                   <ChevronDown
                     size={14}
                     className={`text-[var(--text-muted)] transition-transform duration-200 ${
-                      folders.backend ? "" : "-rotate-90"
+                      folders.integrations ? "" : "-rotate-90"
                     }`}
                   />
                 </button>
-                {folders.backend && (
+                {folders.integrations && (
                   <div className="ml-5 mt-1 border-l border-[var(--border-color)] pl-3 space-y-1 animate-fade-in-up">
                     <button
-                      onClick={() => handlePageSelect("express-server")}
+                      onClick={() => handlePageSelect("managing-api-keys")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "express-server"
+                        selectedPage === "managing-api-keys"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Express Setup
+                      <FileText size={12} /> Managing API Keys
                     </button>
                     <button
-                      onClick={() => handlePageSelect("redis-cache-layer")}
+                      onClick={() => handlePageSelect("fetching-data")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "redis-cache-layer"
+                        selectedPage === "fetching-data"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Redis Caching
-                    </button>
-                    <button
-                      onClick={() => handlePageSelect("bullmq-worker")}
-                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "bullmq-worker"
-                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                      }`}
-                    >
-                      <FileText size={12} /> BullMQ Worker
+                      <FileText size={12} /> Fetching Your Data
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Category: Public API Folder */}
+              {/* Category: Analytics Folder */}
               <div>
                 <button
-                  onClick={() => toggleFolder("publicApi")}
+                  onClick={() => toggleFolder("analytics")}
                   className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--accent-light)] transition-all"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Globe size={16} className="text-[var(--text-muted)]" />
-                    Public API Docs
+                    <Eye size={16} className="text-[var(--text-muted)]" />
+                    Analytics &amp; Metrics
                   </span>
                   <ChevronDown
                     size={14}
                     className={`text-[var(--text-muted)] transition-transform duration-200 ${
-                      folders.publicApi ? "" : "-rotate-90"
+                      folders.analytics ? "" : "-rotate-90"
                     }`}
                   />
                 </button>
-                {folders.publicApi && (
+                {folders.analytics && (
                   <div className="ml-5 mt-1 border-l border-[var(--border-color)] pl-3 space-y-1 animate-fade-in-up">
                     <button
-                      onClick={() => handlePageSelect("getting-started-api")}
+                      onClick={() => handlePageSelect("analytics-dashboard")}
                       className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "getting-started-api"
+                        selectedPage === "analytics-dashboard"
                           ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
                           : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
                       }`}
                     >
-                      <FileText size={12} /> Getting Started (API)
-                    </button>
-                    <button
-                      onClick={() => handlePageSelect("api-authentication")}
-                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "api-authentication"
-                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                      }`}
-                    >
-                      <FileText size={12} /> Authentication
-                    </button>
-                    <button
-                      onClick={() => handlePageSelect("public-api-reference")}
-                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
-                        selectedPage === "public-api-reference"
-                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
-                      }`}
-                    >
-                      <FileText size={12} /> Public API Reference
+                      <FileText size={12} /> Analytics Dashboard
                     </button>
                   </div>
                 )}
