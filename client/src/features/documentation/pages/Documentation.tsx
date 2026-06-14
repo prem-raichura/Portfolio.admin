@@ -5,11 +5,8 @@ import {
   ArrowLeft,
   Sun,
   Moon,
-  Code,
   Copy,
   Check,
-  Server,
-  Globe,
   ChevronDown,
   FileText,
   Search,
@@ -17,16 +14,10 @@ import {
   Info,
   AlertTriangle,
   ArrowUpRight,
-  ChevronRight,
   Settings,
   User,
-  Briefcase,
-  Award,
   Key,
   Eye,
-  TrendingUp,
-  MapPin,
-  Laptop,
 } from "lucide-react";
 
 // Types for Navigation & Sections
