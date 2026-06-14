@@ -1,9 +1,7 @@
 import {
   ArrowRight,
-  Database,
   Moon,
   Sun,
-  Activity,
   Briefcase,
   Award,
   Eye,
@@ -33,13 +31,6 @@ function App() {
     setLoading(true);
     setTimeout(() => navigate(path), 700);
   };
-
-  interface LogEvent {
-    text: string;
-    type: string;
-    msg: string;
-    node: string;
-  }
 
   const [views, setViews] = useState(24512);
 
@@ -212,67 +203,39 @@ function App() {
               <button
                 onClick={() => handleNavigation("/documentation")}
                 className="
-                  rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]
-                  px-6 py-3 text-sm font-semibold
-                  transition-all duration-300
-                  hover:border-[var(--accent)] hover:bg(--accent-light)
+                  flex items-center justify-center gap-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold transition-all duration-300 hover:bg-[var(--accent-light)] hover:border-[var(--accent)] hover:-translate-y-0.5
                 "
               >
-                Documentation
+                Documentation <ArrowRight size={16} />
               </button>
             </div>
           </div>
 
-          {/* ── RIGHT — Live API Data Pipeline & Logs Animation ── */}
-          <div className="animate-fade-in-up animate-delay-2">
-            <style>{`
-              @keyframes flow-line {
-                0% { background-position: 200% 0; }
-                100% { background-position: 0% 0; }
-              }
-              .flow-active {
-                background: linear-gradient(90deg, var(--border-color), var(--accent), var(--border-color));
-                background-size: 200% 100%;
-                animation: flow-line 1.2s linear infinite;
-              }
-              .pulse-glow-redis {
-                box-shadow: 0 0 20px rgba(16, 185, 129, 0.55);
-                border-color: #10b981 !important;
-                background-color: rgba(16, 185, 129, 0.08) !important;
-              }
-              .pulse-glow-postgres {
-                box-shadow: 0 0 20px rgba(129, 140, 248, 0.55);
-                border-color: var(--accent) !important;
-                background-color: var(--accent-light) !important;
-              }
-              .pulse-glow-bullmq {
-                box-shadow: 0 0 20px rgba(245, 158, 11, 0.55);
-                border-color: #f59e0b !important;
-                background-color: rgba(245, 158, 11, 0.08) !important;
-              }
-            `}</style>
-
-          {/* ── RIGHT — Interactive Showcase Animation ── */}
-          <div className="animate-fade-in-up animate-delay-2 relative">
+          {/* ── RIGHT ── */}
+          <div className="animate-fade-in-up animate-delay-2 relative flex items-center justify-center min-h-[460px] w-full">
             <style>{`
               @keyframes float-p1 {
                 0% { transform: translateY(0px) rotate(-1.5deg); }
-                50% { transform: translateY(-12px) rotate(1.5deg); }
+                50% { transform: translateY(-10px) rotate(1deg); }
                 100% { transform: translateY(0px) rotate(-1.5deg); }
               }
               @keyframes float-p2 {
                 0% { transform: translateY(0px) rotate(2deg); }
-                50% { transform: translateY(-16px) rotate(-2deg); }
+                50% { transform: translateY(-14px) rotate(-2deg); }
                 100% { transform: translateY(0px) rotate(2deg); }
               }
               @keyframes float-p3 {
-                0% { transform: translateY(0px) rotate(-3deg); }
-                50% { transform: translateY(-8px) rotate(3deg); }
-                100% { transform: translateY(0px) rotate(-3deg); }
+                0% { transform: translateY(0px) rotate(-2deg); }
+                50% { transform: translateY(-8px) rotate(2deg); }
+                100% { transform: translateY(0px) rotate(-2deg); }
               }
-              @keyframes spin-slow {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+              @keyframes orbit-dot-1 {
+                0% { transform: translate(-50%, -50%) rotate(0deg) translate(150px) rotate(0deg); }
+                100% { transform: translate(-50%, -50%) rotate(360deg) translate(150px) rotate(-360deg); }
+              }
+              @keyframes orbit-dot-2 {
+                0% { transform: translate(-50%, -50%) rotate(180deg) translate(210px) rotate(-180deg); }
+                100% { transform: translate(-50%, -50%) rotate(-180deg) translate(210px) rotate(180deg); }
               }
               .float-card-1 {
                 animation: float-p1 5s ease-in-out infinite;
@@ -283,14 +246,65 @@ function App() {
               .float-card-3 {
                 animation: float-p3 4.5s ease-in-out infinite;
               }
-              .spin-slow {
-                animation: spin-slow 12s linear infinite;
+              .orbit-track-1 {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 300px;
+                height: 300px;
+                border: 1px dashed var(--border-color);
+                border-radius: 50%;
+                pointer-events: none;
+                opacity: 0.45;
+              }
+              .orbit-track-2 {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 420px;
+                height: 420px;
+                border: 1px dashed var(--border-color);
+                border-radius: 50%;
+                pointer-events: none;
+                opacity: 0.25;
+              }
+              .orbit-pulse-dot-1 {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: var(--accent);
+                box-shadow: 0 0 12px var(--accent);
+                animation: orbit-dot-1 12s linear infinite;
+              }
+              .orbit-pulse-dot-2 {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: #fbbf24;
+                box-shadow: 0 0 10px #fbbf24;
+                animation: orbit-dot-2 18s linear infinite;
               }
             `}</style>
 
+            {/* Concentric Orbit Paths */}
+            <div className="orbit-track-1" />
+            <div className="orbit-track-2" />
+            
+            {/* Glowing Orbit Dots */}
+            <div className="orbit-pulse-dot-1" />
+            <div className="orbit-pulse-dot-2" />
+
             {/* Central Desktop Frame Mockup */}
             <div
-              className="relative min-h-[380px] rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-xl)] flex flex-col justify-between overflow-hidden"
+              className="relative w-full max-w-[480px] min-h-[420px] rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-xl)] flex flex-col justify-between overflow-hidden z-10"
             >
               {/* Inner glowing core */}
               <div
@@ -318,7 +332,7 @@ function App() {
                   <div className="h-full w-full rounded-full bg-[var(--bg-card)] flex items-center justify-center text-[var(--accent)] font-extrabold text-xl animate-pulse">
                     JD
                   </div>
-                  <Sparkles size={16} className="absolute -top-1 -right-1 text-amber-400 spin-slow" />
+                  <Sparkles size={16} className="absolute -top-1 -right-1 text-amber-400 animate-pulse" />
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-[var(--text-primary)]">Jane Doe</h3>
@@ -349,7 +363,7 @@ function App() {
 
               {/* FLOATING CARD 1: Projects (Top Left) */}
               <div
-                className="absolute top-12 -left-6 z-10 w-40 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-1 backdrop-blur-md"
+                className="absolute top-12 -left-12 z-20 w-40 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-1 backdrop-blur-md"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
@@ -364,7 +378,7 @@ function App() {
 
               {/* FLOATING CARD 2: Certificates Badge (Bottom Left) */}
               <div
-                className="absolute bottom-16 -left-8 z-10 w-36 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-2 backdrop-blur-md"
+                className="absolute bottom-16 -left-10 z-20 w-36 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-2 backdrop-blur-md"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
@@ -379,7 +393,7 @@ function App() {
 
               {/* FLOATING CARD 3: Analytics / Eye View Tracker (Top Right) */}
               <div
-                className="absolute top-8 -right-4 z-10 w-36 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-3 backdrop-blur-md"
+                className="absolute top-8 -right-10 z-20 w-36 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-3 backdrop-blur-md"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
@@ -395,7 +409,6 @@ function App() {
               </div>
 
             </div>
-          </div>
           </div>
         </main>
       </div>
