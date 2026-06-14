@@ -216,6 +216,7 @@ function App() {
 
               {/* Secondary */}
               <button
+                onClick={() => handleNavigation("/documentation")}
                 className="
                   rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]
                   px-6 py-3 text-sm font-semibold

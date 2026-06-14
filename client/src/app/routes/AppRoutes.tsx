@@ -38,6 +38,8 @@ import ApiKeys from "@features/apiKeys/pages/ApiKeys";
 
 import Bin from "@features/bin/pages/Bin";
 
+import Documentation from "@features/documentation/pages/Documentation";
+
 import ProtectedRoute from "@app/routes/ProtectedRoute";
 
 import NotFound from "@app/pages/NotFound";
@@ -55,6 +57,11 @@ function AppRoutes() {
         <Route
           path="/"
           element={<Landing />}
+        />
+
+        <Route
+          path="/documentation"
+          element={<Documentation />}
         />
 
         <Route
