@@ -242,6 +242,67 @@ function Documentation() {
         </div>
       ),
     },
+    "github-oauth": {
+      id: "github-oauth",
+      title: "GitHub OAuth Authentication",
+      category: "Getting Started",
+      attributes: [
+        { name: "OAuth Provider", value: "GitHub" },
+        { name: "Scope Required", value: "read:user user:email" },
+        { name: "Token Type", value: "Bearer (JWT) & HTTP-Only Refresh" },
+        { name: "Session Validity", value: "7 Days" },
+      ],
+      headings: [
+        { id: "oauth-overview", text: "OAuth Overview" },
+        { id: "authentication-flow", text: "Authentication Flow" },
+        { id: "data-sync-mapping", text: "Data Synchronization" },
+      ],
+      content: (
+        <div className="space-y-6">
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            PortOS leverages GitHub OAuth to securely manage user authentication and create matching portfolio workspaces. By utilizing GitHub as our core identity provider, we bypass standard password risks and automatically sync your public github account link.
+          </p>
+
+          <h3 id="oauth-overview" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> OAuth Overview
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            When a developer clicks "Get Started" or logs in, the client directs the browser to the backend server authentication route. This initiates the handshake protocol directly with GitHub's authorization server.
+          </p>
+
+          <h3 id="authentication-flow" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Authentication Flow
+          </h3>
+          <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3 shadow-sm text-sm">
+            <p className="font-bold text-[var(--text-primary)]">Handshake Progression:</p>
+            <ol className="list-decimal pl-5 space-y-2.5 text-xs text-[var(--text-secondary)]">
+              <li>
+                <strong>Initialize Request:</strong> Frontend queries <code>GET /api/auth/github</code>. The server generates a random <code>state</code> cookie to prevent CSRF attacks and redirects the browser to GitHub with parameters: client ID, state, scopes (<code>read:user user:email</code>), and client callback URI.
+              </li>
+              <li>
+                <strong>User Authorization:</strong> The user reviews requested scopes on GitHub and confirms consent. GitHub redirects the client browser back to our server callback: <code>GET /api/auth/github/callback?code=CODE&state=STATE</code>.
+              </li>
+              <li>
+                <strong>State &amp; Token Validation:</strong> The server asserts that the returning state matches the state stored in the secure cookie. If correct, the server requests an access token from GitHub using the code and secret environment variables.
+              </li>
+              <li>
+                <strong>Profile Registration:</strong> Using the token, the backend requests user details and emails from GitHub. It locates the primary verified email and matching user record in our database.
+              </li>
+              <li>
+                <strong>Session Issuance:</strong> An Access Token (JWT) is generated and returned to the client in the redirect URL parameters. A secure, HTTP-only Refresh Token is cookies under sameSite policy.
+              </li>
+            </ol>
+          </div>
+
+          <h3 id="data-sync-mapping" className="text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-color)] pb-2 scroll-mt-20 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" /> Data Synchronization
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            During the callback mapping phase, the server automatically updates the user's links metadata with their public GitHub path (<code>https://github.com/username</code>) and registers their profile image on Cloudinary to prevent broken image referrers.
+          </p>
+        </div>
+      ),
+    },
     "database-schema": {
       id: "database-schema",
       title: "Database Schema Models",
@@ -768,6 +829,7 @@ function Documentation() {
   const allDocLinks = [
     { id: "project-overview", title: "Project Overview", category: "Getting Started" },
     { id: "system-architecture", title: "System Architecture", category: "Getting Started" },
+    { id: "github-oauth", title: "GitHub OAuth Authentication", category: "Getting Started" },
     { id: "database-schema", title: "Database Schema Models", category: "Getting Started" },
     { id: "frontend-stack", title: "Frontend Stack", category: "Frontend Docs" },
     { id: "routing-auth", title: "Routing & Authentication", category: "Frontend Docs" },
@@ -934,6 +996,16 @@ function Documentation() {
                       }`}
                     >
                       <FileText size={12} /> Database Schema
+                    </button>
+                    <button
+                      onClick={() => handlePageSelect("github-oauth")}
+                      className={`flex w-full items-center gap-2 rounded-lg py-1.5 px-2.5 text-xs text-left transition-all ${
+                        selectedPage === "github-oauth"
+                          ? "bg-[var(--accent-light)] text-[var(--accent)] font-bold"
+                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
+                      }`}
+                    >
+                      <FileText size={12} /> GitHub Auth Flow
                     </button>
                   </div>
                 )}
