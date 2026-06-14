@@ -1,11 +1,14 @@
 import {
   ArrowRight,
-  BarChart3,
-  BriefcaseBusiness,
   Database,
   Moon,
-  ShieldCheck,
   Sun,
+  Activity,
+  Briefcase,
+  Award,
+  Eye,
+  TrendingUp,
+  Sparkles,
 } from "lucide-react";
 
 import { useTheme } from "next-themes";
@@ -31,30 +34,21 @@ function App() {
     setTimeout(() => navigate(path), 700);
   };
 
-  const stats = [
-    { icon: <BarChart3 size={22} />,       value: "24.8K", label: "Portfolio Views" },
-    { icon: <ShieldCheck size={22} />,     value: "12.4K", label: "API Requests"    },
-    { icon: <BriefcaseBusiness size={22}/>,value: "48",    label: "Projects Added"  },
-    { icon: <Database size={22} />,        value: "99.9%", label: "System Health"   },
-  ];
+  interface LogEvent {
+    text: string;
+    type: string;
+    msg: string;
+    node: string;
+  }
 
-  /* Gradient colours to cycle through stat icon containers */
-  const statGrads = [
-    "linear-gradient(135deg,#6366f1,#8b5cf6)",
-    "linear-gradient(135deg,#3b82f6,#6366f1)",
-    "linear-gradient(135deg,#10b981,#059669)",
-    "linear-gradient(135deg,#f59e0b,#ef4444)",
-  ];
+  const [views, setViews] = useState(24512);
 
-  /* Bar heights for the mini chart */
-  const bars = [
-    { h: "h-24", active: true  },
-    { h: "h-16", active: false },
-    { h: "h-40", active: true  },
-    { h: "h-20", active: false },
-    { h: "h-32", active: true  },
-    { h: "h-14", active: false },
-  ];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setViews((prev) => prev + Math.floor(Math.random() * 3) + 1);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -221,7 +215,7 @@ function App() {
                   rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)]
                   px-6 py-3 text-sm font-semibold
                   transition-all duration-300
-                  hover:border-[var(--accent)] hover:bg-[var(--accent-light)]
+                  hover:border-[var(--accent)] hover:bg(--accent-light)
                 "
               >
                 Documentation
@@ -229,101 +223,179 @@ function App() {
             </div>
           </div>
 
-          {/* ── RIGHT — Dashboard preview card ── */}
+          {/* ── RIGHT — Live API Data Pipeline & Logs Animation ── */}
           <div className="animate-fade-in-up animate-delay-2">
+            <style>{`
+              @keyframes flow-line {
+                0% { background-position: 200% 0; }
+                100% { background-position: 0% 0; }
+              }
+              .flow-active {
+                background: linear-gradient(90deg, var(--border-color), var(--accent), var(--border-color));
+                background-size: 200% 100%;
+                animation: flow-line 1.2s linear infinite;
+              }
+              .pulse-glow-redis {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.55);
+                border-color: #10b981 !important;
+                background-color: rgba(16, 185, 129, 0.08) !important;
+              }
+              .pulse-glow-postgres {
+                box-shadow: 0 0 20px rgba(129, 140, 248, 0.55);
+                border-color: var(--accent) !important;
+                background-color: var(--accent-light) !important;
+              }
+              .pulse-glow-bullmq {
+                box-shadow: 0 0 20px rgba(245, 158, 11, 0.55);
+                border-color: #f59e0b !important;
+                background-color: rgba(245, 158, 11, 0.08) !important;
+              }
+            `}</style>
+
+          {/* ── RIGHT — Interactive Showcase Animation ── */}
+          <div className="animate-fade-in-up animate-delay-2 relative">
+            <style>{`
+              @keyframes float-p1 {
+                0% { transform: translateY(0px) rotate(-1.5deg); }
+                50% { transform: translateY(-12px) rotate(1.5deg); }
+                100% { transform: translateY(0px) rotate(-1.5deg); }
+              }
+              @keyframes float-p2 {
+                0% { transform: translateY(0px) rotate(2deg); }
+                50% { transform: translateY(-16px) rotate(-2deg); }
+                100% { transform: translateY(0px) rotate(2deg); }
+              }
+              @keyframes float-p3 {
+                0% { transform: translateY(0px) rotate(-3deg); }
+                50% { transform: translateY(-8px) rotate(3deg); }
+                100% { transform: translateY(0px) rotate(-3deg); }
+              }
+              @keyframes spin-slow {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              .float-card-1 {
+                animation: float-p1 5s ease-in-out infinite;
+              }
+              .float-card-2 {
+                animation: float-p2 6s ease-in-out infinite;
+              }
+              .float-card-3 {
+                animation: float-p3 4.5s ease-in-out infinite;
+              }
+              .spin-slow {
+                animation: spin-slow 12s linear infinite;
+              }
+            `}</style>
+
+            {/* Central Desktop Frame Mockup */}
             <div
-              className="relative overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 lg:p-7"
-              style={{ boxShadow: "var(--shadow-xl)" }}
+              className="relative min-h-[380px] rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-xl)] flex flex-col justify-between overflow-hidden"
             >
-              {/* Gradient top stripe */}
+              {/* Inner glowing core */}
               <div
-                className="absolute top-0 left-0 right-0 h-[3px]"
-                style={{ background: "linear-gradient(90deg, var(--grad-start), var(--grad-end))" }}
+                className="pointer-events-none absolute inset-0 opacity-15"
+                style={{
+                  background: "radial-gradient(circle at 50% 50%, var(--accent), transparent 60%)",
+                }}
               />
 
-              {/* Inner glow */}
-              <div
-                className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full opacity-20"
-                style={{ background: "radial-gradient(circle, var(--accent), transparent 70%)" }}
-              />
-
-              {/* Card header */}
-              <div className="relative mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-semibold text-[var(--text-primary)]">
-                    Dashboard Overview
-                  </h2>
-                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                    Monitor your portfolio infrastructure
-                  </p>
-                </div>
-
-                <span
-                  className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
-                  style={{
-                    background: "var(--success-light)",
-                    color:      "var(--success)",
-                  }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "var(--success)" }} />
-                  Live
+              {/* Window Controls */}
+              <div className="flex items-center gap-1.5 border-b border-[var(--border-color)] pb-3">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+                <span className="ml-2 text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
+                  portos-app.com
                 </span>
               </div>
 
-              {/* Stats grid */}
-              <div className="relative grid grid-cols-2 gap-3">
-                {stats.map((item, i) => (
-                  <div
-                    key={i}
-                    className="
-                      rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)]
-                      p-4 transition-all duration-300
-                      hover:-translate-y-1 hover:border-[var(--border-accent)]
-                    "
-                    style={{ boxShadow: "var(--shadow-sm)" }}
-                  >
-                    {/* Icon */}
-                    <div
-                      className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl text-white"
-                      style={{
-                        background: statGrads[i],
-                        boxShadow:  `0 4px 12px rgba(99,102,241,0.25)`,
-                      }}
-                    >
-                      {item.icon}
-                    </div>
-                    <h3 className="text-2xl font-bold text-[var(--text-primary)]">
-                      {item.value}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                      {item.label}
-                    </p>
+              {/* Main Core Profile Screen */}
+              <div className="my-auto py-6 flex flex-col items-center text-center space-y-3">
+                <div
+                  className="relative h-16 w-16 rounded-full p-1 bg-gradient-to-tr from-[var(--grad-start)] to-[var(--grad-end)] shadow-md"
+                >
+                  <div className="h-full w-full rounded-full bg-[var(--bg-card)] flex items-center justify-center text-[var(--accent)] font-extrabold text-xl animate-pulse">
+                    JD
                   </div>
-                ))}
-              </div>
-
-              {/* Mini bar chart */}
-              <div
-                className="relative mt-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4"
-              >
-                <p className="mb-3 text-xs font-medium text-[var(--text-muted)]">
-                  Weekly Traffic
-                </p>
-                <div className="flex h-36 items-end gap-2">
-                  {bars.map((bar, i) => (
-                    <div
-                      key={i}
-                      className={`${bar.h} flex-1 rounded-xl transition-all duration-300 hover:opacity-80`}
-                      style={
-                        bar.active
-                          ? { background: "linear-gradient(180deg, var(--grad-start), var(--grad-end))", boxShadow: "0 4px 12px var(--accent-glow)" }
-                          : { background: "var(--bg-tertiary)" }
-                      }
-                    />
-                  ))}
+                  <Sparkles size={16} className="absolute -top-1 -right-1 text-amber-400 spin-slow" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-[var(--text-primary)]">Jane Doe</h3>
+                  <p className="text-xs text-[var(--text-secondary)] font-medium">Software Engineer</p>
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-1 text-[10px] text-[var(--text-muted)] font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)] animate-pulse" /> Available for projects
                 </div>
               </div>
+
+              {/* Animated Path Chart at Bottom */}
+              <div className="w-full h-12 overflow-hidden border-t border-[var(--border-color)] pt-3 relative">
+                <span className="absolute left-0 top-3 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Live Traffic
+                </span>
+                <svg className="w-full h-full text-[var(--accent)]" viewBox="0 0 300 50">
+                  <path
+                    d="M0 40 C 50 10, 70 30, 100 20 C 130 10, 150 40, 180 30 C 210 20, 240 10, 300 35"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    className="animate-pulse"
+                    style={{ strokeDasharray: "300", strokeDashoffset: "0" }}
+                  />
+                </svg>
+              </div>
+
+              {/* FLOATING CARD 1: Projects (Top Left) */}
+              <div
+                className="absolute top-12 -left-6 z-10 w-40 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-1 backdrop-blur-md"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
+                    <Briefcase size={14} />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] font-extrabold text-[var(--text-primary)]">PortOS CLI</h4>
+                    <p className="text-[8px] text-[var(--text-muted)] font-medium">Vite + React</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* FLOATING CARD 2: Certificates Badge (Bottom Left) */}
+              <div
+                className="absolute bottom-16 -left-8 z-10 w-36 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-2 backdrop-blur-md"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                    <Award size={14} />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] font-extrabold text-[var(--text-primary)]">AWS Solutions</h4>
+                    <p className="text-[8px] text-[var(--text-muted)] font-medium">Certified</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* FLOATING CARD 3: Analytics / Eye View Tracker (Top Right) */}
+              <div
+                className="absolute top-8 -right-4 z-10 w-36 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3 shadow-[var(--shadow-md)] float-card-3 backdrop-blur-md"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                    <Eye size={14} />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] font-extrabold text-[var(--text-primary)]">{views.toLocaleString()}</h4>
+                    <p className="text-[8px] text-[var(--text-muted)] font-medium flex items-center gap-0.5">
+                      <TrendingUp size={10} className="text-emerald-500" /> Active views
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             </div>
+          </div>
           </div>
         </main>
       </div>
