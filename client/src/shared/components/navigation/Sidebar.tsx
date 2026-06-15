@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   Key,
+  Mail,
   Trash2,
   X,
 } from "lucide-react";
@@ -41,6 +42,11 @@ const NAV_ITEMS = [
     icon: <Key size={20} />,
     label: "API Keys",
     path: "/api-keys",
+  },
+  {
+    icon: <Mail size={20} />,
+    label: "Contacts",
+    path: "/contacts",
   },
 ];
 

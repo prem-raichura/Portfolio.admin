@@ -38,6 +38,8 @@ import ApiKeys from "@features/apiKeys/pages/ApiKeys";
 
 import Bin from "@features/bin/pages/Bin";
 
+import Contacts from "@features/contacts/pages/Contacts";
+
 import Documentation from "@features/documentation/pages/Documentation";
 
 import ProtectedRoute from "@app/routes/ProtectedRoute";
@@ -189,6 +191,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <ApiKeys />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/contacts"
+          element={
+            <ProtectedRoute>
+              <Contacts />
             </ProtectedRoute>
           }
         />

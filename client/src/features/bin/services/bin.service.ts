@@ -1,7 +1,12 @@
 import api from "@shared/lib/api";
 import { API_ROUTES } from "@shared/lib/apiRoutes";
 
-export type BinType = "project" | "experience" | "certificate" | "apiKey";
+export type BinType =
+  | "project"
+  | "experience"
+  | "certificate"
+  | "apiKey"
+  | "contact";
 
 export interface BinProject {
   id: number;
@@ -40,6 +45,16 @@ export interface BinApiKey {
   deleted_at: string;
 }
 
+export interface BinContact {
+  id: number;
+  name: string;
+  email: string;
+  subject: string | null;
+  message: string;
+  created_at: string;
+  deleted_at: string;
+}
+
 export interface BinResponse {
   success: boolean;
   bin: {
@@ -47,6 +62,7 @@ export interface BinResponse {
     experience: BinExperience[];
     certificates: BinCertificate[];
     apiKeys: BinApiKey[];
+    contacts: BinContact[];
   };
 }
 

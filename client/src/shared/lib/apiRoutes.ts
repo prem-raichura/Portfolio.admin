@@ -48,6 +48,13 @@ export const API_ROUTES = {
     summary: "/api/dashboard",
   },
 
+  contacts: {
+    /** GET — List all contact submissions for the authenticated user */
+    list: "/api/contacts",
+    /** GET — Single contact (auto-marks as read) | DELETE — Soft delete */
+    detail: (id: string | number) => `/api/contacts/${id}`,
+  },
+
   bin: {
     /** GET — All soft-deleted items grouped by type */
     list: "/api/bin",
