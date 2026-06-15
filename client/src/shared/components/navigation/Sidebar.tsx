@@ -1,5 +1,6 @@
 import {
   Award,
+  BookOpen,
   BriefcaseBusiness,
   FolderKanban,
   LayoutDashboard,
@@ -51,6 +52,11 @@ const NAV_ITEMS = [
     icon: <Mail size={20} />,
     label: "Contacts",
     path: "/contacts",
+  },
+  {
+    icon: <BookOpen size={20} />,
+    label: "Documentation",
+    path: "/documentation",
   },
 ];
 
