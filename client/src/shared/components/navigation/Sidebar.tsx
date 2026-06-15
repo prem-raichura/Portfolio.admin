@@ -190,7 +190,10 @@ function Sidebar({
 
           {/* Pin Documentation to the bottom of the nav so it sits flush
               against the divider that already separates Bin / Logout. */}
-          <div className="mt-auto">
+        </nav>
+
+        <div className="border-t border-[var(--border-color)] p-3 space-y-2">
+           <div className="mt-auto">
             <SidebarItem
               icon={DOCUMENTATION_ITEM.icon}
               label={DOCUMENTATION_ITEM.label}
@@ -204,9 +207,6 @@ function Sidebar({
               }}
             />
           </div>
-        </nav>
-
-        <div className="border-t border-[var(--border-color)] p-3 space-y-2">
           <button
             onClick={() => {
               navigate("/bin");
