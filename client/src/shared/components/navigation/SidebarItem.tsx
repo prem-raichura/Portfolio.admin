@@ -8,6 +8,7 @@ function SidebarItem({
   sidebarOpen,
   path,
   onClick,
+  badge,
 }: {
   icon:        ReactNode;
   label:       string;
@@ -15,6 +16,8 @@ function SidebarItem({
   sidebarOpen: boolean;
   path:        string;
   onClick?:    () => void;
+  /** Optional unread/notification count rendered next to the icon. */
+  badge?:      number;
 }) {
   const navigate = useNavigate();
 
@@ -46,18 +49,47 @@ function SidebarItem({
           : undefined
       }
     >
-      {/* Icon */}
+      {/* Icon (with optional collapsed-state badge dot) */}
       <span
-        className={`shrink-0 transition-all duration-200 ${
+        className={`relative shrink-0 transition-all duration-200 ${
           active ? "text-white" : ""
         }`}
       >
         {icon}
+        {badge !== undefined && badge > 0 && !sidebarOpen && (
+          <span
+            className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-white"
+            style={{
+              background: "var(--danger, #ef4444)",
+              boxShadow: "0 0 0 2px var(--bg-sidebar, var(--bg-main))",
+            }}
+          >
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
       </span>
 
       {/* Label */}
       {sidebarOpen && (
-        <span className="truncate">{label}</span>
+        <span className="flex flex-1 items-center justify-between gap-2 truncate">
+          <span className="truncate">{label}</span>
+          {badge !== undefined && badge > 0 && (
+            <span
+              className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                active ? "bg-white/25 text-white" : "text-white"
+              }`}
+              style={
+                active
+                  ? undefined
+                  : {
+                      background: "var(--danger, #ef4444)",
+                    }
+              }
+            >
+              {badge > 99 ? "99+" : badge}
+            </span>
+          )}
+        </span>
       )}
 
       {/* Active shimmer overlay */}

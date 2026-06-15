@@ -15,7 +15,11 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import { useEffect, useState } from "react";
+
 import SidebarItem from "./SidebarItem";
+
+import { getContacts } from "@features/contacts/services/contact.service";
 
 const NAV_ITEMS = [
   {
@@ -59,6 +63,26 @@ function Sidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [unreadContacts, setUnreadContacts] = useState(0);
+
+  // Refresh the unread badge on mount and whenever the route changes so that
+  // opening a contact (which marks it read on the server) reflects here too.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await getContacts();
+        if (!alive || !res.success) return;
+        const unread = res.contacts.filter((c) => !c.is_read).length;
+        setUnreadContacts(unread);
+      } catch {
+        // Stay silent — sidebar shouldn't toast for a background fetch.
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [location.pathname]);
 
   return (
     <>
@@ -146,6 +170,7 @@ function Sidebar({
                     : location.pathname === item.path
               }
               sidebarOpen={sidebarOpen}
+              badge={item.path === "/contacts" ? unreadContacts : undefined}
               onClick={() => {
                 if (window.innerWidth < 1024) {
                   setSidebarOpen(false);
