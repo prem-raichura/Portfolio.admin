@@ -17,7 +17,7 @@ import {
 
 import { isAxiosError } from "axios";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   deleteCertificate,
@@ -28,6 +28,7 @@ import DashboardLayout from "@layouts/DashboardLayout";
 import AchievementCard from "@shared/components/cards/AchievementCard";
 import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
+import { matchesSearchText, normalizeSearchText } from "@shared/lib/globalSearch";
 
 type CertificateType =
   | "achievement"
@@ -58,6 +59,14 @@ const isVisibleCertificate = (
 
 function Certificates() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+  const searchTerm = searchParams.get("q") || "";
+  const focusId = searchParams.get("focus") || "";
+  const routeType = searchParams.get("type") as TypeFilter | null;
 
   const [
     viewMode,
@@ -70,7 +79,9 @@ function Certificates() {
     activeTypeFilter,
     setActiveTypeFilter,
   ] = useState<TypeFilter>(
-    "all"
+    routeType === "achievement" || routeType === "certificate"
+      ? routeType
+      : "all"
   );
 
   const [
@@ -96,6 +107,7 @@ function Certificates() {
   ] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
+  const [highlightedCertificateId, setHighlightedCertificateId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -128,19 +140,63 @@ function Certificates() {
   const filteredCertificates =
     useMemo(
       () =>
-        certificates.filter(
-          (item) =>
-            activeTypeFilter ===
-            "all"
-              ? true
-              : item.type ===
-                activeTypeFilter
-        ),
+        certificates.filter((item) => {
+          if (normalizeSearchText(searchTerm)) {
+            const searchValue = [
+              item.title,
+              item.slug,
+              item.type,
+              item.issued_by || "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            if (!matchesSearchText(searchValue, searchTerm)) {
+              return false;
+            }
+          }
+
+          return activeTypeFilter === "all"
+            ? true
+            : item.type === activeTypeFilter;
+        }),
       [
         activeTypeFilter,
         certificates,
+        searchTerm,
       ]
     );
+
+  useEffect(() => {
+    if (routeType === "achievement" || routeType === "certificate") {
+      setActiveTypeFilter(routeType);
+      return;
+    }
+
+    if (!routeType) {
+      setActiveTypeFilter("all");
+    }
+  }, [routeType]);
+
+  useEffect(() => {
+    if (!focusId || filteredCertificates.length === 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const element = document.getElementById(focusId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedCertificateId(focusId);
+
+        window.setTimeout(() => {
+          setHighlightedCertificateId((current) => (current === focusId ? null : current));
+        }, 2200);
+      }
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [focusId, filteredCertificates.length, viewMode]);
 
   const getCertificateCoverImage = (
     certificate: Certificate
@@ -393,6 +449,11 @@ function Certificates() {
           <p className="mt-2 text-[var(--text-secondary)]">
             Manage your certificates and achievements.
           </p>
+          {searchTerm && (
+            <p className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-semibold text-[var(--accent)]">
+              Search results for "{searchTerm}"
+            </p>
+          )}
         </div>
 
         <button
@@ -550,10 +611,11 @@ function Certificates() {
           </h3>
 
           <p className="mt-2 text-[var(--text-secondary)]">
-            {activeTypeFilter ===
-            "all"
-              ? "Create your first certificate."
-              : `No ${activeTypeFilter} items yet.`}
+            {searchTerm
+              ? `No certificates match "${searchTerm}".`
+              : activeTypeFilter === "all"
+                ? "Create your first certificate."
+                : `No ${activeTypeFilter} items yet.`}
           </p>
         </div>
       )}
@@ -573,43 +635,52 @@ function Certificates() {
           >
             {filteredCertificates.map(
               (item) => (
-                <AchievementCard
+                <div
                   key={item.id}
-                  title={item.title}
-                  type={item.type}
-                  issuedBy={
-                    item.issued_by ||
-                    undefined
+                  id={`certificate-${item.slug}`}
+                  className={
+                    highlightedCertificateId === `certificate-${item.slug}`
+                      ? "rounded-[30px] ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
+                      : undefined
                   }
-                  issueDate={formatDate(
-                    item.issue_date
-                  )}
-                  link={
-                    item.link ||
-                    undefined
-                  }
-                  image={getCertificateCoverImage(
-                    item
-                  )}
-                  isVisible={isVisibleCertificate(
-                    item
-                  )}
-                  onToggleVisibility={() =>
-                    void handleToggleVisibility(
+                >
+                  <AchievementCard
+                    title={item.title}
+                    type={item.type}
+                    issuedBy={
+                      item.issued_by ||
+                      undefined
+                    }
+                    issueDate={formatDate(
+                      item.issue_date
+                    )}
+                    link={
+                      item.link ||
+                      undefined
+                    }
+                    image={getCertificateCoverImage(
                       item
-                    )
-                  }
-                  onEdit={() =>
-                    navigate(
-                      `/certificates/${item.slug}/edit`
-                    )
-                  }
-                  onDelete={() =>
-                    setCertificateToDelete(
+                    )}
+                    isVisible={isVisibleCertificate(
                       item
-                    )
-                  }
-                />
+                    )}
+                    onToggleVisibility={() =>
+                      void handleToggleVisibility(
+                        item
+                      )
+                    }
+                    onEdit={() =>
+                      navigate(
+                        `/certificates/${item.slug}/edit`
+                      )
+                    }
+                    onDelete={() =>
+                      setCertificateToDelete(
+                        item
+                      )
+                    }
+                  />
+                </div>
               )
             )}
           </div>
@@ -621,25 +692,15 @@ function Certificates() {
           <div className="mt-8 space-y-5">
             {filteredCertificates.map(
               (item) => (
-                <div
-                  key={item.id}
-                  className="
-                    flex
-                    flex-col
-                    gap-5
-                    rounded-[28px]
-                    border
-                    border-[var(--border-color)]
-                    bg-[var(--bg-card)]
-                    p-6
-                    transition-all
-                    duration-300
-                    hover:shadow-lg
-                    lg:flex-row
-                    lg:items-center
-                    lg:justify-between
-                  "
-                >
+            <div
+              key={item.id}
+              id={`certificate-${item.slug}`}
+              className={`flex flex-col gap-5 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 transition-all duration-300 hover:shadow-lg lg:flex-row lg:items-center lg:justify-between ${
+                highlightedCertificateId === `certificate-${item.slug}`
+                  ? "ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
+                  : ""
+              }`}
+            >
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex min-w-0 flex-1 items-start gap-3">

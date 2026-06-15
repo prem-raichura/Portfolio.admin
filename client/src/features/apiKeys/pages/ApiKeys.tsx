@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Key, Plus, Trash2, RefreshCw, Power, PowerOff, Check, Copy, CalendarDays, Clock, Activity, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
 import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
+import { matchesSearchText, normalizeSearchText } from "@shared/lib/globalSearch";
 import {
   type ApiKey,
   getApiKeys,
@@ -14,6 +16,14 @@ import {
 } from "@features/apiKeys/services/apiKey.service";
 
 function ApiKeys() {
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+  const searchTerm = searchParams.get("q") || "";
+  const focusId = searchParams.get("focus") || "";
+
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,6 +39,7 @@ function ApiKeys() {
     keyData: ApiKey;
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [highlightedKeyId, setHighlightedKeyId] = useState<string | null>(null);
 
   const toggleVisibility = (id: number) => {
     setVisibleKeys((prev) => {
@@ -38,6 +49,21 @@ function ApiKeys() {
       return next;
     });
   };
+
+  const filteredKeys = useMemo(() => {
+    if (!normalizeSearchText(searchTerm)) {
+      return keys;
+    }
+
+    return keys.filter((key) =>
+      matchesSearchText(
+        [key.name, key.status, key.api_key, String(key.id), key.rate_limit]
+          .filter(Boolean)
+          .join(" "),
+        searchTerm
+      )
+    );
+  }, [keys, searchTerm]);
 
   useEffect(() => {
     let active = true;
@@ -59,6 +85,26 @@ function ApiKeys() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!focusId || filteredKeys.length === 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const element = document.getElementById(focusId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedKeyId(focusId);
+
+        window.setTimeout(() => {
+          setHighlightedKeyId((current) => (current === focusId ? null : current));
+        }, 2200);
+      }
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [focusId, filteredKeys.length]);
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) {
@@ -169,6 +215,11 @@ function ApiKeys() {
           <p className="mt-1 text-[var(--text-muted)]">
             Manage API keys for external access to your portfolio data.
           </p>
+          {searchTerm && (
+            <p className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-semibold text-[var(--accent)]">
+              Search results for "{searchTerm}"
+            </p>
+          )}
         </div>
         <button
           onClick={() => setIsCreating(true)}
@@ -222,14 +273,18 @@ function ApiKeys() {
         </div>
       )}
 
-      {keys.length === 0 && !isCreating ? (
+      {filteredKeys.length === 0 && !isCreating ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-[var(--border-color)] border-dashed py-20 text-center">
           <div className="mb-4 rounded-full bg-[var(--bg-secondary)] p-4">
             <Key size={32} className="text-[var(--text-muted)]" />
           </div>
-          <h3 className="mb-2 text-lg font-semibold">No API Keys</h3>
+          <h3 className="mb-2 text-lg font-semibold">
+            {searchTerm ? "No matching API Keys" : "No API Keys"}
+          </h3>
           <p className="mb-6 max-w-md text-[var(--text-muted)]">
-            You haven't created any API keys yet. Create one to allow external applications to access your portfolio data.
+            {searchTerm
+              ? `No API keys match "${searchTerm}".`
+              : "You haven't created any API keys yet. Create one to allow external applications to access your portfolio data."}
           </p>
           <button
             onClick={() => setIsCreating(true)}
@@ -241,14 +296,19 @@ function ApiKeys() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {keys.map((key) => {
+          {filteredKeys.map((key) => {
             const expired = key.expires_at ? new Date(key.expires_at) < new Date() : false;
             const daysLeft = key.expires_at ? Math.ceil((new Date(key.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
             
             return (
             <div
               key={key.id}
+              id={`api-key-${key.id}`}
               className={`group flex flex-col gap-6 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-main)] p-6 transition-all hover:border-primary/30 hover:shadow-md sm:flex-row sm:items-center sm:justify-between ${
+                highlightedKeyId === `api-key-${key.id}`
+                  ? "ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
+                  : ""
+              } ${
                 expired ? "opacity-60 grayscale-[50%]" : ""
               }`}
             >
