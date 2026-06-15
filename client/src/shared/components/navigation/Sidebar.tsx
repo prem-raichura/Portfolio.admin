@@ -53,12 +53,15 @@ const NAV_ITEMS = [
     label: "Contacts",
     path: "/contacts",
   },
-  {
-    icon: <BookOpen size={20} />,
-    label: "Documentation",
-    path: "/documentation",
-  },
 ];
+
+// Rendered separately at the bottom of the nav (right above the divider)
+// so it sits visually grouped with Bin / Logout.
+const DOCUMENTATION_ITEM = {
+  icon: <BookOpen size={20} />,
+  label: "Documentation",
+  path: "/documentation",
+};
 
 function Sidebar({
   sidebarOpen,
@@ -161,7 +164,7 @@ function Sidebar({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <nav className="flex flex-1 flex-col overflow-y-auto p-3 space-y-1">
           {NAV_ITEMS.map((item) => (
             <SidebarItem
               key={item.path}
@@ -184,6 +187,23 @@ function Sidebar({
               }}
             />
           ))}
+
+          {/* Pin Documentation to the bottom of the nav, with its own
+              separator above so it groups visually with Bin / Logout. */}
+          <div className="mt-auto pt-3 border-t border-[var(--border-color)]">
+            <SidebarItem
+              icon={DOCUMENTATION_ITEM.icon}
+              label={DOCUMENTATION_ITEM.label}
+              path={DOCUMENTATION_ITEM.path}
+              active={location.pathname === DOCUMENTATION_ITEM.path}
+              sidebarOpen={sidebarOpen}
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setSidebarOpen(false);
+                }
+              }}
+            />
+          </div>
         </nav>
 
         <div className="border-t border-[var(--border-color)] p-3 space-y-2">
