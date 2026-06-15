@@ -188,9 +188,9 @@ function Sidebar({
             />
           ))}
 
-          {/* Pin Documentation to the bottom of the nav, with its own
-              separator above so it groups visually with Bin / Logout. */}
-          <div className="mt-auto pt-3 border-t border-[var(--border-color)]">
+          {/* Pin Documentation to the bottom of the nav so it sits flush
+              against the divider that already separates Bin / Logout. */}
+          <div className="mt-auto">
             <SidebarItem
               icon={DOCUMENTATION_ITEM.icon}
               label={DOCUMENTATION_ITEM.label}
