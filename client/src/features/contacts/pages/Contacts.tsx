@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Mail,
   Trash2,
@@ -7,9 +7,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 
 import DashboardLayout from "@layouts/DashboardLayout";
 import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
+import { matchesSearchText, normalizeSearchText } from "@shared/lib/globalSearch";
 import {
   type Contact,
   getContacts,
@@ -29,6 +31,14 @@ function formatDate(value: string) {
 }
 
 function Contacts() {
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+  const searchTerm = searchParams.get("q") || "";
+  const focusId = searchParams.get("focus") || "";
+
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +47,7 @@ function Contacts() {
 
   const [deleteTarget, setDeleteTarget] = useState<Contact | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [highlightedContactId, setHighlightedContactId] = useState<string | null>(null);
 
   const fetchAll = async () => {
     try {
@@ -55,6 +66,51 @@ function Contacts() {
   useEffect(() => {
     fetchAll();
   }, []);
+
+  const filteredContacts = useMemo(() => {
+    if (!normalizeSearchText(searchTerm)) {
+      return contacts;
+    }
+    return contacts.filter((c) =>
+      matchesSearchText(
+        [c.name, c.email, c.subject || "", c.message].filter(Boolean).join(" "),
+        searchTerm
+      )
+    );
+  }, [contacts, searchTerm]);
+
+  // Scroll the focused row into view + briefly highlight when arriving from
+  // the global search.
+  useEffect(() => {
+    if (!focusId || filteredContacts.length === 0) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById(focusId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedContactId(focusId);
+        window.setTimeout(() => {
+          setHighlightedContactId((curr) => (curr === focusId ? null : curr));
+        }, 2200);
+      }
+    }, 150);
+    return () => window.clearTimeout(timer);
+  }, [focusId, filteredContacts.length]);
+
+  // Lock background scroll while either modal is open so the page behind
+  // can't move and the modal stays visually anchored at viewport center.
+  useEffect(() => {
+    const anyOpen = openContact !== null || deleteTarget !== null;
+    if (!anyOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [openContact, deleteTarget]);
 
   const handleOpen = async (contact: Contact) => {
     setOpenContact(contact);
@@ -115,6 +171,7 @@ function Contacts() {
   }
 
   const unreadCount = contacts.filter((c) => !c.is_read).length;
+  const visibleContacts = filteredContacts;
 
   return (
     <DashboardLayout>
@@ -140,7 +197,13 @@ function Contacts() {
         </p>
       </div>
 
-      {contacts.length === 0 ? (
+      {searchTerm && (
+        <p className="mb-4 inline-flex rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-semibold text-[var(--accent)]">
+          Search results for "{searchTerm}"
+        </p>
+      )}
+
+      {visibleContacts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-color)] py-20 text-center">
           <div className="mb-4 rounded-full bg-[var(--bg-secondary)] p-4">
             <Mail size={32} className="text-[var(--text-muted)]" />
@@ -155,10 +218,18 @@ function Contacts() {
         </div>
       ) : (
         <div className="grid gap-3">
-          {contacts.map((contact) => (
+          {visibleContacts.map((contact) => {
+            const elementId = `contact-${contact.id}`;
+            const highlighted = highlightedContactId === elementId;
+            return (
             <div
               key={contact.id}
-              className="flex flex-col gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-colors hover:border-[var(--accent)]/30 sm:flex-row sm:items-center sm:justify-between"
+              id={elementId}
+              className={`flex flex-col gap-4 rounded-2xl border bg-[var(--bg-card)] p-5 transition-colors sm:flex-row sm:items-center sm:justify-between ${
+                highlighted
+                  ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/40"
+                  : "border-[var(--border-color)] hover:border-[var(--accent)]/30"
+              }`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -202,14 +273,21 @@ function Contacts() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Detail modal */}
       {openContact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-[var(--border-color)] bg-[var(--bg-main)] p-6 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/40 p-4 backdrop-blur-sm"
+          onClick={() => setOpenContact(null)}
+        >
+          <div
+            className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-main)] p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h3 className="truncate text-xl font-bold text-[var(--text-primary)]">

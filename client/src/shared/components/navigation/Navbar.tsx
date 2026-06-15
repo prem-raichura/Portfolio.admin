@@ -21,6 +21,7 @@ import { getProjects } from "@features/projects/services/project.service";
 import { getExperiences } from "@features/experience/services/experience.service";
 import { getCertificates } from "@features/certificates/services/certificate.service";
 import { getApiKeys } from "@features/apiKeys/services/apiKey.service";
+import { getContacts } from "@features/contacts/services/contact.service";
 import {
   buildSearchHref,
   getSearchTargetCategories,
@@ -84,12 +85,13 @@ function Navbar({
     const loadSearchIndex = async () => {
       setSearchLoading(true);
 
-      const [projectsRes, experiencesRes, certificatesRes, apiKeysRes] =
+      const [projectsRes, experiencesRes, certificatesRes, apiKeysRes, contactsRes] =
         await Promise.allSettled([
           getProjects(),
           getExperiences(),
           getCertificates(),
           getApiKeys(),
+          getContacts(),
         ]);
 
       if (!active) {
@@ -144,6 +146,14 @@ function Navbar({
           category: "api-key",
           keywords: ["api key", "api keys", "apikey", "api-keys"],
           route: { path: "/api-keys" },
+        },
+        {
+          id: "category-contacts",
+          label: "Contacts",
+          kind: "category",
+          category: "contact",
+          keywords: ["contact", "contacts", "message", "messages", "inbox", "inquiry"],
+          route: { path: "/contacts" },
         },
       ];
 
@@ -285,6 +295,41 @@ function Navbar({
         );
       }
 
+      if (contactsRes.status === "fulfilled" && contactsRes.value?.success) {
+        targets.push(
+          ...contactsRes.value.contacts.map((contact: {
+            id: number;
+            name: string;
+            email: string;
+            subject: string | null;
+            message: string;
+          }): SearchTarget => ({
+            id: `contact-${contact.id}`,
+            label: contact.subject
+              ? `${contact.name} — ${contact.subject}`
+              : contact.name,
+            kind: "item",
+            category: "contact",
+            keywords: [
+              contact.name,
+              contact.email,
+              contact.subject || "",
+              contact.message,
+              "contact",
+              "message",
+            ].filter(Boolean).map(String),
+            route: {
+              path: "/contacts",
+              params: {
+                q: contact.name,
+                focus: `contact-${contact.id}`,
+              },
+            },
+            focusId: `contact-${contact.id}`,
+          }))
+        );
+      }
+
       if (active) {
         setSearchTargets(targets);
         setSearchLoading(false);
@@ -417,7 +462,7 @@ function Navbar({
           />
           <input
             type="text"
-            placeholder="Search everything..."
+            placeholder="Search anything..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

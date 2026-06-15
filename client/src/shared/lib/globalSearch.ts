@@ -9,7 +9,7 @@ export type SearchTarget = {
   id: string;
   label: string;
   kind: SearchTargetKind;
-  category: "project" | "research" | "experience" | "certificate" | "achievement" | "api-key";
+  category: "project" | "research" | "experience" | "certificate" | "achievement" | "api-key" | "contact";
   keywords: string[];
   route: SearchRoute;
   focusId?: string;
