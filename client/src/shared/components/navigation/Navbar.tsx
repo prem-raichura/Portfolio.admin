@@ -53,8 +53,9 @@ function Navbar({
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/projects?search=${encodeURIComponent(searchQuery)}`);
+    const query = searchQuery.trim();
+    if (query) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
       setSearchQuery("");
     }
   };
@@ -113,7 +114,7 @@ function Navbar({
           />
           <input
             type="text"
-            placeholder="Search projects..."
+            placeholder="Search everything..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setSearchFocused(true)}

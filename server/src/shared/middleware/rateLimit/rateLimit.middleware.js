@@ -126,6 +126,18 @@ const makeStore = (prefix) =>
  */
 const getRetryAfter = (res) => res.getHeader("Retry-After") ?? "60 seconds";
 
+const parseOrigin = (value) => {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+};
+
 // ─────────────────────────────────────────────
 // Limiters
 // ─────────────────────────────────────────────
@@ -170,7 +182,11 @@ export const authLimiter = rateLimit({
 
     // GitHub OAuth: browser-initiated redirect — send back to the frontend
     if (req.path.includes("github")) {
-      const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+      const clientUrl =
+        parseOrigin(req.headers.referer) ||
+        parseOrigin(req.headers.origin) ||
+        process.env.CLIENT_URL ||
+        "http://localhost:5173";
       const params = new URLSearchParams({ error: message, retryAfter });
       return res.redirect(`${clientUrl}/login?${params.toString()}`);
     }

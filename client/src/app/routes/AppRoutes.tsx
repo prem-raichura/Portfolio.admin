@@ -14,6 +14,8 @@ import AuthCallback from "@features/auth/pages/AuthCallback";
 
 import Dashboard from "@features/dashboard/pages/Dashboard";
 
+import Search from "@features/search/pages/Search";
+
 import Profile from "@features/profile/pages/Profile";
 
 import Projects from "@features/projects/pages/Projects";
@@ -83,6 +85,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <Search />
             </ProtectedRoute>
           }
         />

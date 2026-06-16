@@ -9,8 +9,12 @@ import { API_ROUTES } from "./apiRoutes";
 
 // ─── Axios Instance ────────────────────────────────────────────────────────────
 
+const apiBaseUrl =
+  import.meta.env.VITE_API_URL ||
+  "https://portfolio-admin-7es8.onrender.com";
+
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: apiBaseUrl,
   withCredentials: true, // Send HttpOnly refresh cookie on every request
 });
 
