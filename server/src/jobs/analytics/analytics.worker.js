@@ -110,6 +110,20 @@ async function createAnalyticsEntry(data, type) {
   });
 }
 
+async function createNotification(data, title, message) {
+  const { user_id } = data;
+  if (!user_id) return;
+
+  await prisma.notification.create({
+    data: {
+      user_id,
+      title,
+      message,
+      type: "info",
+    },
+  });
+}
+
 const analyticsWorker = new Worker(
   "analyticsQueue",
   async (job) => {
@@ -239,6 +253,14 @@ const analyticsWorker = new Worker(
         });
 
         await createAnalyticsEntry(data, "contact_submission");
+
+        const contactName = data.metadata?.name || "Someone";
+        await createNotification(
+          data,
+          "New Contact Message",
+          `${contactName} sent you a message`
+        );
+
         console.log(`Contact submission tracked for user ${user_id}`);
         break;
 
