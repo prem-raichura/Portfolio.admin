@@ -33,10 +33,6 @@ const getServerUrl = () =>
   process.env.SERVER_URL ||
   `http://localhost:${process.env.PORT || 8000}`;
 
-const getClientUrl = () =>
-  process.env.CLIENT_URL ||
-  "http://localhost:5173";
-
 const getGithubRedirectUri = () =>
   process.env.GITHUB_CALLBACK_URL ||
   `${getServerUrl()}/api/auth/github/callback`;
@@ -69,6 +65,31 @@ const getCookieValue = (
   );
 };
 
+const parseOrigin = (value) => {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+};
+
+const getClientUrl = (req) => {
+  const requestedUrl =
+    parseOrigin(req?.query?.returnTo) ||
+    parseOrigin(req?.headers?.referer) ||
+    parseOrigin(req?.headers?.origin) ||
+    parseOrigin(process.env.CLIENT_URL);
+
+  return (
+    requestedUrl ||
+    "http://localhost:5173"
+  );
+};
+
 const getOauthCookieOptions = () => ({
   httpOnly: true,
   secure:
@@ -76,6 +97,22 @@ const getOauthCookieOptions = () => ({
       "https://"
     ),
   sameSite: "lax",
+});
+
+const getRefreshCookieOptions = () => {
+  const secure = getServerUrl().startsWith("https://");
+
+  return {
+    httpOnly: true,
+    secure,
+    sameSite: secure ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+};
+
+const getFrontendCookieOptions = () => ({
+  ...getOauthCookieOptions(),
+  maxAge: 10 * 60 * 1000,
 });
 
 /* =========================================
@@ -299,6 +336,7 @@ const getAvailableUsername =
 ========================================= */
 
 const redirectWithError = (
+  req,
   res,
   message
 ) => {
@@ -308,7 +346,7 @@ const redirectWithError = (
     });
 
   return res.redirect(
-    `${getClientUrl()}/login?${params.toString()}`
+    `${getClientUrl(req)}/login?${params.toString()}`
   );
 };
 
@@ -340,6 +378,8 @@ export const githubLogin = (
         .randomBytes(24)
         .toString("hex");
 
+    const frontendUrl = getClientUrl(req);
+
     res.cookie(
       oauthStateCookieName,
       state,
@@ -348,6 +388,12 @@ export const githubLogin = (
         maxAge:
           10 * 60 * 1000,
       }
+    );
+
+    res.cookie(
+      "github_return_to",
+      frontendUrl,
+      getFrontendCookieOptions()
     );
 
     const params =
@@ -403,6 +449,7 @@ export const githubCallback =
 
       if (!code) {
         return redirectWithError(
+          req,
           res,
           "GitHub authorization code missing"
         );
@@ -425,6 +472,7 @@ export const githubCallback =
         state !== storedState
       ) {
         return redirectWithError(
+          req,
           res,
           "Invalid GitHub authorization state"
         );
@@ -457,6 +505,7 @@ export const githubCallback =
 
       if (!email) {
         return redirectWithError(
+          req,
           res,
           "Verified GitHub email not found"
         );
@@ -634,12 +683,16 @@ export const githubCallback =
       ===================== */
 
       // Set HttpOnly cookie for the refresh token
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true, // Required for sameSite: "none"
-        sameSite: "none", // Allow cross-origin cookie (localhost -> render.com)
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+      res.cookie("refreshToken", refreshToken, getRefreshCookieOptions());
+
+      const frontendUrl =
+        getCookieValue(req, "github_return_to") ||
+        getClientUrl(req);
+
+      res.clearCookie(
+        "github_return_to",
+        getFrontendCookieOptions()
+      );
 
       const params =
         new URLSearchParams({
@@ -647,13 +700,14 @@ export const githubCallback =
         });
 
       return res.redirect(
-        `${getClientUrl()}/auth/github/callback?${params.toString()}`
+        `${frontendUrl}/auth/github/callback?${params.toString()}`
       );
 
     } catch (error) {
       console.log(error);
 
       return redirectWithError(
+        req,
         res,
         "Failed to authenticate with GitHub"
       );
@@ -701,9 +755,7 @@ export const logout = async (req, res) => {
     }
     
     res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      ...getRefreshCookieOptions(),
     });
 
     return res.status(200).json({ success: true, message: "Logged out successfully" });

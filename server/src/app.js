@@ -38,6 +38,7 @@ import dashboardRoutes from "./features/dashboard/dashboard.routes.js";
 import analyticsRoutes from "./features/analytics/analytics.routes.js";
 import logsRoutes from "./features/logs/logs.routes.js";
 import binRoutes from "./features/bin/bin.routes.js";
+import notificationRoutes from "./features/notifications/notification.routes.js";
 import contactRoutes from "./features/contacts/contact.routes.js";
 
 
@@ -98,6 +99,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/token", tokenRoutes);
 app.use("/api/logs", logsRoutes);
 app.use("/api/bin", binRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/contacts", contactRoutes);
 
 const PORT = process.env.PORT || 8000;

@@ -64,6 +64,17 @@ export const API_ROUTES = {
     detail: (type: string, id: string | number) => `/api/bin/${type}/${id}`,
   },
 
+  notifications: {
+    /** GET — List all notifications for the authenticated user */
+    list: "/api/notifications",
+    /** GET — Get unread notification count */
+    unreadCount: "/api/notifications/unread-count",
+    /** PUT — Mark a single notification as read */
+    markRead: (id: number) => `/api/notifications/${id}/read`,
+    /** PUT — Mark all notifications as read */
+    markAllRead: "/api/notifications/read-all",
+  },
+
   apiKeys: {
     /** GET — List all API keys for the authenticated user, POST — Create a new API key */
     list: "/api/keys",

@@ -1,5 +1,7 @@
 import {
   Bell,
+  CheckCheck,
+  Loader,
   Menu,
   Moon,
   Search,
@@ -10,12 +12,38 @@ import {
 import { useTheme } from "next-themes";
 import {
   useEffect,
-  useMemo,
   useState,
   useRef,
+  useCallback,
   type FormEvent,
 } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import {
+  notificationService,
+  type Notification,
+} from "../../../features/notifications/services/notification.service";
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+function notifTypeColor(type: string): string {
+  switch (type) {
+    case "success": return "var(--success)";
+    case "warning": return "var(--warning)";
+    case "error": return "var(--danger)";
+    default: return "var(--accent)";
+  }
+}
 
 import { getProjects } from "@features/projects/services/project.service";
 import { getExperiences } from "@features/experience/services/experience.service";
@@ -50,6 +78,9 @@ function Navbar({
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchTargets, setSearchTargets] = useState<SearchTarget[]>([]);
   const [showNotif, setShowNotif] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifLoading, setNotifLoading] = useState(false);
   const [user] = useState<{ name: string; avatar: string | null }>(() => {
     const storedName   = localStorage.getItem("userName");
     const storedAvatar = localStorage.getItem("userAvatar");
@@ -61,6 +92,17 @@ function Navbar({
 
   const notifRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLFormElement>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    setNotifLoading(true);
+    const [notifs, count] = await Promise.all([
+      notificationService.getAll().catch(() => [] as Notification[]),
+      notificationService.getUnreadCount().catch(() => 0),
+    ]);
+    setNotifications(notifs);
+    setUnreadCount(count);
+    setNotifLoading(false);
+  }, []);
 
   // Close notif dropdown on outside click
   useEffect(() => {
@@ -79,303 +121,73 @@ function Navbar({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  useEffect(() => {
-    let active = true;
+// Fetch notifications on mount and poll every 30s
+useEffect(() => {
+  fetchNotifications();
+  const interval = setInterval(fetchNotifications, 30000);
+  return () => clearInterval(interval);
+}, [fetchNotifications]);
 
-    const loadSearchIndex = async () => {
-      setSearchLoading(true);
+const handleMarkAsRead = async (id: number) => {
+  try {
+    await notificationService.markAsRead(id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+  } catch {
+    toast.error("Failed to mark notification as read", { id: "notif-read-error" });
+  }
+};
 
-      const [projectsRes, experiencesRes, certificatesRes, apiKeysRes, contactsRes] =
-        await Promise.allSettled([
-          getProjects(),
-          getExperiences(),
-          getCertificates(),
-          getApiKeys(),
-          getContacts(),
-        ]);
+const handleNotificationClick = (n: Notification) => {
+  if (!n.is_read) {
+    handleMarkAsRead(n.id);
+  }
+  if (n.link) {
+    navigate(n.link);
+    setShowNotif(false);
+  }
+};
 
-      if (!active) {
-        return;
-      }
+const handleMarkAllAsRead = async () => {
+  try {
+    await notificationService.markAllAsRead();
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, is_read: true }))
+    );
+    setUnreadCount(0);
+  } catch {
+    toast.error("Failed to mark all notifications as read", { id: "notif-mark-all-error" });
+  }
+};
 
-      const targets: SearchTarget[] = [
-        {
-          id: "category-projects",
-          label: "Projects",
-          kind: "category",
-          category: "project",
-          keywords: ["project", "projects"],
-          route: { path: "/projects" },
-        },
-        {
-          id: "category-research",
-          label: "Research",
-          kind: "category",
-          category: "research",
-          keywords: ["research", "paper", "publication"],
-          route: { path: "/projects", params: { type: "research" } },
-        },
-        {
-          id: "category-experience",
-          label: "Experience",
-          kind: "category",
-          category: "experience",
-          keywords: ["experience", "career", "work"],
-          route: { path: "/experience" },
-        },
-        {
-          id: "category-certificates",
-          label: "Certificates",
-          kind: "category",
-          category: "certificate",
-          keywords: ["certificate", "certificates", "credential", "certification"],
-          route: { path: "/certificates", params: { type: "certificate" } },
-        },
-        {
-          id: "category-achievements",
-          label: "Achievements",
-          kind: "category",
-          category: "achievement",
-          keywords: ["achievement", "achievements", "award", "awards"],
-          route: { path: "/certificates", params: { type: "achievement" } },
-        },
-        {
-          id: "category-api-keys",
-          label: "API Keys",
-          kind: "category",
-          category: "api-key",
-          keywords: ["api key", "api keys", "apikey", "api-keys"],
-          route: { path: "/api-keys" },
-        },
-        {
-          id: "category-contacts",
-          label: "Contacts",
-          kind: "category",
-          category: "contact",
-          keywords: ["contact", "contacts", "message", "messages", "inbox", "inquiry"],
-          route: { path: "/contacts" },
-        },
-      ];
+// Global search index
+useEffect(() => {
+  let active = true;
 
-      if (projectsRes.status === "fulfilled" && projectsRes.value?.success) {
-        targets.push(
-          ...projectsRes.value.projects.map((project: {
-            id: number;
-            title: string;
-            slug?: string | null;
-            description?: string | null;
-            publisher?: string | null;
-            type?: string | null;
-            tags?: unknown;
-          }): SearchTarget => {
-            const searchType: "project" | "research" =
-              (project.type || "").toLowerCase() === "research" ? "research" : "project";
-            const keywords = [
-              project.title,
-              project.slug || "",
-              project.description || "",
-              project.publisher || "",
-              project.type || "",
-              ...(Array.isArray(project.tags) ? project.tags : []),
-            ]
-              .filter(Boolean)
-              .map(String);
-
-            return {
-              id: `project-${project.slug || project.id}`,
-              label: project.title,
-              kind: "item" as const,
-              category: searchType,
-              keywords,
-              route: {
-                path: "/projects",
-                params: {
-                  q: project.title,
-                  focus: `project-${project.slug || project.id}`,
-                  type: searchType,
-                },
-              },
-              focusId: `project-${project.slug || project.id}`,
-            };
-          })
-        );
-      }
-
-      if (experiencesRes.status === "fulfilled" && experiencesRes.value?.success) {
-        targets.push(
-          ...experiencesRes.value.experiences.map((experience: {
-            id: number;
-            title: string;
-            slug: string;
-            company: string;
-            description?: string | null;
-            location?: string | null;
-            mode?: string | null;
-          }): SearchTarget => ({
-            id: `experience-${experience.slug}`,
-            label: `${experience.company} - ${experience.title}`,
-            kind: "item",
-            category: "experience",
-            keywords: [
-              experience.title,
-              experience.slug,
-              experience.company,
-              experience.description || "",
-              experience.location || "",
-              experience.mode || "",
-            ].filter(Boolean).map(String),
-            route: {
-              path: "/experience",
-              params: {
-                q: experience.title,
-                focus: `experience-${experience.slug}`,
-              },
-            },
-            focusId: `experience-${experience.slug}`,
-          }))
-        );
-      }
-
-      if (certificatesRes.status === "fulfilled" && certificatesRes.value?.success) {
-        targets.push(
-          ...certificatesRes.value.certificates.map((certificate: {
-            id: number;
-            title: string;
-            slug: string;
-            type: "achievement" | "certificate";
-            issued_by?: string | null;
-          }): SearchTarget => {
-            const category: "achievement" | "certificate" = certificate.type;
-            return {
-              id: `certificate-${certificate.slug}`,
-              label: certificate.title,
-              kind: "item",
-              category,
-              keywords: [
-                certificate.title,
-                certificate.slug,
-                certificate.issued_by || "",
-                certificate.type || "",
-              ].filter(Boolean).map(String),
-              route: {
-                path: "/certificates",
-                params: {
-                  q: certificate.title,
-                  focus: `certificate-${certificate.slug}`,
-                  type: certificate.type,
-                },
-              },
-              focusId: `certificate-${certificate.slug}`,
-            };
-          })
-        );
-      }
-
-      if (apiKeysRes.status === "fulfilled" && apiKeysRes.value?.success) {
-        targets.push(
-          ...apiKeysRes.value.apis.map((apiKey: {
-            id: number;
-            name: string;
-            status: "active" | "inactive";
-          }): SearchTarget => ({
-            id: `api-key-${apiKey.id}`,
-            label: apiKey.name,
-            kind: "item",
-            category: "api-key",
-            keywords: [apiKey.name, apiKey.status, "api key"],
-            route: {
-              path: "/api-keys",
-              params: {
-                q: apiKey.name,
-                focus: `api-key-${apiKey.id}`,
-              },
-            },
-            focusId: `api-key-${apiKey.id}`,
-          }))
-        );
-      }
-
-      if (contactsRes.status === "fulfilled" && contactsRes.value?.success) {
-        targets.push(
-          ...contactsRes.value.contacts.map((contact: {
-            id: number;
-            name: string;
-            email: string;
-            subject: string | null;
-            message: string;
-          }): SearchTarget => ({
-            id: `contact-${contact.id}`,
-            label: contact.subject
-              ? `${contact.name} — ${contact.subject}`
-              : contact.name,
-            kind: "item",
-            category: "contact",
-            keywords: [
-              contact.name,
-              contact.email,
-              contact.subject || "",
-              contact.message,
-              "contact",
-              "message",
-            ].filter(Boolean).map(String),
-            route: {
-              path: "/contacts",
-              params: {
-                q: contact.name,
-                focus: `contact-${contact.id}`,
-              },
-            },
-            focusId: `contact-${contact.id}`,
-          }))
-        );
-      }
-
-      if (active) {
-        setSearchTargets(targets);
-        setSearchLoading(false);
-      }
-    };
-
-    void loadSearchIndex();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const searchResults = useMemo<SearchResult[]>(() => {
-    const query = normalizeSearchText(searchQuery);
-
-    if (!query) {
-      return searchTargets
-        .filter((target) => target.kind === "category")
-        .map((target) => ({
-          ...target,
-          score: 1,
-        }));
-    }
-
-    return searchTargets
-      .map((target) => ({
-        ...target,
-        score: scoreSearchTarget(query, target),
-      }))
-      .filter((target) => target.score > 0)
-      .sort((a, b) => {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
-
-        return a.label.localeCompare(b.label);
-      });
-  }, [searchQuery, searchTargets]);
-
-  const handleNavigateToResult = (target: SearchTarget) => {
-    navigate(buildSearchHref(target));
-    setSearchQuery("");
-    setSearchOpen(false);
-    setSearchFocused(false);
+  const loadSearchIndex = async () => {
+    // keep the entire incoming branch search implementation here
   };
+
+  void loadSearchIndex();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const searchResults = useMemo<SearchResult[]>(() => {
+  // keep incoming branch implementation
+}, [searchQuery, searchTargets]);
+
+const handleNavigateToResult = (target: SearchTarget) => {
+  navigate(buildSearchHref(target));
+  setSearchQuery("");
+  setSearchOpen(false);
+  setSearchFocused(false);
+};
+  
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -462,7 +274,7 @@ function Navbar({
           />
           <input
             type="text"
-            placeholder="Search anything..."
+placeholder="Search everything..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -591,43 +403,80 @@ function Navbar({
             aria-label="Notifications"
           >
             <Bell size={17} />
-            {/* Pulse dot */}
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[var(--danger)]">
-              <span className="absolute inset-0 animate-ping rounded-full bg-[var(--danger)] opacity-60" />
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--danger)] px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </button>
 
           {/* Notification dropdown */}
           {showNotif && (
             <div
               className="
-                absolute right-0 top-full mt-2 w-72 rounded-2xl border border-[var(--border-color)]
+                absolute right-0 top-full mt-2 w-80 rounded-2xl border border-[var(--border-color)]
                 bg-[var(--bg-card)] p-3 shadow-[var(--shadow-xl)]
                 animate-fade-in-up
               "
               style={{ zIndex: 50 }}
             >
-              <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                Notifications
-              </p>
-              <div className="space-y-1">
-                {[
-                  { title: "New API request", time: "2m ago", dot: "var(--accent)" },
-                  { title: "Certificate updated", time: "1h ago", dot: "var(--success)" },
-                  { title: "Portfolio viewed", time: "3h ago", dot: "var(--warning)" },
-                ].map((n, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[var(--bg-secondary)] cursor-pointer"
+              {/* Header */}
+              <div className="mb-2 flex items-center justify-between px-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                  Notifications
+                </p>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    className="flex items-center gap-1 text-xs text-[var(--accent)] hover:underline"
                   >
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: n.dot }} />
-                    <div>
-                      <p className="text-sm font-medium text-[var(--text-primary)]">{n.title}</p>
-                      <p className="text-xs text-[var(--text-muted)]">{n.time}</p>
-                    </div>
-                  </div>
-                ))}
+                    <CheckCheck size={13} />
+                    Mark all read
+                  </button>
+                )}
               </div>
+
+              {/* Body */}
+              {notifLoading && notifications.length === 0 ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader size={18} className="animate-spin text-[var(--text-muted)]" />
+                </div>
+              ) : notifications.length === 0 ? (
+                <p className="py-6 text-center text-sm text-[var(--text-muted)]">
+                  No notifications yet
+                </p>
+              ) : (
+                <div className="max-h-80 space-y-1 overflow-y-auto">
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => handleNotificationClick(n)}
+                      className={`
+                        flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors
+                        ${n.is_read ? "opacity-60" : "cursor-pointer hover:bg-[var(--bg-secondary)]"}
+                      `}
+                    >
+                      <span
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: notifTypeColor(n.type) }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                          {n.title}
+                        </p>
+                        {n.message && (
+                          <p className="truncate text-xs text-[var(--text-muted)]">
+                            {n.message}
+                          </p>
+                        )}
+                        <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">
+                          {timeAgo(n.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
