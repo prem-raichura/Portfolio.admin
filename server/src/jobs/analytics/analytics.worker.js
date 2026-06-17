@@ -110,7 +110,7 @@ async function createAnalyticsEntry(data, type) {
   });
 }
 
-async function createNotification(data, title, message) {
+async function createNotification(data, title, message, link = null) {
   const { user_id } = data;
   if (!user_id) return;
 
@@ -120,6 +120,7 @@ async function createNotification(data, title, message) {
       title,
       message,
       type: "info",
+      link,
     },
   });
 }
@@ -255,10 +256,12 @@ const analyticsWorker = new Worker(
         await createAnalyticsEntry(data, "contact_submission");
 
         const contactName = data.metadata?.name || "Someone";
+        const contactId = data.metadata?.contactId || null;
         await createNotification(
           data,
           "New Contact Message",
-          `${contactName} sent you a message`
+          `${contactName} sent you a message`,
+          contactId ? `/contacts/${contactId}` : "/contacts"
         );
 
         console.log(`Contact submission tracked for user ${user_id}`);

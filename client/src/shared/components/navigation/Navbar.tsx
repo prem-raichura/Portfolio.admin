@@ -12,13 +12,13 @@ import {
 import { useTheme } from "next-themes";
 import {
   useEffect,
-  useMemo,
   useState,
   useRef,
   useCallback,
   type FormEvent,
 } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import {
   notificationService,
   type Notification,
@@ -94,19 +94,14 @@ function Navbar({
   const searchRef = useRef<HTMLFormElement>(null);
 
   const fetchNotifications = useCallback(async () => {
-    try {
-      setNotifLoading(true);
-      const [notifs, count] = await Promise.all([
-        notificationService.getAll(),
-        notificationService.getUnreadCount(),
-      ]);
-      setNotifications(notifs);
-      setUnreadCount(count);
-    } catch {
-      // Silently fail
-    } finally {
-      setNotifLoading(false);
-    }
+    setNotifLoading(true);
+    const [notifs, count] = await Promise.all([
+      notificationService.getAll().catch(() => [] as Notification[]),
+      notificationService.getUnreadCount().catch(() => 0),
+    ]);
+    setNotifications(notifs);
+    setUnreadCount(count);
+    setNotifLoading(false);
   }, []);
 
   // Close notif dropdown on outside click
@@ -141,7 +136,17 @@ const handleMarkAsRead = async (id: number) => {
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   } catch {
-    // Silently fail
+    toast.error("Failed to mark notification as read", { id: "notif-read-error" });
+  }
+};
+
+const handleNotificationClick = (n: Notification) => {
+  if (!n.is_read) {
+    handleMarkAsRead(n.id);
+  }
+  if (n.link) {
+    navigate(n.link);
+    setShowNotif(false);
   }
 };
 
@@ -153,7 +158,7 @@ const handleMarkAllAsRead = async () => {
     );
     setUnreadCount(0);
   } catch {
-    // Silently fail
+    toast.error("Failed to mark all notifications as read", { id: "notif-mark-all-error" });
   }
 };
 
@@ -186,32 +191,29 @@ const handleNavigateToResult = (target: SearchTarget) => {
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-if (searchQuery.trim()) {
-  const [bestMatch] = searchResults;
-  const categoryHint = getSearchTargetCategories(searchQuery);
+    if (searchQuery.trim()) {
+      const [bestMatch] = searchResults;
+      const categoryHint = getSearchTargetCategories(searchQuery);
 
-  if (bestMatch) {
-    handleNavigateToResult(bestMatch);
-    return;
-  }
+      if (bestMatch) {
+        handleNavigateToResult(bestMatch);
+        return;
+      }
 
-  if (categoryHint === "research") {
-    navigate("/projects?type=research");
-  } else if (categoryHint === "experience") {
-    navigate("/experience");
-  } else if (categoryHint === "achievement") {
-    navigate("/certificates?type=achievement");
-  } else if (categoryHint === "certificate") {
-    navigate("/certificates?type=certificate");
-  } else if (categoryHint === "api-key") {
-    navigate("/api-keys");
-  } else {
-    navigate("/projects");
-  }
+      if (categoryHint === "research") {
+        navigate("/projects?type=research");
+      } else if (categoryHint === "experience") {
+        navigate("/experience");
+      } else if (categoryHint === "achievement") {
+        navigate("/certificates?type=achievement");
+      } else if (categoryHint === "certificate") {
+        navigate("/certificates?type=certificate");
+      } else if (categoryHint === "api-key") {
+        navigate("/api-keys");
+      } else {
+        navigate("/projects");
+      }
 
-  setSearchQuery("");
-  setSearchOpen(false);
-}
       setSearchQuery("");
       setSearchOpen(false);
     }
@@ -448,7 +450,7 @@ placeholder="Search everything..."
                   {notifications.map((n) => (
                     <div
                       key={n.id}
-                      onClick={() => !n.is_read && handleMarkAsRead(n.id)}
+                      onClick={() => handleNotificationClick(n)}
                       className={`
                         flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors
                         ${n.is_read ? "opacity-60" : "cursor-pointer hover:bg-[var(--bg-secondary)]"}
