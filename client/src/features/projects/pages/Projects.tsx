@@ -18,9 +18,10 @@ import DashboardLayout from "@layouts/DashboardLayout";
 import PortfolioItemCard from "@shared/components/cards/PortfolioItemCard";
 import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { getProjects, deleteProject, updateProject } from "@features/projects/services/project.service";
+import { matchesSearchText, normalizeSearchText } from "@shared/lib/globalSearch";
 
 interface Project {
   id: number;
@@ -55,6 +56,14 @@ type TypeFilter = "all" | "research" | "project";
 
 function Projects() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+  const searchTerm = searchParams.get("q") || "";
+  const focusId = searchParams.get("focus") || "";
+  const routeType = searchParams.get("type") as TypeFilter | null;
 
   /* =========================
       VIEW MODE
@@ -73,10 +82,13 @@ function Projects() {
       FILTER STATE
   ========================= */
 
-  const [activeTypeFilter, setActiveTypeFilter] = useState<TypeFilter>("all");
+  const [activeTypeFilter, setActiveTypeFilter] = useState<TypeFilter>(
+    routeType === "research" || routeType === "project" ? routeType : "all"
+  );
   const [activeStatusFilter, setActiveStatusFilter] = useState<string>("all");
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [highlightedProjectId, setHighlightedProjectId] = useState<string | null>(null);
 
   // Reset status filter when type changes
   const handleTypeFilterChange = (type: TypeFilter) => {
@@ -256,6 +268,19 @@ function Projects() {
         value.slice(1)
       : undefined;
 
+  const getProjectSearchValue = (project: Project) =>
+    [
+      project.title,
+      project.slug || "",
+      project.description || "",
+      project.publisher || "",
+      project.type || "",
+      ...getProjectTags(project),
+      ...getProjectContributors(project),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
   const STATUS_LABELS: Record<string, string> = {
     ongoing: "Ongoing",
     completed: "Completed",
@@ -337,8 +362,29 @@ function Projects() {
     };
   }, []);
 
+  useEffect(() => {
+    if (routeType === "research" || routeType === "project") {
+      setActiveTypeFilter(routeType);
+      setActiveStatusFilter("all");
+      return;
+    }
+
+    if (!routeType) {
+      setActiveTypeFilter("all");
+      setActiveStatusFilter("all");
+    }
+  }, [routeType]);
+
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
+      if (normalizeSearchText(searchTerm)) {
+        const searchValue = getProjectSearchValue(project);
+
+        if (!matchesSearchText(searchValue, searchTerm)) {
+          return false;
+        }
+      }
+
       // Type filter
       if (activeTypeFilter !== "all") {
         const projectType = (project.type || "").toLowerCase();
@@ -357,7 +403,28 @@ function Projects() {
 
       return true;
     });
-  }, [projects, activeTypeFilter, activeStatusFilter]);
+  }, [projects, activeTypeFilter, activeStatusFilter, searchTerm]);
+
+  useEffect(() => {
+    if (!focusId || filteredProjects.length === 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const element = document.getElementById(focusId);
+
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedProjectId(focusId);
+
+        window.setTimeout(() => {
+          setHighlightedProjectId((current) => (current === focusId ? null : current));
+        }, 2200);
+      }
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [focusId, filteredProjects.length, viewMode]);
 
   if (projectsLoading) {
     return (
@@ -402,6 +469,11 @@ function Projects() {
           <p className="mt-2 text-[var(--text-secondary)]">
             Manage your portfolio projects.
           </p>
+          {searchTerm && (
+            <p className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-semibold text-[var(--accent)]">
+              Search results for "{searchTerm}"
+            </p>
+          )}
         </div>
 
         {/* Right */}
@@ -581,9 +653,11 @@ function Projects() {
           <h3 className="text-xl font-semibold">No Projects Found</h3>
 
           <p className="mt-2 text-[var(--text-secondary)]">
-            {activeTypeFilter === "all" && activeStatusFilter === "all"
-              ? "Create your first project."
-              : `No ${activeStatusFilter !== "all" ? activeStatusFilter : ""} ${activeTypeFilter !== "all" ? activeTypeFilter : ""} projects yet.`.trim().replace(/\s+/g, " ")}
+            {searchTerm
+              ? `No projects match "${searchTerm}".`
+              : activeTypeFilter === "all" && activeStatusFilter === "all"
+                ? "Create your first project."
+                : `No ${activeStatusFilter !== "all" ? activeStatusFilter : ""} ${activeTypeFilter !== "all" ? activeTypeFilter : ""} projects yet.`.trim().replace(/\s+/g, " ")}
           </p>
         </div>
       )}
@@ -604,67 +678,76 @@ function Projects() {
           "
         >
           {filteredProjects.map((project) => (
-            <PortfolioItemCard
+            <div
               key={project.id}
-              title={project.title}
-              description={project.description}
-              featured={project.featured}
-              status={formatStatus(project.status)}
-              tags={getProjectTags(project)}
-              thumbnail={getProjectThumbnail(project)}
-              dateLabel={
-                formatDate(project.date_time) ||
-                formatDate(project.created_at)
-              }
-              metaLabel={
-                [
-                  formatLabel(project.type),
-                  (project.type || "").toLowerCase() === "research" && project.publisher
-                    ? project.publisher
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" / ")
-              }
-              codeAction={
-                getProjectLink(project, [
-                  "github",
-                ])
-                  ? {
-                      href: getProjectLink(project, [
-                        "github",
-                      ]),
-                    }
+              id={`project-${project.slug || project.id}`}
+              className={
+                highlightedProjectId === `project-${project.slug || project.id}`
+                  ? "rounded-[30px] ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
                   : undefined
               }
-              externalAction={
-                getProjectLink(project, [
-                  "live",
-                  "figma",
-                  "youtube",
-                  "docs",
-                ])
-                  ? {
-                      href: getProjectLink(project, [
-                        "live",
-                        "figma",
-                        "youtube",
-                        "docs",
-                      ]),
-                    }
-                  : undefined
-              }
-              editAction={{
-                onClick: () =>
-                  navigate(
-                    `/projects/${project.slug || project.id}/edit`
-                  ),
-              }}
-              deleteAction={{
-                onClick: () => setProjectToDelete(project),
-              }}
-              onToggleFeatured={() => handleToggleFeatured(project)}
-            />
+            >
+              <PortfolioItemCard
+                title={project.title}
+                description={project.description}
+                featured={project.featured}
+                status={formatStatus(project.status)}
+                tags={getProjectTags(project)}
+                thumbnail={getProjectThumbnail(project)}
+                dateLabel={
+                  formatDate(project.date_time) ||
+                  formatDate(project.created_at)
+                }
+                metaLabel={
+                  [
+                    formatLabel(project.type),
+                    (project.type || "").toLowerCase() === "research" && project.publisher
+                      ? project.publisher
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" / ")
+                }
+                codeAction={
+                  getProjectLink(project, [
+                    "github",
+                  ])
+                    ? {
+                        href: getProjectLink(project, [
+                          "github",
+                        ]),
+                      }
+                    : undefined
+                }
+                externalAction={
+                  getProjectLink(project, [
+                    "live",
+                    "figma",
+                    "youtube",
+                    "docs",
+                  ])
+                    ? {
+                        href: getProjectLink(project, [
+                          "live",
+                          "figma",
+                          "youtube",
+                          "docs",
+                        ]),
+                      }
+                    : undefined
+                }
+                editAction={{
+                  onClick: () =>
+                    navigate(
+                      `/projects/${project.slug || project.id}/edit`
+                    ),
+                }}
+                deleteAction={{
+                  onClick: () => setProjectToDelete(project),
+                }}
+                onToggleFeatured={() => handleToggleFeatured(project)}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -678,22 +761,12 @@ function Projects() {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="
-                flex
-                flex-col
-                gap-5
-                rounded-[28px]
-                border
-                border-[var(--border-color)]
-                bg-[var(--bg-card)]
-                p-6
-                transition-all
-                duration-300
-                hover:shadow-lg
-                lg:flex-row
-                lg:items-center
-                lg:justify-between
-              "
+              id={`project-${project.slug || project.id}`}
+              className={`flex flex-col gap-5 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 transition-all duration-300 hover:shadow-lg lg:flex-row lg:items-center lg:justify-between ${
+                highlightedProjectId === `project-${project.slug || project.id}`
+                  ? "ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
+                  : ""
+              }`}
             >
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-4">

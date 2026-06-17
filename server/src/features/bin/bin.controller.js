@@ -54,6 +54,19 @@ const TYPE_HANDLERS = {
     },
     listKey: "apiKeys",
   },
+  contact: {
+    model: prisma.contact,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      subject: true,
+      message: true,
+      created_at: true,
+      deleted_at: true,
+    },
+    listKey: "contacts",
+  },
 };
 
 /**
@@ -66,7 +79,7 @@ export const getBin = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const [projects, experience, certificates, apiKeys] = await Promise.all(
+    const [projects, experience, certificates, apiKeys, contacts] = await Promise.all(
       Object.values(TYPE_HANDLERS).map((handler) =>
         handler.model.findMany({
           where: {
@@ -89,6 +102,7 @@ export const getBin = async (req, res) => {
         experience,
         certificates,
         apiKeys,
+        contacts,
       },
     });
   } catch (error) {

@@ -22,6 +22,7 @@ const SOFT_DELETE_MODELS = [
   { name: "experience",   model: prisma.experience },
   { name: "certificates", model: prisma.certificates },
   { name: "apiKeys",      model: prisma.aPI },
+  { name: "contacts",     model: prisma.contact },
 ];
 
 /* =========================================

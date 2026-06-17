@@ -205,9 +205,12 @@ model Contact {
 
   created_at DateTime @default(now())
 
+  deleted_at DateTime?
+
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+  @@index([user_id, deleted_at])
 }
 
 model Dashboard {

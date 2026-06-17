@@ -29,26 +29,29 @@ function DashboardLayout({
   }, []);
 
   return (
+    // h-screen + overflow-hidden freezes the outer page: the window itself
+    // never scrolls. Only the <main> below is allowed to scroll.
     <div
-      className="flex min-h-screen"
+      className="flex h-screen overflow-hidden"
       style={{ background: "var(--bg-main)" }}
     >
-      {/* Sidebar */}
+      {/* Sidebar — fixed full-height column */}
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col min-w-0">
-        {/* Navbar */}
+      {/* Right column: navbar pinned on top, scrollable main below */}
+      <div className="flex h-screen flex-1 flex-col min-w-0 overflow-hidden">
+        {/* Navbar (does not scroll out of view) */}
         <Navbar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
 
-        {/* Page content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 animate-fade-in-up">
+        {/* Page content — only this scrolls. min-h-0 is required so the
+            flex child can actually shrink and enable inner overflow. */}
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 lg:p-8 animate-fade-in-up">
           {children}
         </main>
       </div>

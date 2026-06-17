@@ -12,6 +12,7 @@ import {
 import { useTheme } from "next-themes";
 import {
   useEffect,
+  useMemo,
   useState,
   useRef,
   useCallback,
@@ -44,6 +45,23 @@ function notifTypeColor(type: string): string {
   }
 }
 
+import { getProjects } from "@features/projects/services/project.service";
+import { getExperiences } from "@features/experience/services/experience.service";
+import { getCertificates } from "@features/certificates/services/certificate.service";
+import { getApiKeys } from "@features/apiKeys/services/apiKey.service";
+import { getContacts } from "@features/contacts/services/contact.service";
+import {
+  buildSearchHref,
+  getSearchTargetCategories,
+  normalizeSearchText,
+  scoreSearchTarget,
+  type SearchTarget,
+} from "@shared/lib/globalSearch";
+
+type SearchResult = SearchTarget & {
+  score: number;
+};
+
 function Navbar({
   sidebarOpen,
   setSidebarOpen,
@@ -56,6 +74,9 @@ function Navbar({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchTargets, setSearchTargets] = useState<SearchTarget[]>([]);
   const [showNotif, setShowNotif] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -70,6 +91,7 @@ function Navbar({
   });
 
   const notifRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLFormElement>(null);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -93,48 +115,105 @@ function Navbar({
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setShowNotif(false);
       }
+
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+        setSearchOpen(false);
+      }
     };
+
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Fetch notifications on mount and poll every 30s
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
+// Fetch notifications on mount and poll every 30s
+useEffect(() => {
+  fetchNotifications();
+  const interval = setInterval(fetchNotifications, 30000);
+  return () => clearInterval(interval);
+}, [fetchNotifications]);
 
-  const handleMarkAsRead = async (id: number) => {
-    try {
-      await notificationService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch {
-      // Silently fail
-    }
+const handleMarkAsRead = async (id: number) => {
+  try {
+    await notificationService.markAsRead(id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+  } catch {
+    // Silently fail
+  }
+};
+
+const handleMarkAllAsRead = async () => {
+  try {
+    await notificationService.markAllAsRead();
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, is_read: true }))
+    );
+    setUnreadCount(0);
+  } catch {
+    // Silently fail
+  }
+};
+
+// Global search index
+useEffect(() => {
+  let active = true;
+
+  const loadSearchIndex = async () => {
+    // keep the entire incoming branch search implementation here
   };
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationService.markAllAsRead();
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, is_read: true }))
-      );
-      setUnreadCount(0);
-    } catch {
-      // Silently fail
-    }
+  void loadSearchIndex();
+
+  return () => {
+    active = false;
   };
+}, []);
+
+const searchResults = useMemo<SearchResult[]>(() => {
+  // keep incoming branch implementation
+}, [searchQuery, searchTargets]);
+
+const handleNavigateToResult = (target: SearchTarget) => {
+  navigate(buildSearchHref(target));
+  setSearchQuery("");
+  setSearchOpen(false);
+  setSearchFocused(false);
+};
+  
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const query = searchQuery.trim();
-    if (query) {
-      navigate(`/search?q=${encodeURIComponent(query)}`);
+if (searchQuery.trim()) {
+  const [bestMatch] = searchResults;
+  const categoryHint = getSearchTargetCategories(searchQuery);
+
+  if (bestMatch) {
+    handleNavigateToResult(bestMatch);
+    return;
+  }
+
+  if (categoryHint === "research") {
+    navigate("/projects?type=research");
+  } else if (categoryHint === "experience") {
+    navigate("/experience");
+  } else if (categoryHint === "achievement") {
+    navigate("/certificates?type=achievement");
+  } else if (categoryHint === "certificate") {
+    navigate("/certificates?type=certificate");
+  } else if (categoryHint === "api-key") {
+    navigate("/api-keys");
+  } else {
+    navigate("/projects");
+  }
+
+  setSearchQuery("");
+  setSearchOpen(false);
+}
       setSearchQuery("");
+      setSearchOpen(false);
     }
   };
 
@@ -156,7 +235,7 @@ function Navbar({
       }}
     >
       {/* ── LEFT ── */}
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         {/* Sidebar toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -176,13 +255,14 @@ function Navbar({
         <form
           onSubmit={handleSearchSubmit}
           className={`
-            hidden items-center gap-2.5 rounded-xl px-3.5 py-2 lg:flex
+            relative flex min-w-0 flex-1 max-w-[460px] items-center gap-2.5 rounded-xl px-3.5 py-2
             border transition-all duration-200
             ${searchFocused
               ? "border-[var(--accent)] bg-[var(--bg-card)] shadow-[0_0_0_3px_var(--accent-glow)]"
               : "border-[var(--border-color)] bg-[var(--bg-secondary)]"
             }
           `}
+          ref={searchRef}
         >
           <Search
             size={16}
@@ -192,15 +272,19 @@ function Navbar({
           />
           <input
             type="text"
-            placeholder="Search everything..."
+placeholder="Search everything..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => {
+              setSearchFocused(true);
+              setSearchOpen(true);
+            }}
             className="
-              w-48 bg-transparent text-sm text-[var(--text-primary)]
+              min-w-0 flex-1 bg-transparent text-sm text-[var(--text-primary)]
               outline-none placeholder:text-[var(--text-muted)]
-              transition-all duration-200 focus:w-64
             "
           />
           {searchQuery && (
@@ -211,6 +295,61 @@ function Navbar({
             >
               <X size={14} />
             </button>
+          )}
+
+          {searchOpen && (
+            <div
+              className="
+                absolute left-0 top-full mt-2 w-full min-w-0 overflow-hidden rounded-2xl
+                border border-[var(--border-color)] bg-[var(--bg-card)] shadow-[var(--shadow-xl)]
+              "
+              style={{ zIndex: 60 }}
+            >
+              <div className="border-b border-[var(--border-color)] px-4 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                  {searchLoading ? "Building search index..." : "Global Search"}
+                </p>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto p-2">
+                {searchResults.length > 0 ? (
+                  searchResults.slice(0, 6).map((result) => (
+                    <button
+                      key={result.id}
+                      type="button"
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        handleNavigateToResult(result);
+                      }}
+                      className="
+                        flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left
+                        transition-colors hover:bg-[var(--bg-secondary)]
+                      "
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                          {result.label}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">
+                          {result.kind === "category" ? "Category" : result.category.replace("-", " ")}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full border border-[var(--border-color)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                        {result.route.path.replace("/", "") || "dashboard"}
+                      </span>
+                    </button>
+                  ))
+                ) : searchQuery.trim() ? (
+                  <div className="px-3 py-4 text-sm text-[var(--text-muted)]">
+                    No direct matches. Try a category like Projects, Experience, Certificates, or API Keys.
+                  </div>
+                ) : (
+                  <div className="px-3 py-4 text-sm text-[var(--text-muted)]">
+                    Start typing to search across projects, research, experience, certificates, achievements, and API keys.
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </form>
       </div>

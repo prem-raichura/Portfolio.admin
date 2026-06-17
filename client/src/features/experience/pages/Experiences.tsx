@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import DashboardLayout from "@layouts/DashboardLayout";
@@ -17,6 +17,7 @@ import ExperienceCard from "@shared/components/cards/ExperienceCard";
 import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
 import { getExperiences, deleteExperience } from "@features/experience/services/experience.service";
+import { matchesSearchText, normalizeSearchText } from "@shared/lib/globalSearch";
 
 interface ExperienceLink {
   key: string;
@@ -43,6 +44,13 @@ type ModeFilter = "all" | "remote" | "on-site" | "hybrid";
 
 function Experiences() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
+  const searchTerm = searchParams.get("q") || "";
+  const focusId = searchParams.get("focus") || "";
 
   /* =========================
       VIEW MODE
@@ -62,6 +70,7 @@ function Experiences() {
   const [expToDelete, setExpToDelete] = useState<Experience | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [highlightedExperienceId, setHighlightedExperienceId] = useState<string | null>(null);
 
   const parseJsonArray = <T,>(value: unknown): T[] => {
     if (Array.isArray(value)) {
@@ -87,6 +96,18 @@ function Experiences() {
   const getExperienceImages = (exp: Experience) => {
     return parseJsonArray<string>(exp.images);
   };
+
+  const getExperienceSearchValue = (exp: Experience) =>
+    [
+      exp.title,
+      exp.slug,
+      exp.company,
+      exp.description || "",
+      exp.location || "",
+      exp.mode || "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   const formatDate = (value?: string | null) => {
     if (!value) return undefined;
@@ -139,6 +160,12 @@ function Experiences() {
 
   const filteredExperiences = useMemo(() => {
     return experiences.filter((exp) => {
+      if (normalizeSearchText(searchTerm)) {
+        if (!matchesSearchText(getExperienceSearchValue(exp), searchTerm)) {
+          return false;
+        }
+      }
+
       // Mode filter
       if (activeModeFilter !== "all") {
         const mode = (exp.mode || "").toLowerCase();
@@ -148,7 +175,27 @@ function Experiences() {
       }
       return true;
     });
-  }, [experiences, activeModeFilter]);
+  }, [experiences, activeModeFilter, searchTerm]);
+
+  useEffect(() => {
+    if (!focusId || filteredExperiences.length === 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const element = document.getElementById(focusId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedExperienceId(focusId);
+
+        window.setTimeout(() => {
+          setHighlightedExperienceId((current) => (current === focusId ? null : current));
+        }, 2200);
+      }
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [focusId, filteredExperiences.length, viewMode]);
 
   if (loading) {
     return (
@@ -180,6 +227,11 @@ function Experiences() {
           <p className="mt-2 text-[var(--text-secondary)]">
             Manage your career history and professional experience.
           </p>
+          {searchTerm && (
+            <p className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-3 py-1 text-xs font-semibold text-[var(--accent)]">
+              Search results for "{searchTerm}"
+            </p>
+          )}
         </div>
 
         <button
@@ -287,7 +339,9 @@ function Experiences() {
         <div className="mt-8 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-10 text-center">
           <h3 className="text-xl font-semibold">No Experiences Found</h3>
           <p className="mt-2 text-[var(--text-secondary)]">
-            Create your first work experience entry to showcase your history.
+            {searchTerm
+              ? `No experiences match "${searchTerm}".`
+              : "Create your first work experience entry to showcase your history."}
           </p>
         </div>
       )}
@@ -298,25 +352,34 @@ function Experiences() {
       {viewMode === "grid" && filteredExperiences.length > 0 && (
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredExperiences.map((exp) => (
-            <ExperienceCard
+            <div
               key={exp.id}
-              title={exp.title}
-              company={exp.company}
-              description={exp.description}
-              start_date={exp.start_date}
-              end_date={exp.end_date}
-              is_current={exp.is_current}
-              location={exp.location}
-              mode={exp.mode}
-              images={getExperienceImages(exp)}
-              links={getExperienceLinks(exp)}
-              editAction={{
-                onClick: () => navigate(`/experience/${exp.slug}/edit`),
-              }}
-              deleteAction={{
-                onClick: () => setExpToDelete(exp),
-              }}
-            />
+              id={`experience-${exp.slug}`}
+              className={
+                highlightedExperienceId === `experience-${exp.slug}`
+                  ? "rounded-[30px] ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
+                  : undefined
+              }
+            >
+              <ExperienceCard
+                title={exp.title}
+                company={exp.company}
+                description={exp.description}
+                start_date={exp.start_date}
+                end_date={exp.end_date}
+                is_current={exp.is_current}
+                location={exp.location}
+                mode={exp.mode}
+                images={getExperienceImages(exp)}
+                links={getExperienceLinks(exp)}
+                editAction={{
+                  onClick: () => navigate(`/experience/${exp.slug}/edit`),
+                }}
+                deleteAction={{
+                  onClick: () => setExpToDelete(exp),
+                }}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -330,25 +393,15 @@ function Experiences() {
             const expImages = getExperienceImages(exp);
             const expLinks = getExperienceLinks(exp);
             return (
-              <div
-                key={exp.id}
-                className="
-                  flex
-                  flex-col
-                  gap-5
-                  rounded-[28px]
-                  border
-                  border-[var(--border-color)]
-                  bg-[var(--bg-card)]
-                  p-6
-                  transition-all
-                  duration-300
-                  hover:shadow-lg
-                  lg:flex-row
-                  lg:items-center
-                  lg:justify-between
-                "
-              >
+            <div
+              key={exp.id}
+              id={`experience-${exp.slug}`}
+              className={`flex flex-col gap-5 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 transition-all duration-300 hover:shadow-lg lg:flex-row lg:items-center lg:justify-between ${
+                highlightedExperienceId === `experience-${exp.slug}`
+                  ? "ring-2 ring-[var(--accent)] ring-offset-4 ring-offset-[var(--bg-main)]"
+                  : ""
+              }`}
+            >
                 <div className="flex-1">
                   <div className="flex items-start gap-4">
                     {expImages.length > 0 && (

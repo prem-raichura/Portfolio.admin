@@ -794,7 +794,7 @@ export default function Dashboard() {
             </button>
           }
         >
-          <div className="max-h-[360px] space-y-3 overflow-y-auto pr-2">
+          <div className="max-h-[260px] space-y-3 overflow-y-auto pr-2">
             {topProjects.length ? (
               topProjects.map((project, index) => (
                 <div
@@ -837,7 +837,7 @@ export default function Dashboard() {
           title="Recent activity"
           subtitle="Latest tracked portfolio events"
         >
-          <div className="max-h-[360px] space-y-2 overflow-y-auto pr-2">
+          <div className="max-h-[200px] space-y-2 overflow-y-auto pr-2">
             {recentActivity.length ? (
               recentActivity.map((item) => (
                 <div

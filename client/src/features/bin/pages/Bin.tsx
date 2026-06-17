@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   Award,
   Key,
+  Mail,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -19,7 +20,7 @@ import {
   permanentlyDelete,
 } from "@features/bin/services/bin.service";
 
-type Tab = "project" | "experience" | "certificate" | "apiKey";
+type Tab = "project" | "experience" | "certificate" | "apiKey" | "contact";
 
 const TAB_CONFIG: Array<{
   value: Tab;
@@ -30,6 +31,7 @@ const TAB_CONFIG: Array<{
   { value: "experience", label: "Experience", icon: BriefcaseBusiness },
   { value: "certificate", label: "Certificates", icon: Award },
   { value: "apiKey", label: "API Keys", icon: Key },
+  { value: "contact", label: "Contacts", icon: Mail },
 ];
 
 function formatDeletedAt(value: string) {
@@ -109,11 +111,19 @@ function Bin() {
         deleted_at: c.deleted_at,
       }));
     }
-    return bin.apiKeys.map((k) => ({
-      id: k.id,
-      title: k.name,
-      subtitle: `${k.api_key.substring(0, 16)}…`,
-      deleted_at: k.deleted_at,
+    if (tab === "apiKey") {
+      return bin.apiKeys.map((k) => ({
+        id: k.id,
+        title: k.name,
+        subtitle: `${k.api_key.substring(0, 16)}…`,
+        deleted_at: k.deleted_at,
+      }));
+    }
+    return bin.contacts.map((c) => ({
+      id: c.id,
+      title: c.name,
+      subtitle: c.subject ? `${c.email} · ${c.subject}` : c.email,
+      deleted_at: c.deleted_at,
     }));
   }, [bin, tab]);
 
@@ -163,13 +173,20 @@ function Bin() {
 
   const counts = useMemo(() => {
     if (!bin) {
-      return { project: 0, experience: 0, certificate: 0, apiKey: 0 };
+      return {
+        project: 0,
+        experience: 0,
+        certificate: 0,
+        apiKey: 0,
+        contact: 0,
+      };
     }
     return {
       project: bin.projects.length,
       experience: bin.experience.length,
       certificate: bin.certificates.length,
       apiKey: bin.apiKeys.length,
+      contact: bin.contacts.length,
     };
   }, [bin]);
 

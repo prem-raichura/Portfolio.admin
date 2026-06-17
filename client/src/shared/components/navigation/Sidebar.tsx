@@ -1,10 +1,12 @@
 import {
   Award,
+  BookOpen,
   BriefcaseBusiness,
   FolderKanban,
   LayoutDashboard,
   LogOut,
   Key,
+  Mail,
   Trash2,
   X,
 } from "lucide-react";
@@ -14,7 +16,11 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import { useEffect, useState } from "react";
+
 import SidebarItem from "./SidebarItem";
+
+import { getContacts } from "@features/contacts/services/contact.service";
 
 const NAV_ITEMS = [
   {
@@ -42,7 +48,20 @@ const NAV_ITEMS = [
     label: "API Keys",
     path: "/api-keys",
   },
+  {
+    icon: <Mail size={20} />,
+    label: "Contacts",
+    path: "/contacts",
+  },
 ];
+
+// Rendered separately at the bottom of the nav (right above the divider)
+// so it sits visually grouped with Bin / Logout.
+const DOCUMENTATION_ITEM = {
+  icon: <BookOpen size={20} />,
+  label: "Documentation",
+  path: "/documentation",
+};
 
 function Sidebar({
   sidebarOpen,
@@ -53,6 +72,26 @@ function Sidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [unreadContacts, setUnreadContacts] = useState(0);
+
+  // Refresh the unread badge on mount and whenever the route changes so that
+  // opening a contact (which marks it read on the server) reflects here too.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await getContacts();
+        if (!alive || !res.success) return;
+        const unread = res.contacts.filter((c) => !c.is_read).length;
+        setUnreadContacts(unread);
+      } catch {
+        // Stay silent — sidebar shouldn't toast for a background fetch.
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [location.pathname]);
 
   return (
     <>
@@ -125,7 +164,7 @@ function Sidebar({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        <nav className="flex flex-1 flex-col overflow-y-auto p-3 space-y-1">
           {NAV_ITEMS.map((item) => (
             <SidebarItem
               key={item.path}
@@ -140,6 +179,7 @@ function Sidebar({
                     : location.pathname === item.path
               }
               sidebarOpen={sidebarOpen}
+              badge={item.path === "/contacts" ? unreadContacts : undefined}
               onClick={() => {
                 if (window.innerWidth < 1024) {
                   setSidebarOpen(false);
@@ -147,9 +187,26 @@ function Sidebar({
               }}
             />
           ))}
+
+          {/* Pin Documentation to the bottom of the nav so it sits flush
+              against the divider that already separates Bin / Logout. */}
         </nav>
 
         <div className="border-t border-[var(--border-color)] p-3 space-y-2">
+           <div className="mt-auto">
+            <SidebarItem
+              icon={DOCUMENTATION_ITEM.icon}
+              label={DOCUMENTATION_ITEM.label}
+              path={DOCUMENTATION_ITEM.path}
+              active={location.pathname === DOCUMENTATION_ITEM.path}
+              sidebarOpen={sidebarOpen}
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setSidebarOpen(false);
+                }
+              }}
+            />
+          </div>
           <button
             onClick={() => {
               navigate("/bin");
