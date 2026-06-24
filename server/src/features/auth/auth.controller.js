@@ -653,11 +653,11 @@ export const githubCallback =
       );
 
     } catch (error) {
-      console.log(error);
+      console.error("[GitHub OAuth callback] failed:", error);
 
       return redirectWithError(
         res,
-        "Failed to authenticate with GitHub"
+        `GitHub auth failed: ${error?.message || "unknown error"}`
       );
     }
   };
