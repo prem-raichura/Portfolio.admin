@@ -558,7 +558,9 @@ export const githubCallback =
 
       const updateData = {
         ...userData,
-        name: existingUser.name,
+        // Preserve the existing display name on update. `existingUser` is null
+        // for a brand-new user (create path), so guard against null.
+        name: existingUser?.name ?? userData.name,
         ...(needsLinkUpdate && {
           users_links: {
             ...existingLinks,
