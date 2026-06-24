@@ -57,7 +57,7 @@ function Login() {
 
   const handleGithubLogin = () => {
     const apiUrl =
-      import.meta.env.VITE_API_URL || "https://portfolio-admin-7es8.onrender.com";
+      import.meta.env.VITE_API_URL || "https://portfolio-admin-pdg8.vercel.app";
     window.location.href = `${apiUrl}/api/auth/github`;
   };
 
