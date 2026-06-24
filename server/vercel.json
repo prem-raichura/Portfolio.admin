@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "buildCommand": "prisma generate",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "crons": [
+    { "path": "/api/cron/purge-tokens", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/purge-bin", "schedule": "30 3 * * *" }
+  ]
+}

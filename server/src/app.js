@@ -21,11 +21,6 @@ import {
 
 import tokenRoutes from "./features/tokens/token.routes.js";
 
-import "./jobs/analytics/analytics.worker.js";
-import "./jobs/logs/logs.worker.js";
-import "./jobs/tokens/tokens.worker.js";
-import "./jobs/bin/bin.worker.js";
-
 import healthRoutes from "./features/health/health.routes.js";
 import authRoutes from "./features/auth/auth.routes.js";
 import userRoutes from "./features/users/user.routes.js";
@@ -39,11 +34,25 @@ import analyticsRoutes from "./features/analytics/analytics.routes.js";
 import logsRoutes from "./features/logs/logs.routes.js";
 import binRoutes from "./features/bin/bin.routes.js";
 import contactRoutes from "./features/contacts/contact.routes.js";
+import cronRoutes from "./features/cron/cron.routes.js";
 
 
 dotenv.config();
 
+// BullMQ workers need an always-on process. Run them only off-Vercel
+// (local / Docker / always-on host). On Vercel, scheduled cleanup runs via
+// Vercel Cron → /api/cron/* (see vercel.json) instead.
+if (!process.env.VERCEL) {
+  await import("./jobs/analytics/analytics.worker.js");
+  await import("./jobs/logs/logs.worker.js");
+  await import("./jobs/tokens/tokens.worker.js");
+  await import("./jobs/bin/bin.worker.js");
+}
+
 const app = express();
+
+// Behind Vercel's proxy — needed so req.ip / rate-limit see the real client IP.
+app.set("trust proxy", 1);
 
 securityMiddleware(app);
 
@@ -99,9 +108,15 @@ app.use("/api/token", tokenRoutes);
 app.use("/api/logs", logsRoutes);
 app.use("/api/bin", binRoutes);
 app.use("/api/contacts", contactRoutes);
+app.use("/api/cron", cronRoutes);
 
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Vercel provides its own listener — only listen when running as a real process.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;
