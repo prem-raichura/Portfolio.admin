@@ -37,8 +37,10 @@ const getClientUrl = () =>
   process.env.CLIENT_URL ||
   "http://localhost:5173";
 
+// Single source of truth: derive the OAuth callback from SERVER_URL so it can
+// never drift from the server's real origin. Must exactly match the callback
+// registered in the GitHub OAuth App.
 const getGithubRedirectUri = () =>
-  process.env.GITHUB_CALLBACK_URL ||
   `${getServerUrl()}/api/auth/github/callback`;
 
 const oauthStateCookieName =
