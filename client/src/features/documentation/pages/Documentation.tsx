@@ -16,21 +16,6 @@ import {
   User,
   Key,
   BarChart2,
-  Menu,
-  Hash,
-  X,
-  Eye,
-  Users,
-  Globe,
-  Monitor,
-  Download,
-  GitBranch,
-  Mail,
-  TrendingUp,
-  Filter,
-  MousePointerClick,
-  Clock,
-  Layers,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -136,217 +121,6 @@ function CodeBlock({
   );
 }
 
-// ─── Chart components ─────────────────────────────────────────────────────────
-
-const VISITS  = [82,67,95,78,110,130,98,115,88,142,160,135,118,95,105,122,145,158,138,125,148,170,155,140,128,112,99,118,132,125];
-const UNIQUE  = [55,44,63,52, 74, 88,66, 77,59, 95,107, 90, 79,64, 70, 82, 97,106, 92, 84, 99,114,104, 94, 86, 75,66, 79, 88, 84];
-const CLICKS  = [28,22,38,31, 45, 54,40, 48,35, 58, 66, 55, 49,39, 43, 50, 60, 65, 57, 51, 62, 70, 64, 58, 53, 46,41, 49, 54, 51];
-
-function ActivityChart() {
-  const W = 460, H = 152;
-  const PL = 30, PR = 6, PT = 8, PB = 22;
-  const plotW = W - PL - PR;
-  const plotH = H - PT - PB;
-  const MAX = 190;
-
-  const cx = (i: number) => PL + (i / (VISITS.length - 1)) * plotW;
-  const cy = (v: number) => PT + plotH - (v / MAX) * plotH;
-
-  const pts = (data: number[]) =>
-    data.map((v, i) => `${cx(i).toFixed(1)},${cy(v).toFixed(1)}`).join(" ");
-
-  const area = (data: number[]) =>
-    `${cx(0).toFixed(1)},${(PT + plotH).toFixed(1)} ${pts(data)} ${cx(data.length - 1).toFixed(1)},${(PT + plotH).toFixed(1)}`;
-
-  const gridY = [0, 50, 100, 150];
-  const xTicks = [
-    { i: 0, label: "Jun 1" }, { i: 7, label: "Jun 8" }, { i: 14, label: "Jun 15" },
-    { i: 21, label: "Jun 22" }, { i: 29, label: "Jun 30" },
-  ];
-  const peakIdx = VISITS.indexOf(170);
-
-  return (
-    <div className="overflow-hidden rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)]">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-color)] px-5 py-3.5">
-        <div>
-          <p className="text-[13px] font-semibold text-[var(--text-primary)]">Activity Over Time</p>
-          <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Jun 2025 · 30 days · daily granularity</p>
-        </div>
-        <div className="flex items-center gap-5">
-          {([
-            { label: "Visits", color: "#6366f1" },
-            { label: "Unique Visitors", color: "#3b82f6" },
-            { label: "Project Clicks", color: "#10b981" },
-          ] as const).map(({ label, color }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <span className="block h-[2.5px] w-6 rounded-full" style={{ background: color }} />
-              <span className="text-[10px] font-medium text-[var(--text-muted)]">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* SVG chart */}
-      <div className="px-2 pb-2 pt-3">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 152 }}>
-          <defs>
-            <linearGradient id="ag-v" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.01" />
-            </linearGradient>
-            <linearGradient id="ag-u" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.01" />
-            </linearGradient>
-            <linearGradient id="ag-c" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
-            </linearGradient>
-          </defs>
-
-          {/* Horizontal grid lines */}
-          {gridY.map(v => (
-            <g key={v}>
-              <line
-                x1={PL} y1={cy(v).toFixed(1)}
-                x2={W - PR} y2={cy(v).toFixed(1)}
-                stroke="var(--border-color)" strokeWidth="1"
-                strokeDasharray={v === 0 ? "0" : "3 4"}
-              />
-              <text
-                x={PL - 5} y={cy(v)} dy="0.32em"
-                textAnchor="end" fontSize="8.5" fill="var(--text-muted)"
-              >{v}</text>
-            </g>
-          ))}
-
-          {/* Area fills */}
-          <polygon points={area(VISITS)} fill="url(#ag-v)" />
-          <polygon points={area(UNIQUE)} fill="url(#ag-u)" />
-          <polygon points={area(CLICKS)} fill="url(#ag-c)" />
-
-          {/* Lines */}
-          <polyline points={pts(VISITS)} fill="none" stroke="#6366f1" strokeWidth="2"   strokeLinejoin="round" strokeLinecap="round" />
-          <polyline points={pts(UNIQUE)} fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-          <polyline points={pts(CLICKS)} fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-
-          {/* Peak dot + tooltip */}
-          <circle cx={cx(peakIdx).toFixed(1)} cy={cy(170).toFixed(1)} r="4" fill="#6366f1" stroke="var(--bg-card)" strokeWidth="2" />
-          <rect
-            x={cx(peakIdx) - 26} y={cy(170) - 22}
-            width="52" height="16" rx="4"
-            fill="#6366f1" opacity="0.92"
-          />
-          <text
-            x={cx(peakIdx)} y={cy(170) - 11}
-            textAnchor="middle" fontSize="8.5" fill="white" fontWeight="600"
-          >170 visits</text>
-          {/* Tooltip stem */}
-          <line
-            x1={cx(peakIdx).toFixed(1)} y1={cy(170) - 6}
-            x2={cx(peakIdx).toFixed(1)} y2={cy(170) - 1}
-            stroke="#6366f1" strokeWidth="1.5"
-          />
-
-          {/* X-axis ticks */}
-          {xTicks.map(({ i, label }) => (
-            <text key={i} x={cx(i)} y={H - 5} textAnchor="middle" fontSize="8.5" fill="var(--text-muted)">{label}</text>
-          ))}
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function DeviceMixCard() {
-  const devices = [
-    { label: "Desktop", pct: 59, count: "1,679", color: "#6366f1" },
-    { label: "Mobile",  pct: 29, count: "824",   color: "#3b82f6" },
-    { label: "Tablet",  pct: 9,  count: "256",   color: "#8b5cf6" },
-    { label: "Unknown", pct: 3,  count: "88",    color: "#94a3b8" },
-  ];
-
-  const r = 38;
-  const circ = 2 * Math.PI * r;
-  const GAP = 2; // gap between segments in px along circumference
-
-  let acc = 0;
-  const segs = devices.map(d => {
-    const dash = (d.pct / 100) * circ - GAP;
-    const seg = { ...d, dash: Math.max(dash, 0), gap: circ - Math.max(dash, 0), offset: -acc };
-    acc += (d.pct / 100) * circ;
-    return seg;
-  });
-
-  return (
-    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-[13px] font-semibold text-[var(--text-primary)]">Device Mix</p>
-          <p className="text-[10px] text-[var(--text-muted)] mt-0.5">2,847 total sessions</p>
-        </div>
-        <span className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-2 py-1 text-[10px] font-semibold text-[var(--text-muted)]">
-          Last 30d
-        </span>
-      </div>
-
-      <div className="flex items-center gap-6">
-        {/* Donut */}
-        <div className="relative shrink-0" style={{ width: 110, height: 110 }}>
-          <svg viewBox="0 0 100 100" style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }}>
-            {/* Track */}
-            <circle cx="50" cy="50" r={r} fill="none" stroke="var(--bg-secondary)" strokeWidth="14" />
-            {/* Segments */}
-            {segs.map((s, i) => (
-              <circle
-                key={i}
-                cx="50" cy="50" r={r}
-                fill="none"
-                stroke={s.color}
-                strokeWidth="14"
-                strokeDasharray={`${s.dash.toFixed(2)} ${s.gap.toFixed(2)}`}
-                strokeDashoffset={s.offset.toFixed(2)}
-                strokeLinecap="butt"
-              />
-            ))}
-          </svg>
-          {/* Center label */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[17px] font-extrabold leading-none text-[var(--text-primary)]">59%</p>
-            <p className="text-[9px] font-medium text-[var(--text-muted)] mt-0.5">Desktop</p>
-          </div>
-        </div>
-
-        {/* Legend with mini-bar per device */}
-        <div className="flex-1 space-y-2.5">
-          {devices.map(d => (
-            <div key={d.label}>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ background: d.color }} />
-                  <span className="text-[11px] font-medium text-[var(--text-secondary)]">{d.label}</span>
-                </div>
-                <div className="flex items-center gap-2 text-right">
-                  <span className="text-[10px] text-[var(--text-muted)]">{d.count}</span>
-                  <span className="w-7 text-[11px] font-bold text-[var(--text-primary)]">{d.pct}%</span>
-                </div>
-              </div>
-              <div className="h-1.5 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${d.pct}%`, background: d.color, opacity: 0.85 }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Documentation() {
@@ -354,13 +128,13 @@ export default function Documentation() {
   const navigate = useNavigate();
   const mainRef = useRef<HTMLDivElement>(null);
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedPage, setSelectedPage] = useState("system-overview");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [activeHeading, setActiveHeading] = useState("");
   const [apiTab, setApiTab] = useState<"curl" | "fetch">("curl");
+  const [analyticsTab, setAnalyticsTab] = useState<"curl" | "fetch">("curl");
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -432,6 +206,131 @@ export default function Documentation() {
       "url": "https://aws.amazon.com/verification/AWS-ASA-99812"
     }
   ]
+}`;
+
+  const analyticsTrackCurl = `curl -X POST "https://api.portos.dev/api/analytics/github-click" \\
+  -H "x-api-key: your_api_key_here" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "path": "/projects",
+    "source": "direct",
+    "project_id": 42,
+    "project_slug": "my-project"
+  }'`;
+
+  const analyticsTrackFetch = `const trackEvent = async (endpoint, data = {}) => {
+  await fetch(\`https://api.portos.dev/api/analytics/\${endpoint}\`, {
+    method: "POST",
+    headers: {
+      "x-api-key": "your_api_key_here",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      path: window.location.pathname,
+      source: document.referrer ? "referral" : "direct",
+      ...data,
+    }),
+  });
+};
+
+// Track GitHub link click
+document.getElementById("github-btn").addEventListener("click", () => {
+  trackEvent("github-click", { project_slug: "my-project" });
+});
+
+// Track live demo click
+document.getElementById("demo-btn").addEventListener("click", () => {
+  trackEvent("live-demo-click", { project_id: 42, project_slug: "my-project" });
+});
+
+// Track resume download
+document.getElementById("resume-btn").addEventListener("click", () => {
+  trackEvent("resume-download");
+});
+
+// Track project card click
+document.getElementById("project-card").addEventListener("click", () => {
+  trackEvent("project-click", { project_id: 42, project_slug: "my-project" });
+});
+
+// Track contact form submission
+document.getElementById("contact-form").addEventListener("submit", () => {
+  trackEvent("contact-submission");
+});`;
+
+  const analyticsDashboardResponse = `{
+  "success": true,
+  "filter": "30d",
+  "selectedCountry": "ALL",
+  "dashboard": {
+    "total_visit": 2847,
+    "unique_visitor": 1203,
+    "github_clicks": 384,
+    "live_demo_clicks": 312,
+    "resume_download": 127,
+    "project_clicks": 698,
+    "contact_submissions": 24,
+    "updated_at": "2026-06-25T14:32:18.000Z"
+  },
+  "addedCounts": {
+    "totalProjectsAdded": 12,
+    "experienceAdded": 5,
+    "achievementsAdded": 8,
+    "certificationsAdded": 6,
+    "apiKeysAdded": 2
+  },
+  "totalEvents": 4391,
+  "graphData": [
+    {
+      "date": "2026-05-26",
+      "visits": 89,
+      "uniqueVisitors": 45,
+      "githubClicks": 12,
+      "liveDemoClicks": 9,
+      "resumeDownloads": 3,
+      "projectClicks": 24,
+      "contactSubmissions": 1
+    }
+  ],
+  "countryBreakdown": [
+    { "country": "US", "visits": 1140 },
+    { "country": "IN", "visits": 748 },
+    { "country": "GB", "visits": 501 }
+  ],
+  "deviceBreakdown": [
+    { "device": "desktop", "value": 1804 },
+    { "device": "mobile",  "value": 923  },
+    { "device": "tablet",  "value": 120  },
+    { "device": "unknown", "value": 0    }
+  ],
+  "sourceBreakdown": [
+    { "source": "direct",       "visits": 998 },
+    { "source": "linkedin.com", "visits": 697 },
+    { "source": "github.com",   "visits": 428 }
+  ],
+  "topProjects": [
+    {
+      "project_id": 1,
+      "project_slug": "portos-cli",
+      "title": "PortOS CLI",
+      "clicks": 204
+    }
+  ],
+  "recentActivity": [
+    {
+      "id": 4391,
+      "type": "contact_submission",
+      "created_at": "2026-06-25T14:28:45.123Z",
+      "country": "CA",
+      "device_type": "mobile",
+      "source": "direct",
+      "path": "/contact",
+      "referrer": null,
+      "project_slug": null,
+      "project_id": null
+    }
+  ],
+  "availableCountries": ["US", "IN", "GB", "DE", "CA"]
 }`;
 
   // ── Page definitions ─────────────────────────────────────────────────────
@@ -715,185 +614,327 @@ export default function Documentation() {
       title: "Analytics Dashboard",
       category: "Analytics",
       attributes: [
-        { name: "Dashboard Views", value: "Analytics (traffic) + Library (content counts)" },
-        { name: "Time Ranges", value: "7D · 30D · 90D · 1Y" },
-        { name: "Country Filter", value: "All countries or per-country drill-down" },
-        { name: "Charts", value: "Area · Donut · Bar via Recharts" },
-        { name: "KPI Metrics", value: "7 performance indicators" },
-        { name: "API Endpoint", value: "GET /api/dashboard — Bearer auth" },
+        { name: "Tracking Endpoints", value: "POST /api/analytics/*" },
+        { name: "Dashboard Endpoint", value: "GET /api/dashboard" },
+        { name: "Tracking Auth",      value: "Header: x-api-key" },
+        { name: "Dashboard Auth",     value: "Bearer JWT (admin only)" },
+        { name: "Event Types",        value: "6 (5 manual + 1 automatic)" },
+        { name: "Time Ranges",        value: "7D · 30D · 90D · 1Y" },
       ],
       headings: [
-        { id: "analytics-overview", text: "Dashboard Overview" },
-        { id: "kpi-cards", text: "KPI Metrics" },
-        { id: "activity-chart", text: "Activity Over Time" },
-        { id: "traffic-geography", text: "Traffic & Geography" },
-        { id: "top-projects", text: "Top Projects & Devices" },
-        { id: "activity-feed", text: "Recent Activity Feed" },
+        { id: "analytics-how-it-works",  text: "How Tracking Works" },
+        { id: "analytics-events",        text: "Event Endpoints" },
+        { id: "analytics-request-body",  text: "Tracking Request Body" },
+        { id: "analytics-code-examples", text: "Code Examples" },
+        { id: "analytics-responses",     text: "Tracking Responses" },
+        { id: "analytics-dashboard-api", text: "Dashboard API" },
+        { id: "analytics-query-params",  text: "Query Parameters" },
+        { id: "analytics-response-json", text: "Response Structure" },
+        { id: "analytics-ui",            text: "Dashboard UI Overview" },
       ],
       content: (
         <div className="space-y-7">
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            The Analytics Dashboard gives you complete visibility into your portfolio's performance. Toggle between <strong className="text-[var(--text-primary)]">Analytics</strong> (visitor traffic, clicks, downloads) and <strong className="text-[var(--text-primary)]">Library</strong> (content you've added). Use the <strong className="text-[var(--text-primary)]">7D / 30D / 90D / 1Y</strong> buttons and the country dropdown at the top to slice all charts and KPI cards simultaneously.
+            PortOS ships a built-in analytics engine that tracks every meaningful interaction visitors have with your external portfolio site — visits, project clicks, GitHub link taps, resume downloads, live demo opens, and contact form submissions. All data feeds directly into your admin Analytics Dashboard with time-range filters, country drill-downs, and device breakdowns.
           </p>
 
-          {/* ── KPI Cards ── */}
-          <SectionHeading id="kpi-cards">KPI Metrics</SectionHeading>
+          {/* ── How Tracking Works ── */}
+          <SectionHeading id="analytics-how-it-works">How Tracking Works</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            Seven cards summarise your portfolio activity for the selected period. Each card updates instantly when you change the time range or country filter.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[
-              { Icon: Eye,              color: "text-indigo-500", bg: "rgba(99,102,241,0.12)",  label: "Visits",              value: "2,847" },
-              { Icon: Users,            color: "text-blue-500",   bg: "rgba(59,130,246,0.12)",  label: "Unique Visitors",     value: "1,203" },
-              { Icon: GitBranch,        color: "text-slate-500",  bg: "rgba(100,116,139,0.12)", label: "GitHub Clicks",       value: "384"   },
-              { Icon: Download,         color: "text-emerald-500",bg: "rgba(16,185,129,0.12)",  label: "Resume Downloads",    value: "127"   },
-              { Icon: MousePointerClick,color: "text-violet-500", bg: "rgba(139,92,246,0.12)",  label: "Project Clicks",      value: "698"   },
-              { Icon: Mail,             color: "text-teal-500",   bg: "rgba(20,184,166,0.12)",  label: "Contacts",            value: "24"    },
-              { Icon: ArrowUpRight,     color: "text-amber-500",  bg: "rgba(245,158,11,0.12)",  label: "Live Demo Clicks",    value: "312"   },
-            ].map(({ Icon, color, bg, label, value }) => (
-              <div key={label} className="flex flex-col gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
-                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${color}`} style={{ background: bg }}>
-                  <Icon size={14} />
-                </span>
-                <div>
-                  <p className="text-[22px] font-bold leading-none text-[var(--text-primary)]">{value}</p>
-                  <p className="mt-1 text-[11px] font-medium text-[var(--text-muted)]">{label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* ── Activity chart ── */}
-          <SectionHeading id="activity-chart">Activity Over Time</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            A multi-line area chart plots Visits, Unique Visitors, and Project Clicks across the selected period. Hover any column to see the exact values for that day.
-          </p>
-          <ActivityChart />
-
-          {/* ── Traffic & Geography ── */}
-          <SectionHeading id="traffic-geography">Traffic &amp; Geography</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            Two bar charts sit side by side: <strong className="text-[var(--text-primary)]">Country Breakdown</strong> ranks where your visitors come from geographically, and <strong className="text-[var(--text-primary)]">Traffic Sources</strong> shows which referrer channels drive the most traffic. Selecting a country in the dropdown filters both charts.
+            The system tracks two categories of events — one automatic and five that you fire manually from your external portfolio site:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Country breakdown */}
             <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
-              <div className="flex items-center gap-1.5 mb-3">
-                <Globe size={12} className="text-[var(--text-muted)]" />
-                <p className="text-[12px] font-semibold text-[var(--text-primary)]">Country Breakdown</p>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-black text-white" style={{ background: "var(--accent)" }}>A</span>
+                <p className="text-[12px] font-semibold text-[var(--text-primary)]">Automatic — Portfolio Visit</p>
               </div>
-              <div className="space-y-2">
-                {[
-                  { label: "United States", count: 1140, pct: 100, color: "#6366f1" },
-                  { label: "India",          count: 748,  pct: 66,  color: "#818cf8" },
-                  { label: "United Kingdom", count: 501,  pct: 44,  color: "#a5b4fc" },
-                  { label: "Germany",        count: 321,  pct: 28,  color: "#c7d2fe" },
-                  { label: "Canada",         count: 267,  pct: 23,  color: "#e0e7ff" },
-                ].map(({ label, count, pct, color }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <span className="text-[10px] w-24 truncate text-[var(--text-muted)]">{label}</span>
-                    <div className="flex-1 h-1.5 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-                    </div>
-                    <span className="text-[10px] font-semibold text-[var(--text-primary)] w-9 text-right">{count.toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-[12px] leading-relaxed text-[var(--text-secondary)]">
+                Every time your external site calls <code className="rounded bg-[var(--bg-secondary)] px-1 font-mono text-[var(--accent)]">GET /api/public</code>, the server automatically queues a <code className="rounded bg-[var(--bg-secondary)] px-1 font-mono text-[var(--accent)]">portfolio_visit</code> event. No extra code needed on your site.
+              </p>
             </div>
-            {/* Traffic sources */}
             <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
-              <div className="flex items-center gap-1.5 mb-3">
-                <TrendingUp size={12} className="text-[var(--text-muted)]" />
-                <p className="text-[12px] font-semibold text-[var(--text-primary)]">Traffic Sources</p>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-black text-white" style={{ background: "var(--success)" }}>M</span>
+                <p className="text-[12px] font-semibold text-[var(--text-primary)]">Manual — Interaction Events</p>
               </div>
-              <div className="space-y-2">
-                {[
-                  { label: "Direct",        count: 998, pct: 100, color: "#6366f1" },
-                  { label: "linkedin.com",  count: 697, pct: 70,  color: "#3b82f6" },
-                  { label: "github.com",    count: 428, pct: 43,  color: "#10b981" },
-                  { label: "google.com",    count: 314, pct: 31,  color: "#f59e0b" },
-                  { label: "twitter.com",   count: 150, pct: 15,  color: "#8b5cf6" },
-                ].map(({ label, count, pct, color }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <span className="text-[10px] w-24 truncate text-[var(--text-muted)]">{label}</span>
-                    <div className="flex-1 h-1.5 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-                    </div>
-                    <span className="text-[10px] font-semibold text-[var(--text-primary)] w-9 text-right">{count.toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-[12px] leading-relaxed text-[var(--text-secondary)]">
+                For clicks and form submissions, your portfolio site fires a <code className="rounded bg-[var(--bg-secondary)] px-1 font-mono text-[var(--accent)]">POST</code> request to the relevant tracking endpoint using your API key. All fields in the request body are optional.
+              </p>
             </div>
           </div>
+          <Callout variant="info" icon={<Info size={14} />} title="Background processing">
+            All tracking events are processed asynchronously via a BullMQ job queue. Your portfolio visitors experience zero latency — the tracking write happens in a background worker after the HTTP response is already returned.
+          </Callout>
 
-          {/* ── Top Projects & Devices ── */}
-          <SectionHeading id="top-projects">Top Projects &amp; Devices</SectionHeading>
+          {/* ── Event Endpoints ── */}
+          <SectionHeading id="analytics-events">Event Endpoints</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            <strong className="text-[var(--text-primary)]">Top Projects</strong> ranks your portfolio projects by combined click count (demo + repo). <strong className="text-[var(--text-primary)]">Device Mix</strong> shows the device type split inferred from User-Agent headers.
+            Five POST endpoints correspond to the five interaction types you can track. All use the same <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">x-api-key</code> authentication header.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Top projects */}
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
-              <p className="text-[12px] font-semibold text-[var(--text-primary)] mb-3">Top Projects</p>
-              <div className="space-y-3">
+          <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Method</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Endpoint</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Event Tracked</th>
+                </tr>
+              </thead>
+              <tbody>
                 {[
-                  { title: "PortOS CLI",         slug: "portos-cli",         clicks: 204 },
-                  { title: "API Gateway Proxy",   slug: "api-gateway-proxy",  clicks: 148 },
-                  { title: "React Component Kit", slug: "react-component-kit",clicks: 93  },
-                  { title: "Redis Cache Layer",   slug: "redis-cache-layer",  clicks: 54  },
-                ].map(({ title, slug, clicks }) => (
-                  <div key={slug}>
-                    <div className="flex justify-between mb-1">
-                      <div>
-                        <p className="text-[11px] font-semibold text-[var(--text-primary)]">{title}</p>
-                        <p className="text-[9px] text-[var(--text-muted)]">{slug}</p>
-                      </div>
-                      <span className="text-[11px] font-bold text-[var(--text-primary)]">{clicks}</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${(clicks / 204) * 100}%`, background: "linear-gradient(to right, var(--grad-start), var(--grad-end))" }} />
-                    </div>
-                  </div>
+                  { method: "POST", path: "/api/analytics/github-click",       event: "GitHub repository link click" },
+                  { method: "POST", path: "/api/analytics/live-demo-click",    event: "Live demo / preview link click" },
+                  { method: "POST", path: "/api/analytics/resume-download",    event: "Resume file download" },
+                  { method: "POST", path: "/api/analytics/project-click",      event: "Project card click" },
+                  { method: "POST", path: "/api/analytics/contact-submission", event: "Contact form submission" },
+                ].map(({ method, path, event }, i) => (
+                  <tr key={path} className={`bg-[var(--bg-card)] ${i > 0 ? "border-t border-[var(--border-color)]" : ""}`}>
+                    <td className="px-4 py-3">
+                      <span className="rounded-md bg-[var(--accent-light)] px-2 py-0.5 text-[10px] font-bold text-[var(--accent)]">{method}</span>
+                    </td>
+                    <td className="px-4 py-3 font-mono font-semibold text-[var(--accent)]">{path}</td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">{event}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Request Body ── */}
+          <SectionHeading id="analytics-request-body">Tracking Request Body</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            All fields are optional. Include as much context as you have — the more data you send, the richer your dashboard becomes.
+          </p>
+          <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Field</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Type</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { field: "path",         type: "string", desc: 'Current page URL path (e.g. "/projects")' },
+                  { field: "source",       type: "string", desc: '"direct" or the referrer domain (e.g. "linkedin.com")' },
+                  { field: "project_id",   type: "number", desc: "Database ID of the project — for project/demo/github events" },
+                  { field: "project_slug", type: "string", desc: "URL-safe slug of the project (e.g. \"portos-cli\")" },
+                  { field: "session_id",   type: "string", desc: "UUID for grouping multiple events from one visitor session" },
+                  { field: "metadata",     type: "object", desc: "Any additional JSON data you want to attach to the event" },
+                ].map(({ field, type, desc }, i) => (
+                  <tr key={field} className={`bg-[var(--bg-card)] ${i > 0 ? "border-t border-[var(--border-color)]" : ""}`}>
+                    <td className="px-4 py-3 font-mono font-semibold text-[var(--accent)]">{field}</td>
+                    <td className="px-4 py-3 text-[var(--text-muted)]">{type}</td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Code Examples ── */}
+          <SectionHeading id="analytics-code-examples">Code Examples</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            The following examples demonstrate firing a tracking event from your external portfolio site. Adapt the <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">endpoint</code> and body fields for each event type.
+          </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">Language</span>
+              <div className="flex gap-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] p-1">
+                {(["curl", "fetch"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setAnalyticsTab(tab)}
+                    className={`rounded-md px-3 py-1 text-xs font-semibold transition-all ${
+                      analyticsTab === tab
+                        ? "bg-[var(--accent)] text-white shadow-sm"
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    {tab === "curl" ? "cURL" : "JavaScript"}
+                  </button>
                 ))}
               </div>
             </div>
-            {/* Device mix */}
-            <DeviceMixCard />
+            <CodeBlock
+              language={analyticsTab === "curl" ? "bash" : "javascript"}
+              code={analyticsTab === "curl" ? analyticsTrackCurl : analyticsTrackFetch}
+              copyId="analytics-track"
+              copiedText={copiedText}
+              onCopy={handleCopy}
+              maxHeight={analyticsTab === "fetch" ? "max-h-[340px]" : undefined}
+            />
           </div>
 
-          {/* ── Activity Feed ── */}
-          <SectionHeading id="activity-feed">Recent Activity Feed</SectionHeading>
+          {/* ── Tracking Responses ── */}
+          <SectionHeading id="analytics-responses">Tracking Responses</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-            A live event log at the bottom of the dashboard shows each individual interaction with your portfolio — the event type, visitor country, referrer source, path visited, and timestamp. The feed respects the country filter.
+            All five tracking endpoints return the same lightweight JSON envelope on success. The message text varies per endpoint.
           </p>
-          <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
-            <p className="text-[12px] font-semibold text-[var(--text-primary)] mb-3">Recent Activity</p>
-            <div className="space-y-2">
+          <div className="overflow-hidden rounded-xl border border-[var(--border-color)]">
+            <div className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 py-2.5 flex items-center justify-between">
+              <span className="rounded-md bg-green-500/10 px-2 py-0.5 text-[10px] font-bold text-green-500">200 OK</span>
+              <span className="text-[10px] text-[var(--text-muted)]">application/json</span>
+            </div>
+            <div className="space-y-0">
               {[
-                { Icon: Eye,              color: "text-indigo-500", bg: "rgba(99,102,241,0.1)",  event: "Portfolio Visit",     country: "United States", source: "linkedin.com", path: "/",                    time: "2m ago"  },
-                { Icon: GitBranch,        color: "text-slate-500",  bg: "rgba(100,116,139,0.1)", event: "GitHub Click",        country: "India",         source: "Direct",       path: "/projects",            time: "14m ago" },
-                { Icon: Download,         color: "text-emerald-500",bg: "rgba(16,185,129,0.1)",  event: "Resume Download",     country: "Germany",       source: "google.com",   path: "/",                    time: "1h ago"  },
-                { Icon: ArrowUpRight,     color: "text-amber-500",  bg: "rgba(245,158,11,0.1)",  event: "Live Demo Click",     country: "UK",            source: "twitter.com",  path: "/projects/portos-cli", time: "3h ago"  },
-                { Icon: Mail,             color: "text-teal-500",   bg: "rgba(20,184,166,0.1)",  event: "Contact Submission",  country: "Canada",        source: "Direct",       path: "/contact",             time: "5h ago"  },
-              ].map(({ Icon, color, bg, event, country, source, path, time }) => (
-                <div key={time} className="flex items-center gap-3 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2">
-                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${color}`} style={{ background: bg }}>
-                    <Icon size={12} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold text-[var(--text-primary)]">{event}</p>
-                    <p className="text-[10px] text-[var(--text-muted)] truncate">
-                      <Globe size={8} className="inline mr-0.5" />{country} · {source} · <span className="font-mono">{path}</span>
-                    </p>
-                  </div>
-                  <span className="text-[10px] shrink-0 text-[var(--text-muted)]">{time}</span>
+                { endpoint: "github-click",       message: "Github click tracked" },
+                { endpoint: "live-demo-click",     message: "Live demo click tracked" },
+                { endpoint: "resume-download",     message: "Resume download tracked" },
+                { endpoint: "project-click",       message: "Project click tracked" },
+                { endpoint: "contact-submission",  message: "Contact submission tracked" },
+              ].map(({ endpoint, message }, i) => (
+                <div key={endpoint} className={`grid grid-cols-[1fr_auto] gap-4 px-4 py-2.5 bg-[var(--bg-card)] ${i > 0 ? "border-t border-[var(--border-color)]" : ""}`}>
+                  <code className="text-[11px] font-mono text-[var(--text-muted)]">
+                    {`{ "success": true, "message": "`}<span className="text-[var(--success)]">{message}</span>{`" }`}
+                  </code>
+                  <span className="text-[10px] font-mono text-[var(--text-muted)] shrink-0 self-center">/analytics/{endpoint}</span>
                 </div>
               ))}
             </div>
           </div>
-          <Callout variant="info" icon={<Info size={13} />} title="Library view">
-            Toggle to <strong>Library</strong> at the top of the dashboard to replace the KPI cards with content counts — total projects, experience entries, certifications, and API keys you've added. These counts are not affected by time or country filters.
+          <Callout variant="warning" icon={<AlertTriangle size={14} />} title="Error responses">
+            A missing or invalid <code className="rounded bg-[var(--bg-secondary)] px-1 font-mono text-xs">x-api-key</code> returns <strong>401 Unauthorized</strong>. An expired key returns <strong>401 API key expired and has been deactivated</strong> and the key is permanently disabled. Rotate your keys from the API Keys section in your dashboard.
           </Callout>
+
+          {/* ── Dashboard API ── */}
+          <SectionHeading id="analytics-dashboard-api">Dashboard API</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            The dashboard endpoint returns your full aggregated analytics data. It is called by the PortOS admin UI — you do not need to call it from your portfolio site. It requires your session Bearer token, not an API key.
+          </p>
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 py-3">
+            <span className="rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-400">GET</span>
+            <code className="text-sm font-semibold text-[var(--text-primary)]">https://api.portos.dev/api/dashboard</code>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Header</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Type</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Description</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-[var(--bg-card)]">
+                  <td className="px-4 py-3 font-mono font-semibold text-[var(--accent)]">Authorization</td>
+                  <td className="px-4 py-3 text-[var(--text-muted)]">String</td>
+                  <td className="px-4 py-3 text-[var(--text-secondary)]">Bearer token from your admin session JWT</td>
+                  <td className="px-4 py-3 font-semibold text-red-500">Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Query Params ── */}
+          <SectionHeading id="analytics-query-params">Query Parameters</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            Both parameters are optional and default to the values below. Combine them to slice your data by time and geography simultaneously.
+          </p>
+          <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Parameter</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Values</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Default</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { param: "filter",  values: "7d · 30d · 90d · 1y", def: "7d",  desc: "Rolling date range applied to all metrics and chart data" },
+                  { param: "country", values: "ISO code or ALL",     def: "ALL", desc: "Filter all results to a single country (e.g. US, IN, GB)" },
+                ].map(({ param, values, def, desc }, i) => (
+                  <tr key={param} className={`bg-[var(--bg-card)] ${i > 0 ? "border-t border-[var(--border-color)]" : ""}`}>
+                    <td className="px-4 py-3 font-mono font-semibold text-[var(--accent)]">{param}</td>
+                    <td className="px-4 py-3 font-mono text-[var(--text-secondary)]">{values}</td>
+                    <td className="px-4 py-3 font-mono text-[var(--text-muted)]">{def}</td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 py-3 space-y-1.5">
+            {[
+              "GET /api/dashboard?filter=7d&country=ALL",
+              "GET /api/dashboard?filter=30d&country=IN",
+              "GET /api/dashboard?filter=1y&country=US",
+            ].map((ex) => (
+              <code key={ex} className="block text-[12px] font-mono text-[var(--text-secondary)]">{ex}</code>
+            ))}
+          </div>
+
+          {/* ── Response Structure ── */}
+          <SectionHeading id="analytics-response-json">Response Structure</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            The response contains the KPI summary, daily graph data, country and device breakdowns, top projects by clicks, and the most recent activity feed — all scoped to the requested filter and country.
+          </p>
+          <CodeBlock
+            language="json"
+            code={analyticsDashboardResponse}
+            copyId="analytics-dash-res"
+            copyLabel="Copy JSON"
+            copiedText={copiedText}
+            onCopy={handleCopy}
+            maxHeight="max-h-[400px]"
+          />
+
+          {/* ── Dashboard UI Overview ── */}
+          <SectionHeading id="analytics-ui">Dashboard UI Overview</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            The Analytics section of your PortOS admin panel visualises all of the above data. It has two views toggled at the top:
+          </p>
+          <div className="space-y-3">
+            {[
+              {
+                label: "Analytics View",
+                accent: "var(--accent)",
+                items: [
+                  "7 KPI cards — Visits, Unique Visitors, GitHub Clicks, Resume Downloads, Project Clicks, Contact Submissions, Live Demo Clicks",
+                  "Activity Over Time — area chart of visits, unique visitors, and project clicks per day",
+                  "Country Breakdown — horizontal bar chart of top countries by visit count",
+                  "Traffic Sources — referrer domains ranked by visits (Direct, LinkedIn, GitHub, Google, …)",
+                  "Top Projects — top 5 projects ranked by total click count with progress bars",
+                  "Device Mix — donut chart split by Desktop, Mobile, Tablet, Unknown",
+                  "Recent Activity Feed — last 10 events with type, country, source, path, and timestamp",
+                ],
+              },
+              {
+                label: "Library View",
+                accent: "var(--success)",
+                items: [
+                  "Total Projects added (including research entries)",
+                  "Experience records added",
+                  "Achievements and Certifications added",
+                  "Active API Keys count",
+                  "These counts are not affected by time range or country filters",
+                ],
+              },
+            ].map(({ label, accent, items }) => (
+              <div key={label} className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ background: accent }} />
+                  <p className="text-[13px] font-semibold text-[var(--text-primary)]">{label}</p>
+                </div>
+                <ul className="space-y-1.5">
+                  {items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-[12px] text-[var(--text-secondary)]">
+                      <span className="mt-1.5 h-1 w-1 rounded-full shrink-0 bg-[var(--text-muted)]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+            Use the <strong className="text-[var(--text-primary)]">7D / 30D / 90D / 1Y</strong> buttons and the country dropdown at the top of the dashboard to filter all KPI cards and charts simultaneously. The <strong className="text-[var(--text-primary)]">Available Countries</strong> list in the dropdown is populated from your actual visitor data — only countries that have sent at least one event appear.
+          </p>
         </div>
       ),
     },
@@ -981,7 +1022,6 @@ export default function Documentation() {
     setSelectedPage(id);
     setActiveHeading("");
     mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
   const scrollToHeading = (id: string) => {
@@ -1015,31 +1055,20 @@ export default function Documentation() {
 
   const navContent = (
     <div className="flex flex-col h-full">
-      {/* Sidebar brand */}
-      <div className="flex items-center gap-3 border-b border-[var(--border-color)] px-5 py-4 shrink-0">
-        <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-black text-white"
-          style={{
-            background: "linear-gradient(135deg, var(--grad-start), var(--grad-end))",
-            boxShadow: "0 4px 12px var(--accent-glow)",
-          }}
-        >
-          P
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold leading-tight text-[var(--text-primary)]">PortOS</p>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Documentation</p>
-        </div>
+      {/* Sidebar top label */}
+      <div className="shrink-0 border-b border-[var(--border-color)] px-4 py-4">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Documentation</p>
+        <p className="mt-0.5 text-[12px] font-medium text-[var(--text-secondary)]">User Guide · v1.0</p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         {navGroups.map((group) => {
           const GIcon = group.Icon;
           return (
             <div key={group.category}>
               {/* Group label */}
-              <div className="mb-1.5 flex items-center gap-2 px-2">
+              <div className="mb-2 flex items-center gap-2 px-2">
                 <span
                   className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded ${group.color}`}
                   style={{ background: group.bg }}
@@ -1055,11 +1084,12 @@ export default function Documentation() {
               <ul className="space-y-0.5">
                 {group.items.map((item) => {
                   const isActive = selectedPage === item.id;
+                  const pageData = pages[item.id];
                   return (
                     <li key={item.id}>
                       <button
                         onClick={() => handlePageSelect(item.id)}
-                        className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-all duration-150 ${
+                        className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium transition-all duration-200 ${
                           isActive
                             ? "bg-[var(--accent-light)] text-[var(--accent)]"
                             : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
@@ -1068,6 +1098,26 @@ export default function Documentation() {
                         <FileText size={13} className={`shrink-0 ${isActive ? "text-[var(--accent)]" : "text-[var(--text-muted)]"}`} />
                         <span className="truncate">{item.label}</span>
                       </button>
+
+                      {/* Heading sub-items shown when this page is active */}
+                      {isActive && pageData?.headings && pageData.headings.length > 0 && (
+                        <ul className="mt-0.5 mb-1 ml-4 space-y-0.5 border-l-2 border-[var(--border-color)] pl-3">
+                          {pageData.headings.map((h) => (
+                            <li key={h.id}>
+                              <button
+                                onClick={() => scrollToHeading(h.id)}
+                                className={`w-full text-left py-1.5 px-2 text-[12px] leading-snug rounded-lg transition-all duration-150 ${
+                                  activeHeading === h.id
+                                    ? "font-semibold text-[var(--accent)] bg-[var(--accent-light)]"
+                                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+                                } ${h.sub ? "pl-4" : ""}`}
+                              >
+                                {h.text}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   );
                 })}
@@ -1094,17 +1144,11 @@ export default function Documentation() {
           background: var(--bg-main);
           color: var(--text-primary);
         }
-        .doc-sidebar-desktop {
-          transition: width 280ms cubic-bezier(0.4, 0, 0.2, 1);
-          overflow: hidden;
-          flex-shrink: 0;
-        }
         .doc-sidebar-inner {
           width: 260px;
           display: flex;
           flex-direction: column;
           height: 100%;
-          overflow: hidden;
         }
       `}</style>
 
@@ -1114,54 +1158,17 @@ export default function Documentation() {
         <div className="glow-orb glow-orb-1 pointer-events-none" style={{ position: "fixed", zIndex: 0 }} />
         <div className="glow-orb glow-orb-2 pointer-events-none" style={{ position: "fixed", zIndex: 0 }} />
 
-        {/* ── Mobile overlay ──────────────────────────────────────────────── */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* ── Mobile sidebar drawer ───────────────────────────────────────── */}
-        <aside
-          className={`
-            md:hidden fixed top-0 bottom-0 left-0 z-40 flex flex-col
-            bg-[var(--bg-sidebar)] border-r border-[var(--border-color)]
-            transition-transform duration-300 ease-in-out
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          `}
-          style={{ width: "260px" }}
-        >
-          {/* Mobile close button */}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          >
-            <X size={15} />
-          </button>
-          <div className="overflow-y-auto flex-1">{navContent}</div>
-        </aside>
-
         {/* ── HEADER ─────────────────────────────────────────────────────── */}
         <header
-          className="relative z-40 shrink-0 flex h-14 items-center border-b border-[var(--border-color)] px-4"
+          className="relative z-40 shrink-0 flex h-16 items-center border-b border-[var(--border-color)] px-5 lg:px-6"
           style={{ background: "var(--bg-navbar)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
         >
-          {/* LEFT: toggle + logo + back */}
+          {/* LEFT: logo + back */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Sidebar toggle */}
-            <button
-              onClick={() => setSidebarOpen((p) => !p)}
-              aria-label="Toggle sidebar"
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] transition-all hover:border-[var(--accent)] hover:bg-[var(--accent-light)] hover:text-[var(--accent)]"
-            >
-              <Menu size={15} />
-            </button>
-
             {/* PortOS logo + name */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <div
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-black text-white"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-black text-white"
                 style={{
                   background: "linear-gradient(135deg, var(--grad-start), var(--grad-end))",
                   boxShadow: "0 3px 10px var(--accent-glow)",
@@ -1170,19 +1177,19 @@ export default function Documentation() {
                 P
               </div>
               <div className="leading-tight hidden sm:block">
-                <p className="text-[13px] font-semibold text-[var(--text-primary)]">PortOS</p>
-                <p className="text-[9px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Docs</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">PortOS</p>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Docs</p>
               </div>
             </div>
 
-            <div className="h-4 w-px bg-[var(--border-color)] hidden sm:block" />
+            <div className="h-5 w-px bg-[var(--border-color)] hidden sm:block" />
 
             {/* Back to home */}
             <button
               onClick={() => navigate("/")}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+              className="hidden sm:flex items-center gap-2 text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
             >
-              <ArrowLeft size={12} />
+              <ArrowLeft size={14} />
               Back to Home
             </button>
           </div>
@@ -1191,10 +1198,10 @@ export default function Documentation() {
           <div className="absolute left-1/2 -translate-x-1/2">
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex h-8 items-center gap-2.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-3 text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:bg-[var(--bg-secondary)] w-48 sm:w-60 lg:w-72"
+              className="flex h-9 items-center gap-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-3.5 text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:bg-[var(--bg-secondary)] w-52 sm:w-64 lg:w-80"
             >
-              <Search size={12} className="shrink-0" />
-              <span className="flex-1 text-left text-xs">Search documentation...</span>
+              <Search size={14} className="shrink-0" />
+              <span className="flex-1 text-left text-sm">Search documentation...</span>
               <kbd className="hidden sm:flex items-center rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] px-1.5 py-0.5 font-mono text-[9px] font-medium text-[var(--text-muted)]">
                 ⌘K
               </kbd>
@@ -1205,10 +1212,11 @@ export default function Documentation() {
           <div className="ml-auto shrink-0">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] transition-all hover:border-[var(--accent)] hover:bg-[var(--accent-light)]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition-all duration-200 hover:border-[var(--accent)] hover:bg-[var(--accent-light)]"
+              aria-label="Toggle theme"
             >
-              <Sun size={14} className={`absolute transition-all duration-500 ${theme === "dark" ? "scale-0 opacity-0" : "scale-100 opacity-100 text-amber-500"}`} />
-              <Moon size={14} className={`absolute transition-all duration-500 ${theme === "dark" ? "scale-100 opacity-100 text-indigo-400" : "scale-0 opacity-0"}`} />
+              <Sun size={17} className={`absolute transition-all duration-500 ${theme === "dark" ? "scale-0 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100 text-amber-500"}`} />
+              <Moon size={17} className={`absolute transition-all duration-500 ${theme === "dark" ? "scale-100 rotate-0 opacity-100 text-indigo-400" : "scale-0 -rotate-90 opacity-0"}`} />
             </button>
           </div>
         </header>
@@ -1216,13 +1224,10 @@ export default function Documentation() {
         {/* ── BODY (sidebar + content + toc) ─────────────────────────────── */}
         <div className="relative z-10 flex flex-1 overflow-hidden">
 
-          {/* Desktop sidebar — width-animated collapse */}
+          {/* Desktop sidebar — always visible */}
           <aside
-            className="doc-sidebar-desktop hidden md:block bg-[var(--bg-sidebar)]"
-            style={{
-              width: sidebarOpen ? "260px" : "0px",
-              borderRight: sidebarOpen ? "1px solid var(--border-color)" : "none",
-            }}
+            className="bg-[var(--bg-sidebar)] shrink-0 border-r border-[var(--border-color)]"
+            style={{ width: "260px" }}
           >
             <div className="doc-sidebar-inner overflow-y-auto">
               {navContent}
@@ -1277,40 +1282,6 @@ export default function Documentation() {
             </div>
           </main>
 
-          {/* ── Right TOC ─────────────────────────────────────────────────── */}
-          <aside className="hidden xl:flex flex-col w-56 shrink-0 border-l border-[var(--border-color)] bg-[var(--bg-sidebar)] overflow-y-auto">
-            <div className="sticky top-0 px-5 pt-8">
-              <div className="flex items-center gap-2 mb-4">
-                <Hash size={11} className="text-[var(--text-muted)] shrink-0" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">On This Page</p>
-              </div>
-
-              <nav className="space-y-0.5">
-                {activePageData.headings.map((h) => (
-                  <button
-                    key={h.id}
-                    onClick={() => scrollToHeading(h.id)}
-                    className={`w-full text-left border-l-2 py-1.5 pl-3 pr-2 text-[12px] leading-snug transition-all duration-150 rounded-r-lg ${
-                      activeHeading === h.id
-                        ? "border-[var(--accent)] bg-[var(--accent-light)] font-medium text-[var(--accent)]"
-                        : "border-transparent text-[var(--text-muted)] hover:border-[var(--border-color)] hover:text-[var(--text-secondary)]"
-                    } ${h.sub ? "pl-5" : ""}`}
-                  >
-                    {h.text}
-                  </button>
-                ))}
-
-                {activePageData.headings.length === 0 && (
-                  <p className="text-[11px] italic text-[var(--text-muted)]">No sections</p>
-                )}
-              </nav>
-
-              <div className="mt-8 border-t border-[var(--border-color)] pt-5">
-                <p className="text-[10px] text-[var(--text-muted)]">PortOS Documentation</p>
-                <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">v1.0 · User Guide</p>
-              </div>
-            </div>
-          </aside>
         </div>
 
         {/* ── Search modal ────────────────────────────────────────────────── */}
