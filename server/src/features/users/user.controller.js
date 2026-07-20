@@ -58,12 +58,16 @@ export const updateCurrentUser = async (req, res) => {
       is_public,
       users_links,
       skills,
+      remove_avatar,
     } = req.body;
 
     let avatarUrl = undefined;
     if (req.file) {
       const uploadedImage = await uploadToCloudinary(req.file.buffer, "avatars");
       avatarUrl = uploadedImage.secure_url;
+    } else if (remove_avatar === "true" || remove_avatar === true) {
+      // Explicit request to clear the saved avatar.
+      avatarUrl = null;
     }
 
     const updatedUser = await prisma.user.update({

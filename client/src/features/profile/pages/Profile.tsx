@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent, type ChangeEvent } from "react";
 import { toast } from "react-hot-toast";
-import { Plus, User, ImagePlus, ArrowLeft, X } from "lucide-react";
+import { Plus, User, ImagePlus, ArrowLeft, X, Pencil, Trash2 } from "lucide-react";
 import DashboardLayout from "@layouts/DashboardLayout";
 import PageLoader from "@shared/components/ui/PageLoader";
 import { getProfile, updateProfile, type UserProfile } from "../services/profile.service";
+import AvatarEditorModal from "../components/AvatarEditorModal";
 import { useNavigate } from "react-router-dom";
 
 const PLATFORM_OPTIONS = [
@@ -30,6 +31,9 @@ function Profile() {
   ]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorSrc, setEditorSrc] = useState("");
+  const [removeAvatar, setRemoveAvatar] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -87,13 +91,41 @@ function Profile() {
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setAvatarFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Open the editor on the picked image instead of using it directly.
+      setEditorSrc(URL.createObjectURL(file));
+      setEditorOpen(true);
     }
+    // Reset so re-picking the same file fires onChange again.
+    e.target.value = "";
+  };
+
+  const handleEditorConfirm = (file: File) => {
+    setAvatarFile(file);
+    setRemoveAvatar(false);
+    setAvatarPreview((prev) => {
+      if (prev.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setEditorOpen(false);
+  };
+
+  const handleEditorCancel = () => {
+    if (editorSrc.startsWith("blob:")) URL.revokeObjectURL(editorSrc);
+    setEditorSrc("");
+    setEditorOpen(false);
+  };
+
+  const handleEditExisting = () => {
+    if (!avatarPreview) return;
+    setEditorSrc(avatarPreview);
+    setEditorOpen(true);
+  };
+
+  const handleRemoveAvatar = () => {
+    if (avatarPreview.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
+    setAvatarFile(null);
+    setAvatarPreview("");
+    setRemoveAvatar(true);
   };
 
   /* =========================
@@ -153,6 +185,7 @@ function Profile() {
       if (profile.headline !== undefined) formData.append("headline", profile.headline ?? "");
       if (profile.is_public !== undefined) formData.append("is_public", String(profile.is_public));
       if (avatarFile) formData.append("avatar", avatarFile);
+      else if (removeAvatar) formData.append("remove_avatar", "true");
 
       formData.append("skills", JSON.stringify(skills));
 
@@ -618,48 +651,117 @@ function Profile() {
               onChange={handleAvatarChange}
             />
 
-            <label
-              htmlFor="avatar-upload"
-              className="
-                mt-5
-                flex
-                h-64
-                cursor-pointer
-                flex-col
-                items-center
-                justify-center
-                overflow-hidden
-                rounded-3xl
-                border-2
-                border-dashed
-                border-[var(--border-color)]
-                bg-[var(--bg-main)]
-                transition-all
-                duration-300
-                hover:border-[var(--button-primary)]
-              "
-            >
-              {avatarPreview ? (
+            {avatarPreview ? (
+              <div
+                className="
+                  group
+                  relative
+                  mt-5
+                  h-64
+                  overflow-hidden
+                  rounded-3xl
+                  border
+                  border-[var(--border-color)]
+                  bg-[var(--bg-main)]
+                "
+              >
                 <img
                   src={avatarPreview}
                   alt="Avatar"
                   className="h-full w-full object-cover"
                 />
-              ) : (
-                <>
-                  <ImagePlus
-                    size={42}
-                    className="text-[var(--text-secondary)]"
-                  />
-                  <p className="mt-4 text-sm text-[var(--text-secondary)]">
-                    Click to upload avatar
-                  </p>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">
-                    PNG, JPG, WEBP
-                  </p>
-                </>
-              )}
-            </label>
+
+                {/* Hover actions */}
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    flex
+                    items-center
+                    justify-center
+                    gap-3
+                    bg-black/50
+                    opacity-0
+                    transition-opacity
+                    duration-300
+                    group-hover:opacity-100
+                  "
+                >
+                  <button
+                    type="button"
+                    onClick={handleEditExisting}
+                    className="
+                      flex
+                      items-center
+                      gap-2
+                      rounded-xl
+                      bg-white/90
+                      px-4
+                      py-2
+                      text-sm
+                      font-medium
+                      text-black
+                      transition-transform
+                      hover:scale-105
+                    "
+                  >
+                    <Pencil size={15} />
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    className="
+                      flex
+                      items-center
+                      gap-2
+                      rounded-xl
+                      bg-red-500/90
+                      px-4
+                      py-2
+                      text-sm
+                      font-medium
+                      text-white
+                      transition-transform
+                      hover:scale-105
+                    "
+                  >
+                    <Trash2 size={15} />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label
+                htmlFor="avatar-upload"
+                className="
+                  mt-5
+                  flex
+                  h-64
+                  cursor-pointer
+                  flex-col
+                  items-center
+                  justify-center
+                  overflow-hidden
+                  rounded-3xl
+                  border-2
+                  border-dashed
+                  border-[var(--border-color)]
+                  bg-[var(--bg-main)]
+                  transition-all
+                  duration-300
+                  hover:border-[var(--button-primary)]
+                "
+              >
+                <ImagePlus size={42} className="text-[var(--text-secondary)]" />
+                <p className="mt-4 text-sm text-[var(--text-secondary)]">
+                  Click to upload avatar
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                  PNG, JPG, WEBP
+                </p>
+              </label>
+            )}
 
           </div>
 
@@ -783,6 +885,13 @@ function Profile() {
         </div>
 
       </div>
+
+      <AvatarEditorModal
+        open={editorOpen}
+        imageSrc={editorSrc}
+        onCancel={handleEditorCancel}
+        onConfirm={handleEditorConfirm}
+      />
 
     </DashboardLayout>
   );
