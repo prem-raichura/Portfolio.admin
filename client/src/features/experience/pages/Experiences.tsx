@@ -243,8 +243,8 @@ function Experiences() {
             gap-2
             rounded-2xl
             bg-[var(--button-primary)]
-            px-5
-            py-3
+            px-4
+            py-2
             font-medium
             text-white
             transition-all

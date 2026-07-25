@@ -149,6 +149,66 @@ const uploadRepoThumbnail = async (fullName) => {
   }
 };
 
+// Fetch the repo's contributors (GitHub logins), skipping bots. Returns an
+// empty array on failure so import still succeeds without contributors.
+const getRepoContributors = async (fullName, accessToken) => {
+  try {
+    const data = await githubRequest(
+      `/repos/${fullName}/contributors?per_page=100`,
+      accessToken
+    );
+
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data
+      .filter(
+        (contributor) =>
+          contributor?.login &&
+          contributor.type !== "Bot" &&
+          !contributor.login.endsWith("[bot]")
+      )
+      .map((contributor) => contributor.login);
+  } catch (error) {
+    console.error("[GitHub import] contributors fetch failed:", error?.message);
+    return [];
+  }
+};
+
+// Capture a screenshot of the repo's live site (its GitHub `homepage`) and
+// store it as the project thumbnail. Uses Microlink to render the page, then
+// uploads the resulting image to Cloudinary. Returns null on any failure so
+// the caller can fall back to the OpenGraph image.
+const screenshotLiveSite = async (siteUrl) => {
+  try {
+    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(
+      siteUrl
+    )}&screenshot=true&meta=false`;
+
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const shotUrl = data?.data?.screenshot?.url;
+    if (!shotUrl) {
+      return null;
+    }
+
+    const result = await cloudinary.uploader.upload(shotUrl, {
+      folder: "projects",
+      resource_type: "image",
+    });
+
+    return result.secure_url;
+  } catch (error) {
+    console.error("[GitHub import] live screenshot failed:", error?.message);
+    return null;
+  }
+};
+
 /* =========================================
     CONNECT — start OAuth (repo scope)
 ========================================= */
@@ -316,6 +376,8 @@ export const importRepo = async (req, res) => {
 
     const slug = await getAvailableSlug(createSlug(repo.name), userId);
 
+    const contributors = await getRepoContributors(repo.full_name, accessToken);
+
     const tags = Array.isArray(repo.topics) ? [...repo.topics] : [];
     if (repo.language && !tags.includes(repo.language)) {
       tags.push(repo.language);
@@ -326,14 +388,22 @@ export const importRepo = async (req, res) => {
       links.push({ key: "live", value: repo.homepage });
     }
 
-    const thumbnail = await uploadRepoThumbnail(repo.full_name);
+    // Prefer a screenshot of the live site when the repo has a homepage;
+    // otherwise fall back to GitHub's OpenGraph social image.
+    let thumbnail = null;
+    if (repo.homepage) {
+      thumbnail = await screenshotLiveSite(repo.homepage);
+    }
+    if (!thumbnail) {
+      thumbnail = await uploadRepoThumbnail(repo.full_name);
+    }
 
     const project = await prisma.projects.create({
       data: {
         user_id: userId,
         title: repo.name,
         slug,
-        authors_contributors: [],
+        authors_contributors: contributors,
         description: repo.description ?? "",
         publisher: null,
         status: repo.archived ? "completed" : "ongoing",
