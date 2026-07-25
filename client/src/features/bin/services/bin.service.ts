@@ -88,12 +88,11 @@ export const permanentlyDelete = async (
 };
 
 /**
- * Queue an async job to permanently delete every item in the Bin.
- * Returns immediately; the delete runs on the server-side queue.
+ * Permanently delete every item in the Bin. Runs synchronously on the server
+ * and returns the total number of items removed.
  */
 export const emptyBin = async (): Promise<{
   success: boolean;
-  queued?: boolean;
   count?: number;
   message?: string;
 }> => {
