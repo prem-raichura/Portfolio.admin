@@ -1,7 +1,6 @@
 import { prisma } from "../../config/db.js";
 import { redis } from "../../config/redis.js";
 import { restore } from "../../shared/utils/softDelete.js";
-import { binQueue } from "../../jobs/bin/bin.queue.js";
 
 const BIN_PAGE_SIZE = 100;
 
@@ -273,19 +272,17 @@ export const permanentlyDeleteItem = async (req, res) => {
 /**
  * POST /api/bin/empty
  *
- * Permanently deletes every item in the user's Bin. The delete runs
- * asynchronously on the BullMQ `binQueue` (job `emptyUserBin`) so the request
- * returns immediately and the work scales independently of the web process.
- * A deterministic jobId dedupes rapid repeat clicks for the same user.
+ * Permanently deletes every item in the user's Bin, right now. All five
+ * soft-delete models are cleared in a single transaction so the Bin empties
+ * atomically and the response reflects the real result.
  */
 export const emptyBin = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Cheap pre-check so we don't queue a no-op job for an empty Bin.
-    const perTypeCounts = await Promise.all(
+    const results = await prisma.$transaction(
       Object.values(TYPE_HANDLERS).map((handler) =>
-        handler.model.count({
+        handler.model.deleteMany({
           where: {
             user_id: userId,
             deleted_at: { not: null },
@@ -294,33 +291,18 @@ export const emptyBin = async (req, res) => {
       )
     );
 
-    const total = perTypeCounts.reduce((sum, n) => sum + n, 0);
+    const total = results.reduce((sum, result) => sum + result.count, 0);
 
-    if (total === 0) {
-      return res.status(200).json({
-        success: true,
-        queued: false,
-        message: "Bin is already empty",
-      });
+    // Projects/experience/certificates feed the public portfolio — drop its
+    // cache so the removals show up immediately.
+    if (total > 0) {
+      await redis.del(`portfolio:${userId}`);
     }
 
-    await binQueue.add(
-      "emptyUserBin",
-      { userId },
-      {
-        jobId: `emptyUserBin-${userId}`,
-        removeOnComplete: true,
-        removeOnFail: 50,
-        attempts: 3,
-        backoff: { type: "exponential", delay: 2000 },
-      }
-    );
-
-    return res.status(202).json({
+    return res.status(200).json({
       success: true,
-      queued: true,
       count: total,
-      message: "Emptying the Bin…",
+      message: total === 0 ? "Bin is already empty" : "Bin emptied",
     });
   } catch (error) {
     console.log(error);

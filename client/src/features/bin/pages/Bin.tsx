@@ -156,20 +156,9 @@ function Bin() {
     try {
       const res = await emptyBin();
       if (res.success) {
-        toast.success(res.message || "Emptying the Bin…");
+        toast.success(res.message || "Bin emptied");
         setEmptyOpen(false);
-        // The purge runs on the server-side queue; clear the view optimistically,
-        // then re-sync once the worker has had a moment to process.
-        setBin({
-          projects: [],
-          experience: [],
-          certificates: [],
-          apiKeys: [],
-          contacts: [],
-        });
-        window.setTimeout(() => {
-          void fetchBin();
-        }, 1500);
+        await fetchBin();
       } else {
         toast.error(res.message || "Failed to empty the Bin");
       }
