@@ -131,6 +131,32 @@ const toRepoSummary = (repo) => ({
   updated_at: repo.updated_at,
 });
 
+// Normalize a GitHub repo URL for comparison (lowercase, no trailing slash).
+const normalizeRepoUrl = (url) =>
+  String(url || "")
+    .toLowerCase()
+    .replace(/\/+$/, "");
+
+// Collect the github-link URLs already saved as projects for this user, so the
+// repo list can mark them as already imported.
+const getImportedRepoUrls = async (userId) => {
+  const projects = await prisma.projects.findMany({
+    where: activeWhere({ user_id: userId }),
+    select: { links: true },
+  });
+
+  const urls = new Set();
+  for (const project of projects) {
+    const links = Array.isArray(project.links) ? project.links : [];
+    for (const link of links) {
+      if (link?.key === "github" && link?.value) {
+        urls.add(normalizeRepoUrl(link.value));
+      }
+    }
+  }
+  return urls;
+};
+
 // Upload the repo's GitHub OpenGraph social image as the project thumbnail.
 // Returns null on any failure so import still succeeds without a thumbnail.
 const uploadRepoThumbnail = async (fullName) => {
@@ -323,10 +349,15 @@ export const listRepos = async (req, res) => {
       }
     }
 
+    const importedUrls = await getImportedRepoUrls(userId);
+
     return res.status(200).json({
       success: true,
       connected: true,
-      repos: repos.map(toRepoSummary),
+      repos: repos.map((repo) => ({
+        ...toRepoSummary(repo),
+        imported: importedUrls.has(normalizeRepoUrl(repo.html_url)),
+      })),
     });
   } catch (error) {
     console.error("[GitHub list repos] failed:", error?.message);

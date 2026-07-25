@@ -209,7 +209,9 @@ function ImportGithubModal({ open, onClose, onImported }: ImportGithubModalProps
           ) : (
             <div className="flex flex-col gap-3">
               {filteredRepos.map((repo) => {
-                const isAdded = added.has(repo.full_name);
+                // Already saved as a project (from a previous import) or added
+                // in this session — either way, lock the button.
+                const isAdded = repo.imported || added.has(repo.full_name);
                 const isImporting = importing === repo.full_name;
 
                 return (
