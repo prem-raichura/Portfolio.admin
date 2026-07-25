@@ -149,6 +149,39 @@ const uploadRepoThumbnail = async (fullName) => {
   }
 };
 
+// Capture a screenshot of the repo's live site (its GitHub `homepage`) and
+// store it as the project thumbnail. Uses Microlink to render the page, then
+// uploads the resulting image to Cloudinary. Returns null on any failure so
+// the caller can fall back to the OpenGraph image.
+const screenshotLiveSite = async (siteUrl) => {
+  try {
+    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(
+      siteUrl
+    )}&screenshot=true&meta=false`;
+
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const shotUrl = data?.data?.screenshot?.url;
+    if (!shotUrl) {
+      return null;
+    }
+
+    const result = await cloudinary.uploader.upload(shotUrl, {
+      folder: "projects",
+      resource_type: "image",
+    });
+
+    return result.secure_url;
+  } catch (error) {
+    console.error("[GitHub import] live screenshot failed:", error?.message);
+    return null;
+  }
+};
+
 /* =========================================
     CONNECT — start OAuth (repo scope)
 ========================================= */
@@ -326,7 +359,15 @@ export const importRepo = async (req, res) => {
       links.push({ key: "live", value: repo.homepage });
     }
 
-    const thumbnail = await uploadRepoThumbnail(repo.full_name);
+    // Prefer a screenshot of the live site when the repo has a homepage;
+    // otherwise fall back to GitHub's OpenGraph social image.
+    let thumbnail = null;
+    if (repo.homepage) {
+      thumbnail = await screenshotLiveSite(repo.homepage);
+    }
+    if (!thumbnail) {
+      thumbnail = await uploadRepoThumbnail(repo.full_name);
+    }
 
     const project = await prisma.projects.create({
       data: {
