@@ -15,6 +15,8 @@ export interface GithubRepo {
   archived: boolean;
   stargazers_count: number;
   updated_at: string;
+  /** True when a project already exists for this repo's GitHub link. */
+  imported: boolean;
 }
 
 export interface GithubReposResponse {
