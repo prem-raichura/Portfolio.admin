@@ -86,3 +86,17 @@ export const permanentlyDelete = async (
   const response = await api.delete(API_ROUTES.bin.detail(type, id));
   return response.data;
 };
+
+/**
+ * Queue an async job to permanently delete every item in the Bin.
+ * Returns immediately; the delete runs on the server-side queue.
+ */
+export const emptyBin = async (): Promise<{
+  success: boolean;
+  queued?: boolean;
+  count?: number;
+  message?: string;
+}> => {
+  const response = await api.post(API_ROUTES.bin.empty);
+  return response.data;
+};

@@ -60,6 +60,8 @@ export const API_ROUTES = {
     list: "/api/bin",
     /** POST — Restore a soft-deleted item: body { type, id } */
     restore: "/api/bin/restore",
+    /** POST — Queue a job to permanently delete every item in the Bin */
+    empty: "/api/bin/empty",
     /** DELETE — Permanently remove a soft-deleted item */
     detail: (type: string, id: string | number) => `/api/bin/${type}/${id}`,
   },

@@ -5,6 +5,7 @@ import {
 } from "../../config/queue.js";
 
 import { prisma } from "../../config/db.js";
+import { redis } from "../../config/redis.js";
 
 import { binQueue } from "./bin.queue.js";
 
@@ -65,6 +66,55 @@ const binWorker =
 
         console.log(
           `[Bin Purge] Removed ${total} item(s) older than ${PURGE_AFTER_DAYS} days — ${JSON.stringify(counts)}`
+        );
+
+        return { deleted: total, counts };
+      }
+
+      /* =====================
+          EMPTY A USER'S BIN
+      ===================== */
+
+      if (job.name === "emptyUserBin") {
+
+        const { userId } = job.data;
+
+        // Hard-delete every soft-deleted row this user owns, in one
+        // transaction so the Bin is emptied atomically.
+        const results =
+          await prisma.$transaction(
+            SOFT_DELETE_MODELS.map(({ model }) =>
+              model.deleteMany({
+                where: {
+                  user_id: userId,
+                  deleted_at: { not: null },
+                },
+              })
+            )
+          );
+
+        const counts = {};
+
+        SOFT_DELETE_MODELS.forEach(({ name }, index) => {
+          counts[name] = results[index].count;
+        });
+
+        const total =
+          results.reduce((sum, result) => sum + result.count, 0);
+
+        // Projects/experience/certificates feed the public portfolio — drop
+        // its cache so the removals show up immediately.
+        try {
+          await redis.del(`portfolio:${userId}`);
+        } catch (cacheError) {
+          console.error(
+            "[Bin Empty] cache invalidation failed:",
+            cacheError?.message
+          );
+        }
+
+        console.log(
+          `[Bin Empty] user ${userId} — removed ${total} item(s) — ${JSON.stringify(counts)}`
         );
 
         return { deleted: total, counts };
