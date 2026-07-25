@@ -64,6 +64,15 @@ export const API_ROUTES = {
     detail: (type: string, id: string | number) => `/api/bin/${type}/${id}`,
   },
 
+  github: {
+    /** GET — Start the repo-scope OAuth flow, returns { authUrl } */
+    connect: "/api/github/connect",
+    /** GET — List the connected user's GitHub repos (or { connected:false }) */
+    repos: "/api/github/repos",
+    /** POST — Import a repo into projects: body { full_name } */
+    import: "/api/github/import",
+  },
+
   apiKeys: {
     /** GET — List all API keys for the authenticated user, POST — Create a new API key */
     list: "/api/keys",
