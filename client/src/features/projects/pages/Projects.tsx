@@ -18,6 +18,7 @@ import DashboardLayout from "@layouts/DashboardLayout";
 import PortfolioItemCard from "@shared/components/cards/PortfolioItemCard";
 import { CardSkeletonGrid } from "@shared/components/ui/CardSkeletons";
 import PublishLoadingOverlay from "@shared/components/ui/PublishLoadingOverlay";
+import ImportGithubModal from "@features/projects/components/ImportGithubModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { getProjects, deleteProject, updateProject } from "@features/projects/services/project.service";
@@ -77,6 +78,7 @@ function Projects() {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
+  const [showImport, setShowImport] = useState(false);
 
   /* =========================
       FILTER STATE
@@ -362,6 +364,22 @@ function Projects() {
     };
   }, []);
 
+  // After the GitHub connect roundtrip lands back here, reopen the import
+  // modal (now that a repo-scope token is cached) and strip the query param
+  // so a refresh or back-navigation doesn't retrigger it.
+  useEffect(() => {
+    const status = searchParams.get("github");
+    if (!status) return;
+
+    if (status === "connected") {
+      setShowImport(true);
+    } else if (status === "error") {
+      toast.error("GitHub connection failed, please try again");
+    }
+
+    navigate("/projects", { replace: true });
+  }, [searchParams, navigate]);
+
   useEffect(() => {
     if (routeType === "research" || routeType === "project") {
       setActiveTypeFilter(routeType);
@@ -478,28 +496,54 @@ function Projects() {
 
         {/* Right */}
 
-        <button
-          onClick={() => navigate("/projects/create")}
-          className="
-            flex
-            items-center
-            justify-center
-            gap-2
-            rounded-2xl
-            bg-[var(--button-primary)]
-            px-5
-            py-3
-            font-medium
-            text-white
-            transition-all
-            duration-300
-            hover:bg-[var(--button-primary-hover)]
-            dark:text-black
-          "
-        >
-          <Plus size={18} />
-          Add Project
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            onClick={() => setShowImport(true)}
+            className="
+              flex
+              items-center
+              justify-center
+              gap-2
+              rounded-2xl
+              border
+              border-[var(--border-color)]
+              bg-[var(--bg-secondary)]
+              px-5
+              py-3
+              font-medium
+              text-[var(--text-primary)]
+              transition-all
+              duration-300
+              hover:bg-[var(--bg-main)]
+            "
+          >
+            <GitBranch size={18} />
+            Import from GitHub
+          </button>
+
+          <button
+            onClick={() => navigate("/projects/create")}
+            className="
+              flex
+              items-center
+              justify-center
+              gap-2
+              rounded-2xl
+              bg-[var(--button-primary)]
+              px-5
+              py-3
+              font-medium
+              text-white
+              transition-all
+              duration-300
+              hover:bg-[var(--button-primary-hover)]
+              dark:text-black
+            "
+          >
+            <Plus size={18} />
+            Add Project
+          </button>
+        </div>
       </div>
 
       {/* =========================
@@ -1075,6 +1119,16 @@ function Projects() {
           </div>
         </div>
       )}
+
+      {/* =========================
+          IMPORT FROM GITHUB MODAL
+      ========================= */}
+
+      <ImportGithubModal
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={fetchProjects}
+      />
 
     </DashboardLayout>
   );

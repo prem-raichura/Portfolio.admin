@@ -35,6 +35,7 @@ import logsRoutes from "./features/logs/logs.routes.js";
 import binRoutes from "./features/bin/bin.routes.js";
 import contactRoutes from "./features/contacts/contact.routes.js";
 import cronRoutes from "./features/cron/cron.routes.js";
+import githubRoutes from "./features/github/github.routes.js";
 
 
 dotenv.config();
@@ -109,6 +110,7 @@ app.use("/api/logs", logsRoutes);
 app.use("/api/bin", binRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/cron", cronRoutes);
+app.use("/api/github", githubRoutes);
 
 const PORT = process.env.PORT || 8000;
 

@@ -687,6 +687,7 @@ export const logout = async (req, res) => {
         const userId = tokenRecord.user_id;
         keysToDelete.push(`rl:api:user:${userId}`);
         keysToDelete.push(`rl:write:user:${userId}`);
+        keysToDelete.push(`github:token:${userId}`);
       }
 
       // Delete immediately — logout must invalidate the token right away.
