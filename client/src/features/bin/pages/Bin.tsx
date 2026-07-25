@@ -18,6 +18,7 @@ import {
   getBin,
   restoreItem,
   permanentlyDelete,
+  emptyBin,
 } from "@features/bin/services/bin.service";
 
 type Tab = "project" | "experience" | "certificate" | "apiKey" | "contact";
@@ -68,6 +69,8 @@ function Bin() {
     title: string;
   } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [emptyOpen, setEmptyOpen] = useState(false);
+  const [emptying, setEmptying] = useState(false);
 
   const fetchBin = async () => {
     try {
@@ -148,6 +151,38 @@ function Bin() {
     }
   };
 
+  const handleEmpty = async () => {
+    setEmptying(true);
+    try {
+      const res = await emptyBin();
+      if (res.success) {
+        toast.success(res.message || "Emptying the Bin…");
+        setEmptyOpen(false);
+        // The purge runs on the server-side queue; clear the view optimistically,
+        // then re-sync once the worker has had a moment to process.
+        setBin({
+          projects: [],
+          experience: [],
+          certificates: [],
+          apiKeys: [],
+          contacts: [],
+        });
+        window.setTimeout(() => {
+          void fetchBin();
+        }, 1500);
+      } else {
+        toast.error(res.message || "Failed to empty the Bin");
+      }
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Failed to empty the Bin";
+      toast.error(msg);
+    } finally {
+      setEmptying(false);
+    }
+  };
+
   const confirmPurge = async () => {
     if (!purgeTarget) return;
     const key = `${purgeTarget.type}-${purgeTarget.id}`;
@@ -190,6 +225,11 @@ function Bin() {
     };
   }, [bin]);
 
+  const totalCount = useMemo(
+    () => Object.values(counts).reduce((sum, n) => sum + n, 0),
+    [counts]
+  );
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -206,13 +246,24 @@ function Bin() {
 
   return (
     <DashboardLayout>
-      <div className="mb-6 flex flex-col gap-2">
-        <h1 className="font-display text-2xl font-bold text-[var(--text-primary)]">
-          Bin
-        </h1>
-        <p className="text-sm text-[var(--text-muted)]">
-          Items here are kept for 30 days, then permanently deleted.
-        </p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="font-display text-2xl font-bold text-[var(--text-primary)]">
+            Bin
+          </h1>
+          <p className="text-sm text-[var(--text-muted)]">
+            Items here are kept for 30 days, then permanently deleted.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setEmptyOpen(true)}
+          disabled={totalCount === 0}
+          className="flex items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Trash2 size={16} />
+          Empty Bin
+        </button>
       </div>
 
       {/* Tabs */}
@@ -351,6 +402,39 @@ function Bin() {
                 className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-red-600 disabled:opacity-50"
               >
                 {busyId ? "Deleting…" : "Delete forever"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty-bin confirm modal */}
+      {emptyOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-[var(--border-color)] bg-[var(--bg-main)] p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-[var(--text-primary)]">
+              Empty the entire Bin?
+            </h3>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              All {totalCount} item{totalCount === 1 ? "" : "s"} across projects,
+              experience, certificates, API keys and contacts will be
+              permanently deleted. This cannot be undone.
+            </p>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setEmptyOpen(false)}
+                disabled={emptying}
+                className="rounded-xl px-5 py-2.5 text-sm font-medium transition-all hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEmpty}
+                disabled={emptying}
+                className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-red-600 disabled:opacity-50"
+              >
+                {emptying ? "Emptying…" : "Empty Bin"}
               </button>
             </div>
           </div>

@@ -4,6 +4,7 @@ import {
   getBin,
   restoreItem,
   permanentlyDeleteItem,
+  emptyBin,
 } from "./bin.controller.js";
 
 import {
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.get("/", protect, getBin);
 router.post("/restore", protect, restoreItem);
+router.post("/empty", protect, emptyBin);
 router.delete("/:type/:id", protect, permanentlyDeleteItem);
 
 export default router;
