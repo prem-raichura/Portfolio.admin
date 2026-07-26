@@ -5,7 +5,7 @@ import cloudinary
 from "../config/cloudinary.js";
 
 export const uploadToCloudinary =
-  (fileBuffer, folder) => {
+  (fileBuffer, folder, resourceType = "image") => {
 
     return new Promise(
       (resolve, reject) => {
@@ -17,7 +17,7 @@ export const uploadToCloudinary =
               folder,
 
               resource_type:
-                "image",
+                resourceType,
             },
 
             (error, result) => {

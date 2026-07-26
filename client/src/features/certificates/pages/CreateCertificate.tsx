@@ -60,6 +60,9 @@ function CreateCertificate() {
   const [link, setLink] =
     useState("");
 
+  const [linkedin, setLinkedin] =
+    useState("");
+
   const [
     isVisible,
     setIsVisible,
@@ -177,6 +180,17 @@ function CreateCertificate() {
         return;
       }
 
+      if (
+        linkedin &&
+        !isValidUrl(linkedin)
+      ) {
+        toast.error(
+          "LinkedIn post URL is invalid"
+        );
+
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -214,6 +228,13 @@ function CreateCertificate() {
           formData.append(
             "link",
             link.trim()
+          );
+        }
+
+        if (linkedin.trim()) {
+          formData.append(
+            "linkedin",
+            linkedin.trim()
           );
         }
 
@@ -516,6 +537,44 @@ function CreateCertificate() {
 
               {link &&
                 !isValidUrl(link) && (
+                  <p className="mt-2 text-xs text-red-500">
+                    Invalid URL format
+                  </p>
+                )}
+            </div>
+
+            <div className="mt-6">
+              <label className="mb-2 block text-sm font-medium">
+                LinkedIn Post
+              </label>
+
+              <input
+                type="url"
+                value={linkedin}
+                onChange={(event) =>
+                  setLinkedin(
+                    event.target.value
+                  )
+                }
+                placeholder="https://www.linkedin.com/posts/..."
+                className={`
+                  w-full
+                  rounded-2xl
+                  border
+                  px-4
+                  py-3
+                  outline-none
+                  ${
+                    linkedin && !isValidUrl(linkedin)
+                      ? "border-red-400"
+                      : "border-[var(--border-color)]"
+                  }
+                  bg-[var(--bg-main)]
+                `}
+              />
+
+              {linkedin &&
+                !isValidUrl(linkedin) && (
                   <p className="mt-2 text-xs text-red-500">
                     Invalid URL format
                   </p>

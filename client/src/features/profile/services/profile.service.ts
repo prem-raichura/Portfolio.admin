@@ -9,9 +9,12 @@ export interface UserProfile {
   avatar: string | null;
   bio: string | null;
   headline: string | null;
+  resume: string | null;
 
   users_links: Record<string, string> | null;
-  skills: string[] | null;
+  // Grouped shape [{category, items}] going forward; legacy rows may still be a
+  // flat string[] (the Profile page normalizes on load).
+  skills: { category: string; items: string[] }[] | string[] | null;
   is_public: boolean;
   is_active: boolean;
   created_at: string;

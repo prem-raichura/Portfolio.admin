@@ -352,9 +352,14 @@ body {
     transform: translateY(16px);
   }
 
+  /* No `transform` here on purpose. With `animation-fill-mode: both`, listing
+     `transform: translateY(0)` would persist a non-none transform after the
+     animation ends, making the element a containing block for `position:
+     fixed` descendants — which pins modals to the scroll container instead of
+     the viewport. Omitting it animates 16px -> 0 identically, then reverts to
+     `transform: none`. */
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

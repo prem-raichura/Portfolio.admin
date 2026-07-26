@@ -16,6 +16,7 @@ export const getCurrentUser = async (req, res) => {
         avatar: true,
         bio: true,
         headline: true,
+        resume: true,
 
         users_links: true,
         skills: true,
@@ -59,15 +60,33 @@ export const updateCurrentUser = async (req, res) => {
       users_links,
       skills,
       remove_avatar,
+      remove_resume,
     } = req.body;
 
+    // With upload.fields(), files arrive under req.files[field] as arrays.
+    const avatarFile = req.files?.avatar?.[0];
+    const resumeFile = req.files?.resume?.[0];
+
     let avatarUrl = undefined;
-    if (req.file) {
-      const uploadedImage = await uploadToCloudinary(req.file.buffer, "avatars");
+    if (avatarFile) {
+      const uploadedImage = await uploadToCloudinary(avatarFile.buffer, "avatars");
       avatarUrl = uploadedImage.secure_url;
     } else if (remove_avatar === "true" || remove_avatar === true) {
       // Explicit request to clear the saved avatar.
       avatarUrl = null;
+    }
+
+    let resumeUrl = undefined;
+    if (resumeFile) {
+      // PDFs upload as "raw" resources on Cloudinary.
+      const uploadedResume = await uploadToCloudinary(
+        resumeFile.buffer,
+        "resumes",
+        "raw"
+      );
+      resumeUrl = uploadedResume.secure_url;
+    } else if (remove_resume === "true" || remove_resume === true) {
+      resumeUrl = null;
     }
 
     const updatedUser = await prisma.user.update({
@@ -81,6 +100,7 @@ export const updateCurrentUser = async (req, res) => {
         ...(headline !== undefined && { headline }),
 
         ...(avatarUrl !== undefined && { avatar: avatarUrl }),
+        ...(resumeUrl !== undefined && { resume: resumeUrl }),
         ...(is_public !== undefined && {
           is_public: is_public === "true" || is_public === true,
         }),
@@ -103,6 +123,7 @@ export const updateCurrentUser = async (req, res) => {
         avatar: true,
         bio: true,
         headline: true,
+        resume: true,
 
         users_links: true,
         skills: true,
