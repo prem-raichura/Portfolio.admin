@@ -1242,6 +1242,30 @@ const handleSubmit = async (
                 <option value="research">
                   Research
                 </option>
+
+                <option value="setup">
+                  Setup
+                </option>
+
+                <option value="website">
+                  Website
+                </option>
+
+                <option value="models">
+                  Models
+                </option>
+
+                <option value="webapp">
+                  Webapp
+                </option>
+
+                <option value="api">
+                  API
+                </option>
+
+                <option value="app">
+                  App
+                </option>
               </select>
 
             </div>
