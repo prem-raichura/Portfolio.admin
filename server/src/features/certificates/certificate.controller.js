@@ -23,6 +23,7 @@ export const createCertificate =
         slug,
         type,
         link,
+        linkedin,
         archive_status,
         issued_by,
         issue_date,
@@ -96,6 +97,8 @@ export const createCertificate =
             type,
 
             link,
+
+            linkedin,
 
             images:
               uploadedImages,
@@ -333,6 +336,10 @@ export const updateCertificate =
             link:
               req.body.link ||
               existingCertificate.link,
+
+            linkedin:
+              req.body.linkedin ||
+              existingCertificate.linkedin,
 
             archive_status:
               req.body

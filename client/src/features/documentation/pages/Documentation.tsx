@@ -162,50 +162,76 @@ export default function Documentation() {
   const responseJson = `{
   "success": true,
   "source": "redis-cache",
-  "profile": {
-    "name": "Jane Doe",
-    "headline": "Senior Full Stack Engineer",
-    "bio": "Building developer tooling and high-performance applications.",
-    "avatar": "https://res.cloudinary.com/portos/image/upload/jane_avatar.png",
-    "skills": ["TypeScript", "React", "Node.js", "Redis", "Docker", "PostgreSQL"],
-    "links": {
-      "github": "https://github.com/janedoe",
-      "linkedin": "https://linkedin.com/in/janedoe",
-      "twitter": "https://twitter.com/janedoe",
-      "website": "https://janedoe.dev"
-    }
-  },
-  "projects": [
-    {
-      "title": "PortOS CLI",
-      "slug": "portos-cli",
-      "description": "A terminal companion to bootstrap custom portfolio designs.",
-      "techStack": ["TypeScript", "Vite", "React"],
-      "featured": true,
+  "portfolio": {
+    "profile": {
+      "name": "Jane Doe",
+      "username": "janedoe",
+      "headline": "Senior Full Stack Engineer",
+      "bio": "Building developer tooling.\\n\\nSecond paragraph — split on the blank line.",
+      "avatar": "https://res.cloudinary.com/portos/image/upload/jane_avatar.png",
+      "resume": "https://res.cloudinary.com/portos/raw/upload/jane_resume.pdf",
+      "skills": [
+        { "category": "Frontend", "items": ["React", "TypeScript"] },
+        { "category": "Backend", "items": ["Node.js", "PostgreSQL"] }
+      ],
       "links": {
-        "demo": "https://cli.portos.dev",
-        "github": "https://github.com/janedoe/portos-cli"
+        "github": "https://github.com/janedoe",
+        "linkedin": "https://linkedin.com/in/janedoe",
+        "twitter": "https://twitter.com/janedoe",
+        "website": "https://janedoe.dev",
+        "email": "jane@janedoe.dev",
+        "orcid": "https://orcid.org/0000-0002-1825-0097",
+        "scholar": "https://scholar.google.com/citations?user=abc123"
       }
-    }
-  ],
-  "experience": [
-    {
-      "company": "Stark Tech",
-      "role": "Senior Engineer",
-      "startDate": "2024-01-15",
-      "endDate": null,
-      "isCurrent": true,
-      "description": "Architecting decoupled user interfaces and high throughput cache pipelines."
-    }
-  ],
-  "certificates": [
-    {
-      "title": "AWS Solutions Architect Associate",
-      "issuer": "Amazon Web Services",
-      "credentialId": "AWS-ASA-99812",
-      "url": "https://aws.amazon.com/verification/AWS-ASA-99812"
-    }
-  ]
+    },
+    "projects": [
+      {
+        "title": "PortOS CLI",
+        "slug": "portos-cli",
+        "description": "A terminal companion to bootstrap custom portfolio designs.",
+        "type": "project",
+        "status": "completed",
+        "featured": true,
+        "thumbnail": "https://res.cloudinary.com/portos/image/upload/portos.png",
+        "publisher": null,
+        "authors": ["Jane Doe"],
+        "date": "2025-11-02T00:00:00.000Z",
+        "techStack": ["TypeScript", "Vite", "React"],
+        "links": {
+          "github": "https://github.com/janedoe/portos-cli",
+          "live": "https://cli.portos.dev",
+          "demo": "https://cli.portos.dev"
+        }
+      }
+    ],
+    "experience": [
+      {
+        "company": "Stark Tech",
+        "role": "Senior Engineer",
+        "slug": "stark-tech-senior-engineer",
+        "description": "Architecting decoupled UIs and high-throughput cache pipelines.",
+        "location": "Remote",
+        "mode": "remote",
+        "images": [],
+        "startDate": "2024-01-15T00:00:00.000Z",
+        "endDate": null,
+        "isCurrent": true,
+        "links": {}
+      }
+    ],
+    "certificates": [
+      {
+        "title": "AWS Solutions Architect Associate",
+        "slug": "aws-saa",
+        "type": "certificate",
+        "issuer": "Amazon Web Services",
+        "url": "https://aws.amazon.com/verification/AWS-ASA-99812",
+        "linkedin": "https://www.linkedin.com/posts/janedoe_aws-certified-activity-123",
+        "images": ["https://res.cloudinary.com/portos/image/upload/aws-cert.webp"],
+        "issueDate": "2025-06-01T00:00:00.000Z"
+      }
+    ]
+  }
 }`;
 
   const analyticsTrackCurl = `curl -X POST "https://api.portos.dev/api/analytics/github-click" \\
@@ -408,10 +434,10 @@ document.getElementById("contact-form").addEventListener("submit", () => {
       title: "Profile & Social Links",
       category: "Core Features",
       attributes: [
-        { name: "Custom Fields", value: "Headline, Biography, Technical Skills" },
-        { name: "Image Storage", value: "Cloudinary Cloud Hosting" },
-        { name: "Link Types", value: "GitHub, LinkedIn, Twitter, Custom Web" },
-        { name: "Tags Limit", value: "Up to 30 custom tech tags" },
+        { name: "Custom Fields", value: "Headline, Bio, Grouped Skills, Resume (PDF)" },
+        { name: "Asset Storage", value: "Cloudinary (avatar image + resume PDF)" },
+        { name: "Link Types", value: "GitHub, LinkedIn, Twitter, Website, YouTube, Instagram, Email, ORCID, Scholar" },
+        { name: "Skills Shape", value: "Grouped: [{ category, items[] }]" },
       ],
       headings: [
         { id: "personal-details", text: "Personal Details & Headlines" },
@@ -424,12 +450,12 @@ document.getElementById("contact-form").addEventListener("submit", () => {
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">The profile configuration page manages the top-level parameters of your digital resume.</p>
           <SectionHeading id="personal-details">Personal Details &amp; Headlines</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Update your full professional name, add a punchy developer headline (e.g., "Full Stack Developer specializing in Web Infrastructure"), and write a brief biography describing your focus areas and work interests.</p>
-          <SectionHeading id="avatar-hosting">Avatar &amp; Image Uploads</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">By default, PortOS utilizes your GitHub profile picture. If you wish to change it, the dashboard features an integrated drag-and-drop uploader. Images are optimized and hosted securely on Cloudinary CDN, ensuring fast load times.</p>
+          <SectionHeading id="avatar-hosting">Avatar &amp; Resume Uploads</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">By default, PortOS utilizes your GitHub profile picture. If you wish to change it, the dashboard features an integrated drag-and-drop uploader. You can also upload a <strong className="text-[var(--text-primary)]">resume PDF</strong>. Both are hosted on Cloudinary and exposed as <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">profile.avatar</code> and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">profile.resume</code> URLs.</p>
           <SectionHeading id="social-linking">Connecting Social Links</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Input direct profile links for GitHub, LinkedIn, Twitter, and your personal homepage. These links are packaged neatly in the public API payload under the <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">links</code> object.</p>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Add direct links for GitHub, LinkedIn, Twitter/X, Website, YouTube, Instagram, Email, ORCID, and Google Scholar. These are packaged as a keyed object in the public API under <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">profile.links</code> (e.g. <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">links.github</code>, <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">links.email</code>).</p>
           <SectionHeading id="skills-tagging">Configuring Technical Skills</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Manage your technical skill tags dynamically. Type tech stacks like "React", "TypeScript", or "GraphQL" and press enter to tag them. These are returned as a simple array, perfect for rendering custom badges or filters on your personal website.</p>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Skills are organized into named <strong className="text-[var(--text-primary)]">groups</strong> (e.g. "Frontend", "Backend"). Each group holds its own list of tags. In the API, <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">profile.skills</code> is an array of <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">{"{ category, items[] }"}</code> objects — render each group as a titled section on your site.</p>
         </div>
       ),
     },
@@ -454,7 +480,7 @@ document.getElementById("contact-form").addEventListener("submit", () => {
           <SectionHeading id="creating-project">Creating Showcase Cards</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Add a project card by specifying a title and a description. PortOS automatically generates a URL-safe slug (e.g. <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">portos-cli</code>). Upload a thumbnail card or mock image which gets compressed automatically to the WebP format for fast delivery.</p>
           <SectionHeading id="managing-metadata">Managing Hyperlinks &amp; Tags</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">For each project, assign a Github Repository URL and a Live Demo URL. You can also specify the exact tech stack tags (e.g., Node, Tailwind, React) utilized during development.</p>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">For each project, assign a GitHub repo URL and a Live Demo URL, plus the tech stack tags (e.g. Node, Tailwind, React). In the API these arrive as <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">techStack</code> (array) and a <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">links</code> object (the live link is exposed as both <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">links.live</code> and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">links.demo</code>). Each project also carries <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">type</code> (project/research) and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">thumbnail</code> — derive category filters from <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">techStack</code>/<code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">type</code>.</p>
           <SectionHeading id="featured-flag">Featured Projects Pinning</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Toggle the <strong className="text-[var(--text-primary)]">Featured</strong> switch on your highest quality projects. This flags the project as <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">featured: true</code> in the API response, allowing your portfolio layout to pin these highlight cards to the front page or list them in a hero grid.</p>
         </div>
@@ -478,7 +504,7 @@ document.getElementById("contact-form").addEventListener("submit", () => {
         <div className="space-y-7">
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Maintain an interactive timeline of your employment history, internships, and consulting engagements.</p>
           <SectionHeading id="work-history-setup">Adding Experience Records</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Input the company name, your professional title, start date, and end date. Describe key achievements, architectures built, and technical milestones accomplished during your stay.</p>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Input the company name, your professional title, start date, and end date. In the API these map to <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">company</code>, <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">role</code>, <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">startDate</code>, and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">endDate</code>, alongside <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">location</code>, <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">mode</code>, and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">images</code>.</p>
           <SectionHeading id="current-employment">Tracking Current Roles</SectionHeading>
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">If you are currently employed at a company, check the <strong className="text-[var(--text-primary)]">I presently work here</strong> box. This sets the end date parameter to null and tags the record as <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">isCurrent: true</code> in the public API payload.</p>
         </div>
@@ -489,21 +515,21 @@ document.getElementById("contact-form").addEventListener("submit", () => {
       title: "Certifications",
       category: "Core Features",
       attributes: [
-        { name: "Categories", value: "Awards, Accreditations, Degrees" },
-        { name: "Validation", value: "External Credential URL support" },
-        { name: "Media Badge", value: "Issuer logo uploads" },
+        { name: "Categories", value: "type: certificate | achievement" },
+        { name: "Verification", value: "Credential URL (url) + LinkedIn post" },
+        { name: "Media", value: "Image gallery (images[]) on Cloudinary" },
       ],
       headings: [
         { id: "register-certificates", text: "Logging Credentials & Licenses" },
-        { id: "issuer-verification", text: "Issuer Verification Link" },
+        { id: "issuer-verification", text: "Verification & LinkedIn Links" },
       ],
       content: (
         <div className="space-y-7">
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Manage your credentials, professional exam licenses, bootcamp certificates, and tech hackathon awards.</p>
           <SectionHeading id="register-certificates">Logging Credentials &amp; Licenses</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Provide the name of the certification (e.g. "Google Professional Cloud Architect") and the official issuing organization (e.g. "Google Cloud"). Specify the unique Credential ID issued to verify authenticity.</p>
-          <SectionHeading id="issuer-verification">Issuer Verification Link</SectionHeading>
-          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Include the direct credential lookup link provided by the issuer (like Credly or university portal). In the JSON payload, these are delivered under <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">url</code>, allowing portfolio users to click directly to verify your credentials.</p>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Provide the certification name (e.g. "Google Professional Cloud Architect") and the issuing organization. These arrive in the API as <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">title</code> and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">issuer</code>, with a <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">type</code> of certificate or achievement, plus an <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">images</code> gallery and <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">issueDate</code>.</p>
+          <SectionHeading id="issuer-verification">Verification &amp; LinkedIn Links</SectionHeading>
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)]">Add the issuer's credential lookup link (Credly, university portal, etc.) — delivered under <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">url</code> — and optionally a <code className="rounded bg-[var(--bg-secondary)] px-1.5 py-0.5 text-[12px] font-mono text-[var(--accent)]">linkedin</code> post URL announcing the achievement. Archived certificates are hidden from the public API.</p>
         </div>
       ),
     },

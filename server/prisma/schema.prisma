@@ -31,6 +31,8 @@ model User {
 
   headline      String?  @db.VarChar(255)
 
+  resume String? @db.VarChar(500)
+
 
   is_public Boolean @default(true)
   is_active Boolean @default(true)
@@ -129,6 +131,8 @@ model Certificates {
   type String @db.VarChar(100)
 
   link String? @db.VarChar(500)
+
+  linkedin String? @db.VarChar(500)
 
   images Json?
 

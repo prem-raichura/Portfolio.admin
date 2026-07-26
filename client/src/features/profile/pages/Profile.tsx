@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ChangeEvent } from "react";
 import { toast } from "react-hot-toast";
-import { Plus, User, ImagePlus, ArrowLeft, X, Pencil, Trash2 } from "lucide-react";
+import { Plus, User, ImagePlus, ArrowLeft, X, Pencil, Trash2, FileText } from "lucide-react";
 import DashboardLayout from "@layouts/DashboardLayout";
 import PageLoader from "@shared/components/ui/PageLoader";
 import { getProfile, updateProfile, type UserProfile } from "../services/profile.service";
@@ -14,7 +14,15 @@ const PLATFORM_OPTIONS = [
   { value: "website", label: "Website" },
   { value: "youtube", label: "YouTube" },
   { value: "instagram", label: "Instagram" },
+  { value: "email", label: "Email" },
+  { value: "orcid", label: "ORCID" },
+  { value: "scholar", label: "Google Scholar" },
 ];
+
+interface SkillGroup {
+  category: string;
+  items: string[];
+}
 
 function Profile() {
   const navigate = useNavigate();
@@ -23,8 +31,10 @@ function Profile() {
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
 
   // Local states for complex fields
-  const [skillInput, setSkillInput] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
+  const [skills, setSkills] = useState<SkillGroup[]>([]);
+  const [skillInputs, setSkillInputs] = useState<Record<number, string>>({});
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [removeResume, setRemoveResume] = useState(false);
   const [links, setLinks] = useState<{ platform: string; url: string }[]>([
     { platform: "github", url: "" },
     { platform: "linkedin", url: "" },
@@ -45,7 +55,19 @@ function Profile() {
           if (data.user.avatar) setAvatarPreview(data.user.avatar);
 
           if (data.user.skills && Array.isArray(data.user.skills)) {
-            setSkills(data.user.skills);
+            const raw = data.user.skills as unknown[];
+            if (raw.length > 0 && typeof raw[0] === "object" && raw[0] !== null) {
+              // Grouped shape.
+              setSkills(
+                (raw as { category?: string; items?: string[] }[]).map((g) => ({
+                  category: g.category || "",
+                  items: Array.isArray(g.items) ? g.items : [],
+                }))
+              );
+            } else {
+              // Legacy flat string[] — wrap into a single group.
+              setSkills([{ category: "General", items: raw as string[] }]);
+            }
           }
 
           if (data.user.users_links && typeof data.user.users_links === "object") {
@@ -82,6 +104,14 @@ function Profile() {
     } catch {
       return false;
     }
+  };
+
+  // Email links are validated as an address; everything else must be a URL.
+  const isValidLink = (platform: string, url: string) => {
+    if (platform === "email") {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(url);
+    }
+    return isValidUrl(url);
   };
 
   /* =========================
@@ -129,18 +159,61 @@ function Profile() {
   };
 
   /* =========================
-      SKILLS
+      RESUME
   ========================= */
 
-  const addSkill = () => {
-    if (skillInput.trim() && !skills.includes(skillInput.trim())) {
-      setSkills([...skills, skillInput.trim()]);
-      setSkillInput("");
+  const handleResumeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== "application/pdf") {
+        toast.error("Resume must be a PDF");
+      } else {
+        setResumeFile(file);
+        setRemoveResume(false);
+      }
     }
+    e.target.value = "";
   };
 
-  const removeSkill = (skill: string) => {
-    setSkills(skills.filter((s) => s !== skill));
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    setRemoveResume(true);
+    setProfile((prev) => ({ ...prev, resume: null }));
+  };
+
+  /* =========================
+      SKILLS (grouped by category)
+  ========================= */
+
+  const addSkillGroup = () => setSkills([...skills, { category: "", items: [] }]);
+
+  const updateGroupCategory = (index: number, value: string) => {
+    const next = [...skills];
+    next[index] = { ...next[index], category: value };
+    setSkills(next);
+  };
+
+  const removeSkillGroup = (index: number) =>
+    setSkills(skills.filter((_, i) => i !== index));
+
+  const addSkillItem = (index: number) => {
+    const value = (skillInputs[index] || "").trim();
+    if (!value) return;
+    const next = [...skills];
+    if (!next[index].items.includes(value)) {
+      next[index] = { ...next[index], items: [...next[index].items, value] };
+      setSkills(next);
+    }
+    setSkillInputs({ ...skillInputs, [index]: "" });
+  };
+
+  const removeSkillItem = (index: number, item: string) => {
+    const next = [...skills];
+    next[index] = {
+      ...next[index],
+      items: next[index].items.filter((s) => s !== item),
+    };
+    setSkills(next);
   };
 
   /* =========================
@@ -169,9 +242,11 @@ function Profile() {
       return;
     }
 
-    const invalidLink = links.find((link) => link.url && !isValidUrl(link.url));
+    const invalidLink = links.find(
+      (link) => link.url && !isValidLink(link.platform, link.url)
+    );
     if (invalidLink) {
-      toast.error(`Invalid URL for platform: ${invalidLink.platform || "unknown"}`);
+      toast.error(`Invalid value for platform: ${invalidLink.platform || "unknown"}`);
       return;
     }
 
@@ -187,7 +262,15 @@ function Profile() {
       if (avatarFile) formData.append("avatar", avatarFile);
       else if (removeAvatar) formData.append("remove_avatar", "true");
 
-      formData.append("skills", JSON.stringify(skills));
+      if (resumeFile) formData.append("resume", resumeFile);
+      else if (removeResume) formData.append("remove_resume", "true");
+
+      // Drop empty groups; default a missing category label to "General".
+      const cleanedSkills = skills
+        .map((g) => ({ category: g.category.trim(), items: g.items }))
+        .filter((g) => g.category || g.items.length > 0)
+        .map((g) => ({ category: g.category || "General", items: g.items }));
+      formData.append("skills", JSON.stringify(cleanedSkills));
 
       const formattedLinks: Record<string, string> = {};
       links.forEach((l) => {
@@ -406,82 +489,168 @@ function Profile() {
             </div>
 
 
-            {/* SKILLS */}
+            {/* SKILLS (grouped by category) */}
 
             <div className="mt-6">
 
-              <label className="mb-3 block text-sm font-medium">
-                Skills / Technologies
-              </label>
-
-              <div className="flex gap-3">
-
-                <input
-                  type="text"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addSkill();
-                    }
-                  }}
-                  placeholder="Add a skill (e.g. React)"
-                  className="
-                    w-full
-                    rounded-2xl
-                    border
-                    border-[var(--border-color)]
-                    bg-[var(--bg-main)]
-                    px-4
-                    py-3
-                    outline-none
-                  "
-                />
-
+              <div className="mb-3 flex items-center justify-between">
+                <label className="text-sm font-medium">Skills / Technologies</label>
                 <button
                   type="button"
-                  onClick={addSkill}
+                  onClick={addSkillGroup}
                   className="
                     flex
                     items-center
-                    justify-center
-                    rounded-2xl
+                    gap-2
+                    rounded-xl
                     bg-[var(--button-primary)]
-                    px-5
+                    px-4
+                    py-2
+                    text-sm
+                    font-medium
                     text-white
                     dark:text-black
                   "
                 >
-                  <Plus size={18} />
+                  <Plus size={16} />
+                  Add Group
                 </button>
-
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-3">
-                {skills.map((skill, index) => (
+              <div className="space-y-4">
+
+                {skills.length === 0 && (
+                  <p className="text-sm italic text-[var(--text-muted)]">
+                    No skill groups yet. Add one (e.g. "Frontend", "Backend").
+                  </p>
+                )}
+
+                {skills.map((group, gi) => (
                   <div
-                    key={index}
+                    key={gi}
                     className="
-                      flex
-                      items-center
-                      gap-2
-                      rounded-full
-                      bg-[var(--bg-secondary)]
-                      px-4
-                      py-2
-                      text-sm
+                      rounded-2xl
+                      border
+                      border-[var(--border-color)]
+                      bg-[var(--bg-main)]
+                      p-4
                     "
                   >
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(skill)}
-                    >
-                      <X size={14} />
-                    </button>
+                    {/* Category name + remove group */}
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        value={group.category}
+                        onChange={(e) => updateGroupCategory(gi, e.target.value)}
+                        placeholder="Category (e.g. Frontend)"
+                        className="
+                          w-full
+                          rounded-xl
+                          border
+                          border-[var(--border-color)]
+                          bg-[var(--bg-card)]
+                          px-4
+                          py-2.5
+                          font-medium
+                          outline-none
+                        "
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSkillGroup(gi)}
+                        className="
+                          flex
+                          items-center
+                          justify-center
+                          rounded-xl
+                          border
+                          border-red-200
+                          px-3
+                          text-red-500
+                          transition-all
+                          duration-300
+                          hover:bg-red-50
+                        "
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    {/* Add a skill to this group */}
+                    <div className="mt-3 flex gap-3">
+                      <input
+                        type="text"
+                        value={skillInputs[gi] || ""}
+                        onChange={(e) =>
+                          setSkillInputs({ ...skillInputs, [gi]: e.target.value })
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addSkillItem(gi);
+                          }
+                        }}
+                        placeholder="Add a skill (e.g. React)"
+                        className="
+                          w-full
+                          rounded-xl
+                          border
+                          border-[var(--border-color)]
+                          bg-[var(--bg-card)]
+                          px-4
+                          py-2.5
+                          outline-none
+                        "
+                      />
+                      <button
+                        type="button"
+                        onClick={() => addSkillItem(gi)}
+                        className="
+                          flex
+                          items-center
+                          justify-center
+                          rounded-xl
+                          bg-[var(--button-primary)]
+                          px-4
+                          text-white
+                          dark:text-black
+                        "
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+
+                    {/* Skill pills */}
+                    {group.items.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {group.items.map((item, ii) => (
+                          <div
+                            key={ii}
+                            className="
+                              flex
+                              items-center
+                              gap-2
+                              rounded-full
+                              bg-[var(--bg-secondary)]
+                              px-4
+                              py-2
+                              text-sm
+                            "
+                          >
+                            {item}
+                            <button
+                              type="button"
+                              onClick={() => removeSkillItem(gi, item)}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
+
               </div>
 
             </div>
@@ -571,8 +740,12 @@ function Profile() {
                       {/* URL */}
                     <div className="md:col-span-8">
                       <input
-                        type="url"
-                        placeholder="URL (e.g. https://github.com/...)"
+                        type="text"
+                        placeholder={
+                          link.platform === "email"
+                            ? "you@example.com"
+                            : "URL (e.g. https://github.com/...)"
+                        }
                         value={link.url}
                         onChange={(e) => handleLinkChange(idx, "url", e.target.value)}
                         className={`
@@ -583,14 +756,18 @@ function Profile() {
                           py-3
                           outline-none
                           bg-[var(--bg-card)]
-                          ${link.url && !isValidUrl(link.url)
+                          ${link.url && !isValidLink(link.platform, link.url)
                             ? "border-red-400"
                             : "border-[var(--border-color)]"
                           }
                         `}
                       />
-                      {link.url && !isValidUrl(link.url) && (
-                        <p className="mt-2 text-xs text-red-500">Invalid URL format</p>
+                      {link.url && !isValidLink(link.platform, link.url) && (
+                        <p className="mt-2 text-xs text-red-500">
+                          {link.platform === "email"
+                            ? "Invalid email address"
+                            : "Invalid URL format"}
+                        </p>
                       )}
                     </div>
 
@@ -760,6 +937,108 @@ function Profile() {
                 <p className="mt-1 text-xs text-[var(--text-muted)]">
                   PNG, JPG, WEBP
                 </p>
+              </label>
+            )}
+
+          </div>
+
+          {/* RESUME */}
+
+          <div
+            className="
+              rounded-[32px]
+              border
+              border-[var(--border-color)]
+              bg-[var(--bg-card)]
+              p-6
+            "
+          >
+            <h2 className="text-lg font-semibold">Resume</h2>
+
+            <input
+              type="file"
+              id="resume-upload"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handleResumeChange}
+            />
+
+            {resumeFile || (profile.resume && !removeResume) ? (
+              <div
+                className="
+                  mt-5
+                  flex
+                  items-center
+                  justify-between
+                  gap-3
+                  rounded-2xl
+                  border
+                  border-[var(--border-color)]
+                  bg-[var(--bg-main)]
+                  p-4
+                "
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <FileText size={22} className="shrink-0 text-[var(--button-primary)]" />
+                  <div className="min-w-0">
+                    {resumeFile ? (
+                      <p className="truncate text-sm font-medium">{resumeFile.name}</p>
+                    ) : (
+                      <a
+                        href={profile.resume as string}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="truncate text-sm font-medium text-[var(--button-primary)] hover:underline"
+                      >
+                        View current resume
+                      </a>
+                    )}
+                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">PDF</p>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <label
+                    htmlFor="resume-upload"
+                    className="cursor-pointer rounded-xl border border-[var(--border-color)] px-3 py-2 text-xs font-medium transition-colors hover:bg-[var(--bg-secondary)]"
+                  >
+                    Replace
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleRemoveResume}
+                    className="flex items-center justify-center rounded-xl border border-red-200 px-3 py-2 text-red-500 transition-colors hover:bg-red-50"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label
+                htmlFor="resume-upload"
+                className="
+                  mt-5
+                  flex
+                  h-32
+                  cursor-pointer
+                  flex-col
+                  items-center
+                  justify-center
+                  rounded-3xl
+                  border-2
+                  border-dashed
+                  border-[var(--border-color)]
+                  bg-[var(--bg-main)]
+                  transition-all
+                  duration-300
+                  hover:border-[var(--button-primary)]
+                "
+              >
+                <FileText size={34} className="text-[var(--text-secondary)]" />
+                <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                  Click to upload resume
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">PDF only</p>
               </label>
             )}
 
