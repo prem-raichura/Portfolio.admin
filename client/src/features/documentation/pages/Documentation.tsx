@@ -144,11 +144,11 @@ export default function Documentation() {
 
   // ── Code snippets ────────────────────────────────────────────────────────
 
-  const curlCode = `curl -X GET "https://api.portos.dev/api/public" \\
+  const curlCode = `curl -X GET "https://portfolio-admin-pdg8.vercel.app/api/public" \\
   -H "x-api-key: your_api_key_here"`;
 
   const fetchCode = `const fetchPortfolio = async () => {
-  const response = await fetch("https://api.portos.dev/api/public", {
+  const response = await fetch("https://portfolio-admin-pdg8.vercel.app/api/public", {
     method: "GET",
     headers: {
       "x-api-key": "your_api_key_here",
@@ -234,7 +234,7 @@ export default function Documentation() {
   }
 }`;
 
-  const analyticsTrackCurl = `curl -X POST "https://api.portos.dev/api/analytics/github-click" \\
+  const analyticsTrackCurl = `curl -X POST "https://portfolio-admin-pdg8.vercel.app/api/analytics/github-click" \\
   -H "x-api-key: your_api_key_here" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -245,7 +245,7 @@ export default function Documentation() {
   }'`;
 
   const analyticsTrackFetch = `const trackEvent = async (endpoint, data = {}) => {
-  await fetch(\`https://api.portos.dev/api/analytics/\${endpoint}\`, {
+  await fetch(\`https://portfolio-admin-pdg8.vercel.app/api/analytics/\${endpoint}\`, {
     method: "POST",
     headers: {
       "x-api-key": "your_api_key_here",
